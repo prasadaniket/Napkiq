@@ -10,22 +10,31 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   themeColor: '#F26522',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body>
         {children}
         <Toaster
-          position="top-center"
+          position="top-right"
           toastOptions={{
-            duration: 3000,
-            style: { borderRadius: '8px', fontSize: '14px' },
-            success: { style: { background: '#27AE60', color: '#fff' } },
-            error: { style: { background: '#E74C3C', color: '#fff' } },
+            duration: 3500,
+            style: {
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '10px',
+              fontSize: '13.5px',
+            },
+            success: { iconTheme: { primary: '#22c55e', secondary: '#fff' } },
+            error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
           }}
         />
       </body>

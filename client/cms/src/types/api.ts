@@ -26,25 +26,103 @@ export interface LoginResponse {
   assignedOutletName: string | null
 }
 
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
 export interface DashboardStats {
-  totalCustomers: number
-  totalReviews: number
-  totalVisits: number
-  inactiveCustomers: number
-  averageRating: number | null
-  birthdaysThisMonth: number
-  anniversariesThisMonth: number
-  newCustomersThisWeek: number
-  newReviewsThisWeek: number
-  outletStats: OutletStat[] | null
+  totalCustomers:        number
+  totalReviews:          number
+  totalVisits:           number
+  averageRating:         number | null
+  inactiveCustomers:     number
+  newCustomersThisWeek:  number
+  newCustomersThisMonth: number
+  newCustomersThisYear:  number
+  newReviewsThisWeek:    number
+  totalVisitsThisMonth:  number
+  totalVisitsThisYear:   number
+  birthdaysThisMonth:    number
+  anniversariesThisMonth:number
 }
 
-export interface OutletStat {
-  outletCode: string
-  outletName: string
-  customers: number
-  reviews: number
-  visits: number
-  avgRating: number | null
-  inactiveCustomers: number
+// ─── Outlets ──────────────────────────────────────────────────────────────────
+
+export interface Outlet {
+  id:            string
+  name:          string
+  code:          string
+  slug:          string
+  address:       string | null
+  googleMapsUrl: string | null
+  isActive:      boolean
+}
+
+export interface OutletStats {
+  outletId:               string
+  outletName:             string
+  outletCode:             string
+  outletSlug:             string
+  googleMapsUrl:          string | null
+  totalCustomers:         number
+  totalReviews:           number
+  totalVisits:            number
+  averageRating:          number | null
+  inactiveCustomers:      number
+  newCustomersThisWeek:   number
+  newCustomersThisMonth:  number
+  newCustomersThisYear:   number
+  reviewsThisWeek:        number
+  visitsThisMonth:        number
+  birthdaysThisMonth:     number
+  anniversariesThisMonth: number
+}
+
+// ─── Customers ────────────────────────────────────────────────────────────────
+
+export interface Customer {
+  id:                      string
+  fullName:                string
+  phone:                   string
+  email:                   string | null
+  gender:                  string
+  maritalStatus:           string
+  birthDate:               string | null
+  anniversaryDate:         string | null
+  totalVisits:             number
+  lastVisitDate:           string | null
+  hasSubmittedFirstReview: boolean
+  firstVisitOutletId:      string
+  createdAt:               string
+  firstVisitOutlet?:       { name: string; code: string }
+}
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+export interface Review {
+  id:           string
+  stars:        number
+  reviewType:   'first_visit' | 'repeat'
+  comment:      string | null
+  createdAt:    string
+  customerId:   string
+  outletId:     string
+  customer?:    { fullName: string; phone: string }
+  outlet?:      { name: string; code: string; googleMapsUrl: string | null }
+}
+
+export interface ReviewSummary {
+  averageRating: number | null
+  totalReviews:  number
+  distribution:  { stars: number; count: number }[]
+}
+
+// ─── Visits ───────────────────────────────────────────────────────────────────
+
+export interface Visit {
+  id:          string
+  visitType:   'qr_scan' | 'payment'
+  visitedAt:   string
+  customerId:  string
+  outletId:    string
+  customer?:   { fullName: string; phone: string }
+  outlet?:     { name: string; code: string }
 }

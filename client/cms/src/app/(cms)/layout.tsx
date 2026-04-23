@@ -1,13 +1,61 @@
-import { AuthProvider } from '@/context/AuthContext'
-import CMSBottomNav from '@/components/layout/CMSSidebar'
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { AuthProvider, useAuth } from '@/context/AuthContext'
+import CMSSidebar from '@/components/layout/CMSSidebar'
+
+// ─── Auth guard (inner — has access to useAuth) ───────────────────────────────
+
+function CmsShell({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login')
+    }
+  }, [loading, user, router])
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--color-bg)',
+      }}>
+        <div style={{
+          width: 24, height: 24,
+          border: '2px solid rgba(255,255,255,0.1)',
+          borderTop: '2px solid #F26522',
+          borderRadius: '50%',
+          animation: 'spin 0.7s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
+  }
+
+  if (!user) return null
+
+  return (
+    <div className="cms-shell">
+      <CMSSidebar />
+      <main className="cms-main">
+        {children}
+      </main>
+    </div>
+  )
+}
+
+// ─── Layout wrapper (provides AuthContext) ────────────────────────────────────
 
 export default function CmsLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-neutral-off-white pb-16">
-        <main className="overflow-auto">{children}</main>
-        <CMSBottomNav />
-      </div>
+      <CmsShell>{children}</CmsShell>
     </AuthProvider>
   )
 }

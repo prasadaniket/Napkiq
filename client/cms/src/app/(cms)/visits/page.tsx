@@ -3,72 +3,137 @@
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import StatCard from '@/components/cms/StatCard'
-import Loader from '@/components/ui/Loader'
-import type { DashboardStats } from '@/types/api'
+import { format } from 'date-fns'
+import type { PageResponse, Visit } from '@/types/api'
 
 export default function VisitsPage() {
-  const { user, loading: authLoading } = useAuth()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, isOwnerOrAbove } = useAuth()
+  const [visits, setVisits]     = useState<Visit[]>([])
+  const [total, setTotal]       = useState(0)
+  const [loading, setLoading]   = useState(true)
+  const [page, setPage]         = useState(0)
 
   useEffect(() => {
-    api.get<DashboardStats>('/cms/dashboard/stats')
-      .then((res) => setStats(res.data))
-      .catch(console.error)
+    if (!user) return
+    setLoading(true)
+    api.get<PageResponse<Visit>>(`/cms/visits?page=${page}&size=20`)
+      .then(res => { setVisits(res.data.content); setTotal(res.data.totalElements) })
+      .catch(() => setVisits([]))
       .finally(() => setLoading(false))
-  }, [])
-
-  if (authLoading || loading) return <Loader fullScreen />
+  }, [user, page])
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-secondary">Visit Analytics</h1>
-        <p className="text-secondary-light text-sm mt-1">Track customer visit frequency</p>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Visits</h1>
+        <p className="page-subtitle">
+          {isOwnerOrAbove ? 'All outlet visit activity' : `Visits · ${user?.assignedOutletName}`}
+        </p>
       </div>
 
-      {stats && (
-        <>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <StatCard title="Total Visits"  value={stats.totalVisits}                                            color="primary" />
-            <StatCard title="Inactive"      value={stats.inactiveCustomers}                                      color="error"   subtitle="No visit in 30+ days" />
-            <StatCard title="Active"        value={(stats.totalCustomers ?? 0) - (stats.inactiveCustomers ?? 0)} color="success" subtitle="Last 30 days" />
+      <div className="page-content">
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '48px', color: 'var(--color-text-3)' }}>
+            Loading…
           </div>
+        )}
 
-          {user?.role === 'main_owner' && stats.outletStats && (
-            <div>
-              <h2 className="text-lg font-bold text-secondary mb-4">Visits by Outlet</h2>
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-neutral-off-white border-b border-neutral-light">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-secondary">Outlet</th>
-                      <th className="text-left px-4 py-3 font-semibold text-secondary">Total Visits</th>
-                      <th className="text-left px-4 py-3 font-semibold text-secondary">Customers</th>
-                      <th className="text-left px-4 py-3 font-semibold text-secondary">Inactive</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.outletStats.map((os) => (
-                      <tr key={os.outletCode} className="border-b border-neutral-light/50">
-                        <td className="px-4 py-3 font-medium text-secondary">{os.outletName}</td>
-                        <td className="px-4 py-3 text-secondary-light">{os.visits}</td>
-                        <td className="px-4 py-3 text-secondary-light">{os.customers}</td>
-                        <td className="px-4 py-3">
-                          <span className="bg-error/10 text-error text-xs font-bold px-2 py-1 rounded-full">
-                            {os.inactiveCustomers}
+        {!loading && visits.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">📅</div>
+            <div className="empty-state-title">No visits recorded</div>
+            <div className="empty-state-desc">Visits from QR scans and payments will appear here.</div>
+          </div>
+        )}
+
+        {!loading && visits.length > 0 && (
+          <>
+            <div style={{ marginBottom: 12, fontSize: 13, color: 'var(--color-text-3)' }}>
+              {total.toLocaleString()} total visits
+            </div>
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    {isOwnerOrAbove && <th>Outlet</th>}
+                    <th>Type</th>
+                    <th>Visited At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visits.map((v) => (
+                    <tr key={v.id}>
+                      <td>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-1)' }}>
+                          {v.customer?.fullName ?? '—'}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
+                          {v.customer?.phone}
+                        </div>
+                      </td>
+                      {isOwnerOrAbove && (
+                        <td>
+                          <span style={{
+                            display: 'inline-flex',
+                            padding: '2px 8px',
+                            borderRadius: 99,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            background: 'rgba(255,255,255,0.05)',
+                            color: 'var(--color-text-2)',
+                          }}>
+                            {v.outlet?.code}
                           </span>
                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                      )}
+                      <td>
+                        <span style={{
+                          display: 'inline-flex',
+                          padding: '2px 8px',
+                          borderRadius: 99,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: v.visitType === 'qr_scan'
+                            ? 'rgba(59,130,246,0.12)' : 'rgba(34,197,94,0.12)',
+                          color: v.visitType === 'qr_scan'
+                            ? 'var(--color-info)' : 'var(--color-success)',
+                        }}>
+                          {v.visitType === 'qr_scan' ? 'QR Scan' : 'Payment'}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 12 }}>
+                        {format(new Date(v.visitedAt), 'dd MMM yy, HH:mm')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </>
-      )}
+
+            {/* Pagination */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button
+                className="btn-ghost"
+                disabled={page === 0}
+                onClick={() => setPage(p => p - 1)}
+              >
+                ← Prev
+              </button>
+              <span style={{ fontSize: 13, color: 'var(--color-text-3)' }}>
+                Page {page + 1}
+              </span>
+              <button
+                className="btn-ghost"
+                disabled={(page + 1) * 20 >= total}
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
