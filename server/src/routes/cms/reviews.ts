@@ -75,9 +75,11 @@ router.get('/', async (req, res, next) => {
 })
 
 // ─── GET /api/cms/reviews/summary ─────────────────────────────────────────────
-// Returns star distribution for quick charts
+// Returns star distribution — mirrors same filters as GET /
 router.get('/summary', async (req, res, next) => {
   try {
+    const search = (req.query.search as string)?.trim() || ''
+
     let outletId: string | undefined
     if (req.staff!.role === 'franchise_owner') {
       outletId = req.staff!.assignedOutletId ?? undefined
@@ -85,7 +87,25 @@ router.get('/summary', async (req, res, next) => {
       outletId = req.query.outletId as string
     }
 
-    const where = outletId ? { outletId } : {}
+    const where: any = {}
+    if (outletId) where.outletId = outletId
+    if (req.query.stars) where.stars = parseInt(req.query.stars as string)
+    if (req.query.type && ['first_visit', 'repeat'].includes(req.query.type as string)) {
+      where.reviewType = req.query.type
+    }
+    if (req.query.dateFrom || req.query.dateTo) {
+      where.createdAt = {}
+      if (req.query.dateFrom) where.createdAt.gte = new Date(req.query.dateFrom as string)
+      if (req.query.dateTo)   where.createdAt.lte = new Date(req.query.dateTo as string)
+    }
+    if (search) {
+      where.customer = {
+        OR: [
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { phone:    { contains: search } },
+        ],
+      }
+    }
 
     const [distribution, aggregate] = await Promise.all([
       prisma.review.groupBy({
