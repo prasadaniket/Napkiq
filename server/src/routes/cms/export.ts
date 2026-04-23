@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import { prisma } from '../../lib/prisma'
-import { requireAuth, requireMainOwner } from '../../middleware/auth'
+import { requireAuth, requireAdmin } from '../../middleware/auth'
 import { stringify } from 'csv-stringify/sync'
 
 const router = Router()
 
-router.use(requireAuth, requireMainOwner)
+// Export: admin only
+router.use(requireAuth, requireAdmin)
 
 // GET /cms/export/customers
 router.get('/customers', async (req, res, next) => {

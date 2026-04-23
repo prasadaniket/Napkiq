@@ -11,6 +11,8 @@ import authRouter from './routes/auth'
 import dashboardRouter from './routes/cms/dashboard'
 import cmsCustomersRouter from './routes/cms/customers'
 import cmsReviewsRouter from './routes/cms/reviews'
+import cmsOutletsRouter from './routes/cms/outlets'
+import cmsVisitsRouter from './routes/cms/visits'
 import automationLogsRouter from './routes/cms/automationLogs'
 import exportRouter from './routes/cms/export'
 import { errorHandler } from './middleware/errorHandler'
@@ -53,11 +55,13 @@ export function createApp() {
   app.use('/api/auth', authRouter)  // POST /api/auth/login, GET /api/auth/me
 
   // CMS (protected)
-  app.use('/api/cms/dashboard', dashboardRouter)
-  app.use('/api/cms/customers', cmsCustomersRouter)
-  app.use('/api/cms/reviews', cmsReviewsRouter)
+  app.use('/api/cms/dashboard',       dashboardRouter)
+  app.use('/api/cms/customers',       cmsCustomersRouter)
+  app.use('/api/cms/reviews',         cmsReviewsRouter)
+  app.use('/api/cms/outlets',         cmsOutletsRouter)
+  app.use('/api/cms/visits',          cmsVisitsRouter)
   app.use('/api/cms/automation-logs', automationLogsRouter)
-  app.use('/api/cms/export', exportRouter)
+  app.use('/api/cms/export',          exportRouter)
 
   // Automation trigger — stub until Task 8 (Cloudflare Worker)
   app.post('/api/cms/reengagement/trigger', (_req, res) => {

@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import { prisma } from '../../lib/prisma'
 import { paginate } from '../../lib/paginate'
-import { requireAuth, requireMainOwner } from '../../middleware/auth'
+import { requireAuth, requireAdmin } from '../../middleware/auth'
 
 const router = Router()
 
-router.use(requireAuth, requireMainOwner)
+// Automation logs: admin only
+router.use(requireAuth, requireAdmin)
 
 // GET /cms/automation-logs
 router.get('/', async (req, res, next) => {

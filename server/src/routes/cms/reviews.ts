@@ -4,35 +4,104 @@ import { paginate } from '../../lib/paginate'
 import { requireAuth } from '../../middleware/auth'
 
 const router = Router()
-
 router.use(requireAuth)
 
-// GET /cms/reviews
+// ─── GET /api/cms/reviews ─────────────────────────────────────────────────────
+// Query params:
+//   page, size              — pagination
+//   outletId                — filter by outlet (admin/owner only)
+//   stars                   — 1-5 exact match
+//   type                    — first_visit | repeat
+//   dateFrom, dateTo        — ISO date range (createdAt)
+//   search                  — fuzzy search on customer name/phone
+//   sortDir                 — asc | desc (default: desc)
 router.get('/', async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page as string) || 0
-    const size = parseInt(req.query.size as string) || 20
-    const isMainOwner = req.staff!.role === 'main_owner'
+    const page    = Math.max(0, parseInt(req.query.page as string) || 0)
+    const size    = Math.min(100, Math.max(1, parseInt(req.query.size as string) || 20))
+    const sortDir = req.query.sortDir === 'asc' ? 'asc' : 'desc'
+    const search  = (req.query.search as string)?.trim() || ''
 
-    const where = isMainOwner
-      ? {}
-      : { outletId: req.staff!.assignedOutletId ?? '' }
+    // Outlet scoping
+    let outletId: string | undefined
+    if (req.staff!.role === 'franchise_owner') {
+      outletId = req.staff!.assignedOutletId ?? undefined
+    } else if (req.query.outletId) {
+      outletId = req.query.outletId as string
+    }
+
+    const where: any = {}
+    if (outletId) where.outletId = outletId
+    if (req.query.stars) where.stars = parseInt(req.query.stars as string)
+    if (req.query.type && ['first_visit', 'repeat'].includes(req.query.type as string)) {
+      where.reviewType = req.query.type
+    }
+
+    // Date range
+    if (req.query.dateFrom || req.query.dateTo) {
+      where.createdAt = {}
+      if (req.query.dateFrom) where.createdAt.gte = new Date(req.query.dateFrom as string)
+      if (req.query.dateTo)   where.createdAt.lte = new Date(req.query.dateTo as string)
+    }
+
+    // Customer search
+    if (search) {
+      where.customer = {
+        OR: [
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { phone:    { contains: search } },
+        ],
+      }
+    }
 
     const [reviews, total] = await Promise.all([
       prisma.review.findMany({
         where,
         skip: page * size,
         take: size,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: sortDir },
         include: {
           customer: { select: { fullName: true, phone: true } },
-          outlet: { select: { name: true, code: true } },
+          outlet:   { select: { name: true, code: true, googleMapsUrl: true } },
         },
       }),
       prisma.review.count({ where }),
     ])
 
     res.json(paginate(reviews, total, page, size))
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── GET /api/cms/reviews/summary ─────────────────────────────────────────────
+// Returns star distribution for quick charts
+router.get('/summary', async (req, res, next) => {
+  try {
+    let outletId: string | undefined
+    if (req.staff!.role === 'franchise_owner') {
+      outletId = req.staff!.assignedOutletId ?? undefined
+    } else if (req.query.outletId) {
+      outletId = req.query.outletId as string
+    }
+
+    const where = outletId ? { outletId } : {}
+
+    const [distribution, aggregate] = await Promise.all([
+      prisma.review.groupBy({
+        by: ['stars'],
+        where,
+        _count: { stars: true },
+        orderBy: { stars: 'desc' },
+      }),
+      prisma.review.aggregate({ where, _avg: { stars: true }, _count: { id: true } }),
+    ])
+
+    res.json({
+      averageRating: aggregate._avg.stars ?? null,
+      totalReviews:  aggregate._count.id,
+      distribution:  distribution.map(d => ({ stars: d.stars, count: d._count.stars })),
+    })
   } catch (err) {
     next(err)
   }

@@ -49,11 +49,19 @@ export async function requireAuth(
       return
     }
 
+    // Map deprecated main_owner → admin (backward compat during migration)
+    const role: StaffPayload['role'] =
+      staff.role === 'admin' || staff.role === 'main_owner'
+        ? 'admin'
+        : staff.role === 'owner'
+        ? 'owner'
+        : 'franchise_owner'
+
     req.staff = {
-      id: staff.id,
-      fullName: staff.fullName,
-      email: staff.email,
-      role: staff.role,
+      id:               staff.id,
+      fullName:         staff.fullName,
+      email:            staff.email,
+      role,
       assignedOutletId: staff.assignedOutletId,
     }
 
