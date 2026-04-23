@@ -1,13 +1,27 @@
 # Integrations
 
-## Backend Built-in Integrations
-- **Twilio SDK**: Native integration via `com.twilio.sdk:twilio:11.4.0` for SMS and WhatsApp communications routing.
-- **JavaMailSender**: Spring Boot Starter Mail configured for automated and transactional email delivery.
-- **PostgreSQL**: Serving as the primary relational persistence system.
-- **Redis**: Key-value data structured setup for session token management, temporary cache pooling, and event pub-sub operations.
-- **JWT**: JSON Web Tokens for secure stateless authentication.
+## Core Services
 
-## Frontend Integrations
-- **FingerprintJS**: Provides a robust client-side unique identification tracking parameter (`@fingerprintjs/fingerprintjs`) for sophisticated user differentiation in the main app without stringent login gates.
-- **Framer Motion**: Extensive, heavily configured logic hooks for timeline-based spatial and visual element choreography.
-- **Recharts**: For analytic visual metrics within the internal CMS platform.
+### Supabase
+- **Role**: Primary Auth and Database hosting.
+- **Usage**: Handles JWT generation, user session management, and hosts the PostgreSQL instance driven by Prisma.
+- **Pattern**: Client-side `cms_token` cookie is verified by Next.js middleware and Backend `requireAuth` middleware.
+
+### Cloudinary (Active Integration)
+- **Role**: Asset management and media delivery.
+- **Usage**: Used for storing and serving outlet photos, customer profile images, and menu assets.
+- **Implementation**: Secure server-side uploads via private API keys.
+
+## Communication Channels
+
+### WhatsApp Cloud API (Planned)
+- **Role**: Automated customer engagement.
+- **Usage**: Sending birthday greetings, anniversary wishes, and transaction receipts.
+- **Pattern**: Webhook-driven status tracking for message delivery.
+
+## Local Services
+
+### Prisma ORM
+- **Role**: Type-safe database client.
+- **Usage**: Used in the `server/` to interact with PostgreSQL. Schema located in `server/prisma/schema.prisma`.
+- **Convention**: Migrations managed via `npx prisma migrate`.

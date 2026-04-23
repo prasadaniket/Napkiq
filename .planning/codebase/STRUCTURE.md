@@ -1,39 +1,32 @@
 # Structure
 
-## High-Level Layout
-The codebase segregates its main functional environments into distinct root folders:
-```text
-/
-├── client/
-│   ├── main/             # The public StoneOven Next.js site
-│   │   ├── src/          # Source files (app routing, components, hooks)
-│   │   ├── package.json  # Next 16, React 19, Framer Motion
-│   ├── cms/              # The Internal configuration Management System
-│   │   ├── src/          # Source files specifically geared directly towards staff logic
-│   │   ├── package.json  # Separate dependency tracking subset
-│   ├── shared/           # Cross-app configurations
-│   └── package.json      # Monorepo concurrency scripts (`npm run dev`)
-├── server/               # The authoritative Spring Boot Application
-│   ├── src/              # Java backend controllers, entities, repositories
-│   └── pom.xml           # Managed by Maven
-```
+## Directory Map
 
-## Internal Next.js Main Frontend Structure
-```text
-client/main/src/
-├── app/                    # Next.js App Router root
-│   ├── outlet/
-│   │   └── [code]/         # Dynamic route for specific outlet locations
-│   │       ├── menu/
-│   │       ├── feedback/
-│   │       ├── review/
-│   │       └── page.tsx
-├── components/             # Reusable UI Blocks (e.g. boisar, ui, home)
-├── hooks/                  # Custom React hooks
-├── lib/                    # Helper libraries and utilities
-├── styles/                 # Ancillary stylesheets
-└── types/                  # Global TypeScript Interfaces
-```
+### `client/cms/src`
+- **`app/`**: Next.js App Router root.
+  - **`(cms)/`**: Grouped routes for the authenticated portal.
+    - **`outlets/`**: Performance dashboards and individual outlet deep-dives.
+    - **`customers/`**: Filterable customer list and detailed profile pages.
+    - **`reviews/`**: Feedback management with star distribution analytics.
+    - **`visits/`**: Activity timeline and visit history.
+- **`components/`**: Shared and domain-specific UI components.
+  - **`cms/`**: Specialized components like `ReviewCard`, `Initials` avatar, etc.
+- **`context/`**: React contexts for Auth and global state.
+- **`lib/`**: Utilities like `api.ts` (Axios) and `validators.ts` (Zod).
+- **`types/`**: Centralized TypeScript interfaces (matching backend DTOs).
 
-## Conventions
-- **Naming**: React Components are a mix of PascalCase (`GlobalFooter.tsx`) and strict lowercase matching logic paths for domains (`boisar.tsx`). Backend leverages standard Java Class Camel casing. Next.js routes maintain exact structural lowercase `page.tsx`/`layout.tsx` syntax.
+### `server/src`
+- **`routes/cms/`**: Domain-driven API handlers.
+  - `customers.ts`: CRUD and analytics for customer profiles.
+  - `outlets.ts`: Performance stats and aggregation.
+  - `reviews.ts`: Feedback processing and star distribution.
+  - `visits.ts`: Visit logging and history.
+- **`middleware/`**: Shared logic like `auth.ts` for RBAC.
+- **`lib/`**: Prisma client and pagination helpers.
+
+### `server/prisma`
+- `schema.prisma`: The source of truth for the database schema.
+- `migrations/`: Versioned history of database changes.
+
+### `worker/`
+- (Placeholder/Planned): Background tasks for WhatsApp automation and scheduled reporting.

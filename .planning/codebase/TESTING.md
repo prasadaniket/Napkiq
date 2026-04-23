@@ -1,9 +1,23 @@
 # Testing
 
-## Execution Environments
-- **Vitest**: Installed but might require manual pipeline execution to validate data shaping logic and basic util unit structures inside the `main` or shared scope. Highly relevant for isolated component behavior checks.
-- **Playwright**: Utilized via `@playwright/test` for E2E browser automation specifically tailored to ensure vital dynamic interactions—such as the Testimonial slide logic, path-aware outlet routing traversing, and sticky sidebar positioning—function robustly across screen sizes.
-- **Spring Boot Tester**: The backend natively integrates standard Controller assertions by leveraging `spring-boot-starter-test` and authentication scope checking handled cleanly by `spring-security-test` integrations.
+## Verification Strategy
+StoneOven prioritizes functional verification and automated regressions across the role hierarchy.
 
-## Quality Assurance & E2E Validation
-- Validation places a high emphasis on *interaction fidelity*. It is critical in this application that the UI behaviors, complex Framer motion orchestrations, and visual boundaries handle dynamically rendered content natively, mimicking high-end user expectations consistently. Tests typically map to features rather than isolated files.
+### 1. Manual UAT (User Acceptance Testing)
+- **Role Testing**: Verification must be performed as Admin, Owner, and Franchise Owner to ensure data isolation is absolute.
+- **Deep-Link Verification**: Validating that URLs like `/customers?outletId=X` correctly pre-filter views.
+
+### 2. Automated Testing (Playwright)
+- **E2E Flows**: Automated browser tests cover critical paths:
+  - Login → Dashboard.
+  - Customer Search & Filter.
+  - Review Submission & Feed update.
+- **Role Guarding**: Tests that verify 403 Forbidden responses when a Franchise Owner attempts to access Admin-only routes.
+
+### 3. API Smoke Testing
+- **Role-Aware Shell**: Custom PowerShell scripts (as seen in recent work) are used to rapidly verify all 3 roles against live API endpoints.
+- **Health Checks**: Verification of 200 OK responses and correct scoping of returned arrays.
+
+### 4. Static Analysis
+- **TypeScript**: Mandatory `npx tsc --noEmit` check before every major commit.
+- **Zod Schema Validation**: Ensures data integrity between frontend forms and backend persistence.

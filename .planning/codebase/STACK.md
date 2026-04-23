@@ -1,26 +1,30 @@
 # Tech Stack
 
 ## Overview
-StoneOven is a full-stack application leveraging a robust architecture that mixes a high-end visual frontend with a scalable relational backend. The application features a monorepo setup for the frontend and a decoupled Java Spring Boot service for the backend.
+StoneOven is a full-stack premium CMS and customer engagement platform. It uses a modern TypeScript-first approach across both the frontend and backend to ensure type safety and rapid development.
 
-## Frontend (client/)
-- **Architecture**: Monorepo using `npm` workspaces containing `main` (public app) and `cms` (admin portal).
-- **Framework**: Next.js 16 (App Router paradigm)
-- **UI & Patterns**: React 19, TypeScript
-- **Styling**: Tailwind CSS
-- **Animations**: Framer Motion for buttery-smooth dynamic UX and micro-interactions.
-- **Form Management**: `react-hook-form`, validated dynamically with `zod`.
-- **Icons**: Lucide React.
-- **Charts**: `recharts` for CMS visualization data.
+## Frontend (client/cms)
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript
+- **State & Logic**: React 19 (Server Components + Client Hooks)
+- **Styling**: Vanilla CSS with CSS Variables for the premium dark theme. 
+- **Authentication**: Supabase Auth (JWT via cookies)
+- **API Client**: Axios with custom interceptors for token refresh
+- **Form Handling**: React Hook Form with Zod validation
+- **Date Management**: `date-fns` for formatted timelines and relative ages
+- **UI Components**: Hand-crafted SVG-based icons and custom layouts (no generic UI libraries)
 
 ## Backend (server/)
-- **Framework**: Spring Boot 3.5.13 (Java 17)
-- **Database Layer**: PostgreSQL driven by Spring Data JPA
-- **Caching & Brokers**: Redis via Spring Boot Starter Data Redis
-- **Security**: Spring Security coupled with JWT authentication (`io.jsonwebtoken`)
-- **DTO Mapping**: MapStruct for strict, boilerplate-free data transfer object mapping.
-- **Utilities**: Lombok for reducing Java boilerplate.
+- **Runtime**: Node.js (TypeScript)
+- **Framework**: Express.js
+- **Database / ORM**: PostgreSQL with Prisma
+- **Authentication**: JWT (Supabase-compatible)
+- **Security**: Role-based access control (RBAC) with hierarchical scoping (Admin > Owner > Franchise)
+- **Validation**: Zod (shared or mirrored schemas)
 
-## Package Managers & Tools
-- `npm` inside `client/` (Using concurrently for local execution)
-- `Maven` for `server/` resolution
+## Infrastructure & Tools
+- **Version Control**: Git
+- **Package Management**: npm
+- **Database Hosting**: Supabase (PostgreSQL)
+- **Asset Management**: Cloudinary (Integration in progress)
+- **Communications**: WhatsApp Cloud API (Planned for automation)

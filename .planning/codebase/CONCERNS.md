@@ -1,11 +1,31 @@
 # Concerns
 
-## Technical Debt & Synchronization
-- **Component Duplicity Overhead**: Extensive hard-coded array rendering and component mappings exist disjointedly across similar geographic layout definitions mapping (e.g., `boisar`, `vasai`, etc.). Synchronisation requires multi-file audits currently. As the `cms/` platform matures, converting discrete hardcoded elements towards centralized remote dynamic configuration variables fetched via backend services is essential.
-- **Form Cohesion**: Disconnected form implementations managing validations independently without a unified robust tracking pattern inside the feedback loop. 
+## High Priority
 
-## Areas of Future Focus
-- Ensure cross-validation alignment where the robust `zod` schema checks on the client accurately map to the Java `@Validation` constraints configured server-side.
-- Managing potential cold-start overhead when dynamically generating layout variations heavily leveraging complex spatial animations.
-- Expanding global dark-mode persistence implementations without frame flash flickering securely between the main application interface endpoints.
-- Unifying duplicated layout UI across outlets into singular layouts configurable via CMS.
+### Data Isolation
+- **Risk**: Franchise owners seeing data from other outlets.
+- **Mitigation**: Standardized `resolveOutletFilter` helper in the backend to lock every Prisma query.
+
+### Performance
+- **Risk**: Sluggish dashboard loading due to heavy aggregation queries.
+- **Mitigation**: Parallelizing `Promise.all` queries and implementing selective field selection in Prisma.
+
+### Auth Expiry
+- **Risk**: Users losing work due to Supabase session expiry.
+- **Mitigation**: Token refresh interceptors in `lib/api.ts` to automatically renew JWTs before 401s occur.
+
+## Active Development
+
+### Asset Management
+- **Status**: Cloudinary integration is in progress.
+- **Focus**: Ensuring secure, signed uploads and optimized image delivery.
+
+### Automation Engine
+- **Status**: Planned.
+- **Focus**: Building the worker service to trigger WhatsApp communications based on Customer visit patterns and anniversaries.
+
+## Security
+
+### RBAC Hardening
+- **Current**: 3 roles (Admin, Owner, Franchise).
+- **Audit**: Periodic verification that new routes are correctly guarded by `requireAuth` and role-specific checks.
