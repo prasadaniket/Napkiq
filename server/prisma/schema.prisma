@@ -195,6 +195,7 @@ model AutomationLog {
 // staff.id mirrors auth.users.id in Supabase Auth
 model Staff {
   id               String    @id @db.Uuid
+  username         String?   @unique // Used for CMS login (populated via setup script)
   fullName         String
   email            String    @unique
   phone            String?   @db.VarChar(15)

@@ -10129,6 +10129,7 @@ export namespace Prisma {
 
   export type StaffMinAggregateOutputType = {
     id: string | null
+    username: string | null
     fullName: string | null
     email: string | null
     phone: string | null
@@ -10141,6 +10142,7 @@ export namespace Prisma {
 
   export type StaffMaxAggregateOutputType = {
     id: string | null
+    username: string | null
     fullName: string | null
     email: string | null
     phone: string | null
@@ -10153,6 +10155,7 @@ export namespace Prisma {
 
   export type StaffCountAggregateOutputType = {
     id: number
+    username: number
     fullName: number
     email: number
     phone: number
@@ -10167,6 +10170,7 @@ export namespace Prisma {
 
   export type StaffMinAggregateInputType = {
     id?: true
+    username?: true
     fullName?: true
     email?: true
     phone?: true
@@ -10179,6 +10183,7 @@ export namespace Prisma {
 
   export type StaffMaxAggregateInputType = {
     id?: true
+    username?: true
     fullName?: true
     email?: true
     phone?: true
@@ -10191,6 +10196,7 @@ export namespace Prisma {
 
   export type StaffCountAggregateInputType = {
     id?: true
+    username?: true
     fullName?: true
     email?: true
     phone?: true
@@ -10276,6 +10282,7 @@ export namespace Prisma {
 
   export type StaffGroupByOutputType = {
     id: string
+    username: string | null
     fullName: string
     email: string
     phone: string | null
@@ -10305,6 +10312,7 @@ export namespace Prisma {
 
   export type StaffSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    username?: boolean
     fullName?: boolean
     email?: boolean
     phone?: boolean
@@ -10318,6 +10326,7 @@ export namespace Prisma {
 
   export type StaffSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    username?: boolean
     fullName?: boolean
     email?: boolean
     phone?: boolean
@@ -10331,6 +10340,7 @@ export namespace Prisma {
 
   export type StaffSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    username?: boolean
     fullName?: boolean
     email?: boolean
     phone?: boolean
@@ -10344,6 +10354,7 @@ export namespace Prisma {
 
   export type StaffSelectScalar = {
     id?: boolean
+    username?: boolean
     fullName?: boolean
     email?: boolean
     phone?: boolean
@@ -10354,7 +10365,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type StaffOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "fullName" | "email" | "phone" | "role" | "assignedOutletId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["staff"]>
+  export type StaffOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "fullName" | "email" | "phone" | "role" | "assignedOutletId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["staff"]>
   export type StaffInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignedOutlet?: boolean | Staff$assignedOutletArgs<ExtArgs>
   }
@@ -10372,6 +10383,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      username: string | null
       fullName: string
       email: string
       phone: string | null
@@ -10805,6 +10817,7 @@ export namespace Prisma {
    */
   interface StaffFieldRefs {
     readonly id: FieldRef<"Staff", 'String'>
+    readonly username: FieldRef<"Staff", 'String'>
     readonly fullName: FieldRef<"Staff", 'String'>
     readonly email: FieldRef<"Staff", 'String'>
     readonly phone: FieldRef<"Staff", 'String'>
@@ -11377,6 +11390,7 @@ export namespace Prisma {
 
   export const StaffScalarFieldEnum: {
     id: 'id',
+    username: 'username',
     fullName: 'fullName',
     email: 'email',
     phone: 'phone',
@@ -12235,6 +12249,7 @@ export namespace Prisma {
     OR?: StaffWhereInput[]
     NOT?: StaffWhereInput | StaffWhereInput[]
     id?: UuidFilter<"Staff"> | string
+    username?: StringNullableFilter<"Staff"> | string | null
     fullName?: StringFilter<"Staff"> | string
     email?: StringFilter<"Staff"> | string
     phone?: StringNullableFilter<"Staff"> | string | null
@@ -12248,6 +12263,7 @@ export namespace Prisma {
 
   export type StaffOrderByWithRelationInput = {
     id?: SortOrder
+    username?: SortOrderInput | SortOrder
     fullName?: SortOrder
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
@@ -12261,6 +12277,7 @@ export namespace Prisma {
 
   export type StaffWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    username?: string
     email?: string
     AND?: StaffWhereInput | StaffWhereInput[]
     OR?: StaffWhereInput[]
@@ -12273,10 +12290,11 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Staff"> | Date | string
     updatedAt?: DateTimeFilter<"Staff"> | Date | string
     assignedOutlet?: XOR<OutletNullableScalarRelationFilter, OutletWhereInput> | null
-  }, "id" | "email">
+  }, "id" | "username" | "email">
 
   export type StaffOrderByWithAggregationInput = {
     id?: SortOrder
+    username?: SortOrderInput | SortOrder
     fullName?: SortOrder
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
@@ -12295,6 +12313,7 @@ export namespace Prisma {
     OR?: StaffScalarWhereWithAggregatesInput[]
     NOT?: StaffScalarWhereWithAggregatesInput | StaffScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Staff"> | string
+    username?: StringNullableWithAggregatesFilter<"Staff"> | string | null
     fullName?: StringWithAggregatesFilter<"Staff"> | string
     email?: StringWithAggregatesFilter<"Staff"> | string
     phone?: StringNullableWithAggregatesFilter<"Staff"> | string | null
@@ -12958,6 +12977,7 @@ export namespace Prisma {
 
   export type StaffCreateInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -12970,6 +12990,7 @@ export namespace Prisma {
 
   export type StaffUncheckedCreateInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -12982,6 +13003,7 @@ export namespace Prisma {
 
   export type StaffUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12994,6 +13016,7 @@ export namespace Prisma {
 
   export type StaffUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13006,6 +13029,7 @@ export namespace Prisma {
 
   export type StaffCreateManyInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -13018,6 +13042,7 @@ export namespace Prisma {
 
   export type StaffUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13029,6 +13054,7 @@ export namespace Prisma {
 
   export type StaffUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13874,6 +13900,7 @@ export namespace Prisma {
 
   export type StaffCountOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fullName?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -13886,6 +13913,7 @@ export namespace Prisma {
 
   export type StaffMaxOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fullName?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -13898,6 +13926,7 @@ export namespace Prisma {
 
   export type StaffMinOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fullName?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -15085,6 +15114,7 @@ export namespace Prisma {
 
   export type StaffCreateWithoutAssignedOutletInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -15096,6 +15126,7 @@ export namespace Prisma {
 
   export type StaffUncheckedCreateWithoutAssignedOutletInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -15260,6 +15291,7 @@ export namespace Prisma {
     OR?: StaffScalarWhereInput[]
     NOT?: StaffScalarWhereInput | StaffScalarWhereInput[]
     id?: UuidFilter<"Staff"> | string
+    username?: StringNullableFilter<"Staff"> | string | null
     fullName?: StringFilter<"Staff"> | string
     email?: StringFilter<"Staff"> | string
     phone?: StringNullableFilter<"Staff"> | string | null
@@ -16355,6 +16387,7 @@ export namespace Prisma {
 
   export type StaffCreateManyAssignedOutletInput = {
     id: string
+    username?: string | null
     fullName: string
     email: string
     phone?: string | null
@@ -16506,6 +16539,7 @@ export namespace Prisma {
 
   export type StaffUpdateWithoutAssignedOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16517,6 +16551,7 @@ export namespace Prisma {
 
   export type StaffUncheckedUpdateWithoutAssignedOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16528,6 +16563,7 @@ export namespace Prisma {
 
   export type StaffUncheckedUpdateManyWithoutAssignedOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
+    username?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null

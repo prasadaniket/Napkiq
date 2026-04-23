@@ -211,6 +211,7 @@ exports.Prisma.AutomationLogScalarFieldEnum = {
 
 exports.Prisma.StaffScalarFieldEnum = {
   id: 'id',
+  username: 'username',
   fullName: 'fullName',
   email: 'email',
   phone: 'phone',

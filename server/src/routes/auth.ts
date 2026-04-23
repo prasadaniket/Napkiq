@@ -7,22 +7,39 @@ import { z } from 'zod'
 const router = Router()
 
 const LoginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(3).max(32),
   password: z.string().min(6),
 })
 
 // POST /auth/login
 router.post('/login', async (req, res, next) => {
   try {
-    const { email, password } = LoginSchema.parse(req.body)
+    const { username, password } = LoginSchema.parse(req.body)
 
+    // Step 1: Look up staff email by username
+    const staffByUsername = await prisma.staff.findUnique({
+      where: { username },
+      select: { email: true, isActive: true },
+    })
+
+    if (!staffByUsername) {
+      res.status(401).json({ error: 'Invalid username or password' })
+      return
+    }
+
+    if (!staffByUsername.isActive) {
+      res.status(403).json({ error: 'Account is inactive' })
+      return
+    }
+
+    // Step 2: Authenticate with Supabase using the resolved email
     const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-      email,
+      email: staffByUsername.email,
       password,
     })
 
     if (error || !data.user || !data.session) {
-      res.status(401).json({ error: error?.message ?? 'Login failed' })
+      res.status(401).json({ error: 'Invalid username or password' })
       return
     }
 
@@ -37,13 +54,14 @@ router.post('/login', async (req, res, next) => {
     }
 
     res.json({
-      token: data.session.access_token,
-      refreshToken: data.session.refresh_token,
-      userId: staff.id,
-      fullName: staff.fullName,
-      email: staff.email,
-      role: staff.role,
-      assignedOutletId: staff.assignedOutletId,
+      token:              data.session.access_token,
+      refreshToken:       data.session.refresh_token,
+      userId:             staff.id,
+      username:           staff.username,
+      fullName:           staff.fullName,
+      email:              staff.email,
+      role:               staff.role,
+      assignedOutletId:   staff.assignedOutletId,
       assignedOutletName: staff.assignedOutlet?.name ?? null,
     })
   } catch (err) {

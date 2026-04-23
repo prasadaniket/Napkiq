@@ -18,6 +18,7 @@ export interface LoginResponse {
   token: string
   refreshToken?: string
   userId: string
+  username: string | null
   fullName: string
   email: string
   role: 'admin' | 'owner' | 'franchise_owner'
