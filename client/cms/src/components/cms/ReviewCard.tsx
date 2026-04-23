@@ -1,4 +1,4 @@
-import type { Review } from '@/types/review'
+import type { Review } from '@/types/api'
 import { format } from 'date-fns'
 
 interface ReviewCardProps {
@@ -9,33 +9,40 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   const stars = Array.from({ length: 5 }, (_, i) => i < review.stars)
 
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-neutral-light/50">
-      <div className="flex items-start justify-between mb-3">
+    <div className="card" style={{ padding: '16px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
         <div>
-          <p className="font-semibold text-secondary">{review.customerName}</p>
-          <p className="text-xs text-secondary-light">{review.outletName}</p>
+          <div style={{ fontWeight: 600, color: 'var(--color-text-1)' }}>{review.customer?.fullName ?? 'Anonymous'}</div>
+          <div style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{review.outlet?.name ?? 'Unknown Outlet'}</div>
         </div>
-        <div className="text-right">
-          <div className="flex gap-0.5">
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             {stars.map((filled, i) => (
-              <span key={i} className={filled ? 'text-tertiary' : 'text-neutral-light'}>★</span>
+              <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#f59e0b' : 'none'} stroke={filled ? '#f59e0b' : 'var(--color-border-strong)'} strokeWidth="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
             ))}
           </div>
-          <p className="text-xs text-secondary-light mt-1">
+          <div style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 4 }}>
             {format(new Date(review.createdAt), 'dd MMM yyyy')}
-          </p>
+          </div>
         </div>
       </div>
-      {review.reviewText && (
-        <p className="text-sm text-secondary-light leading-relaxed">{review.reviewText}</p>
+      
+      {review.comment && (
+        <p style={{ fontSize: 13.5, color: 'var(--color-text-2)', lineHeight: 1.6, margin: '0 0 12px 0' }}>
+          "{review.comment}"
+        </p>
       )}
-      <div className="mt-3 flex gap-2">
-        <span className="text-xs bg-neutral-off-white text-secondary-light px-2 py-1 rounded-full capitalize">
-          {review.reviewType.replace('_', ' ')}
+      
+      <div style={{ display: 'flex', gap: 8 }}>
+        <span style={{
+          display: 'inline-flex', padding: '2px 8px', borderRadius: 99,
+          fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+          background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-3)'
+        }}>
+          {review.reviewType === 'first_visit' ? 'First Visit' : 'Repeat Visit'}
         </span>
-        {review.postedToGoogle && (
-          <span className="text-xs bg-success/10 text-success px-2 py-1 rounded-full">Google Posted</span>
-        )}
       </div>
     </div>
   )

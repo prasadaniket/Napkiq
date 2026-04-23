@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import ReviewCard from '@/components/cms/ReviewCard'
 import Loader from '@/components/ui/Loader'
-import type { Review } from '@/types/review'
+import type { Review } from '@/types/api'
 import type { PageResponse } from '@/types/api'
 
 export default function ReviewsPage() {
