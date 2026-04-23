@@ -290,8 +290,10 @@ exports.AutomationStatus = exports.$Enums.AutomationStatus = {
 };
 
 exports.StaffRole = exports.$Enums.StaffRole = {
-  main_owner: 'main_owner',
-  franchise_owner: 'franchise_owner'
+  admin: 'admin',
+  owner: 'owner',
+  franchise_owner: 'franchise_owner',
+  main_owner: 'main_owner'
 };
 
 exports.Prisma.ModelName = {

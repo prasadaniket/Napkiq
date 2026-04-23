@@ -123,8 +123,10 @@ export type AutomationStatus = (typeof AutomationStatus)[keyof typeof Automation
 
 
 export const StaffRole: {
-  main_owner: 'main_owner',
-  franchise_owner: 'franchise_owner'
+  admin: 'admin',
+  owner: 'owner',
+  franchise_owner: 'franchise_owner',
+  main_owner: 'main_owner'
 };
 
 export type StaffRole = (typeof StaffRole)[keyof typeof StaffRole]

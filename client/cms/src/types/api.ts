@@ -20,7 +20,7 @@ export interface LoginResponse {
   userId: string
   fullName: string
   email: string
-  role: 'main_owner' | 'franchise_owner'
+  role: 'admin' | 'owner' | 'franchise_owner'
   assignedOutletId: string | null
   assignedOutletName: string | null
 }

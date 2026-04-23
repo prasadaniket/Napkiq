@@ -51,8 +51,10 @@ enum AutomationStatus {
 }
 
 enum StaffRole {
-  main_owner
-  franchise_owner
+  admin // UniCord — full CMS access including automation
+  owner // Nitesh Save — all outlets, no automation
+  franchise_owner // Per-outlet staff — single outlet only
+  main_owner // @deprecated — kept for migration safety, will be removed
 }
 
 model Outlet {
