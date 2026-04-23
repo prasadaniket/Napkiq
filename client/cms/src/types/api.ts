@@ -115,7 +115,7 @@ export interface Review {
   id:           string
   stars:        number
   reviewType:   'first_visit' | 'repeat'
-  comment:      string | null
+  reviewText:   string | null
   createdAt:    string
   customerId:   string
   outletId:     string
@@ -145,6 +145,21 @@ export interface VisitSummary {
   totalVisits: number
   qrScans:     number
   payments:    number
+}
+
+// ─── Automation Templates ─────────────────────────────────────────────────────
+
+export interface AutomationTemplate {
+  key:         string
+  label:       string
+  channel:     'whatsapp' | 'email'
+  trigger:     'automatic' | 'manual'
+  triggerDesc: string
+  subject:     string | null
+  body:        string
+  imageUrl:    string | null
+  linkUrl:     string | null
+  isActive:    boolean
 }
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
