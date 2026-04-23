@@ -3,6 +3,7 @@ export interface MenuCategory {
   name: string
   displayOrder: number
   isActive: boolean
+  items?: MenuItem[]
 }
 
 export interface MenuItem {

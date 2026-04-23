@@ -106,17 +106,13 @@ export default function MenuPage() {
       setLoading(false)
       return
     }
-    api.get<MenuItem[]>(`/menu/outlet/${code}`)
+    api.get<MenuCategory[]>(`/menu/outlet/${code}`)
       .then((res) => {
-        const groups: Record<string, MenuGroup> = {}
-        res.data.forEach((item) => {
-          const catId = item.categoryId
-          if (!groups[catId]) {
-            groups[catId] = { category: item.category, items: [] }
-          }
-          groups[catId].items.push(item)
-        })
-        setMenuGroups(Object.values(groups))
+        const groups: MenuGroup[] = res.data.map(cat => ({
+          category: cat,
+          items: cat.items || []
+        }))
+        setMenuGroups(groups)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
