@@ -29,9 +29,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </div>
       </div>
       
-      {review.comment && (
+      {review.reviewText && (
         <p style={{ fontSize: 13.5, color: 'var(--color-text-2)', lineHeight: 1.6, margin: '0 0 12px 0' }}>
-          "{review.comment}"
+          "{review.reviewText}"
         </p>
       )}
       

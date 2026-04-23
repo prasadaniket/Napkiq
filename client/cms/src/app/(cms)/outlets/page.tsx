@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
@@ -21,31 +22,22 @@ function StarBar({ rating, total }: { rating: number | null; total: number }) {
 
 export default function OutletsPage() {
   const { isOwnerOrAbove } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<OutletStats[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isOwnerOrAbove) { setLoading(false); return }
+    if (!isOwnerOrAbove) {
+      router.replace('/dashboard')
+      return
+    }
     api.get<OutletStats[]>('/cms/outlets/stats')
       .then(res => setStats(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [isOwnerOrAbove])
+  }, [isOwnerOrAbove, router])
 
-  if (!isOwnerOrAbove) {
-    return (
-      <div>
-        <div className="page-header"><h1 className="page-title">Outlets</h1></div>
-        <div className="page-content">
-          <div className="empty-state">
-            <div className="empty-state-icon">🔒</div>
-            <div className="empty-state-title">Access Restricted</div>
-            <div className="empty-state-desc">Only Admin and Owners can view all outlet performance.</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (!isOwnerOrAbove) return null
 
   // Summary totals across all outlets
   const totals = stats.reduce((acc, o) => ({

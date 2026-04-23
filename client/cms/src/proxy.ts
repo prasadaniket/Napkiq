@@ -7,8 +7,14 @@ const PUBLIC_PATHS = ['/login']
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Allow public paths through
+  // Public paths — allow through, but bounce authenticated users away from /login
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    const token = request.cookies.get('cms_token')?.value
+    if (token && pathname === '/login') {
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = '/dashboard'
+      return NextResponse.redirect(dashboardUrl)
+    }
     return NextResponse.next()
   }
 

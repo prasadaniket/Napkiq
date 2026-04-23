@@ -110,13 +110,14 @@ router.get('/me', requireAuth, async (req, res, next) => {
     }
 
     res.json({
-      token: '',
-      refreshToken: '',
-      userId: staff.id,
-      fullName: staff.fullName,
-      email: staff.email,
-      role: staff.role,
-      assignedOutletId: staff.assignedOutletId,
+      token:              '',
+      refreshToken:       '',
+      userId:             staff.id,
+      username:           staff.username,
+      fullName:           staff.fullName,
+      email:              staff.email,
+      role:               staff.role,
+      assignedOutletId:   staff.assignedOutletId,
       assignedOutletName: staff.assignedOutlet?.name ?? null,
     })
   } catch (err) {

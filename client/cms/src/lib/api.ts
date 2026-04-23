@@ -58,7 +58,7 @@ api.interceptors.response.use(
           // Refresh failed — clear session and redirect
           clearSession()
           if (typeof window !== 'undefined') {
-            window.location.href = '/cms/login'
+            window.location.href = '/login'
           }
         } finally {
           isRefreshing = false
@@ -67,7 +67,7 @@ api.interceptors.response.use(
         // No refresh token — go to login
         clearSession()
         if (typeof window !== 'undefined') {
-          window.location.href = '/cms/login'
+          window.location.href = '/login'
         }
       }
     }

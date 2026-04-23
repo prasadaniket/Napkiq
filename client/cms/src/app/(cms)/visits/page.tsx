@@ -87,7 +87,7 @@ function SummaryCard({ summary }: { summary: VisitSummary }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function VisitsPage() {
-  const { user, isOwnerOrAbove } = useAuth()
+  const { user, isAdmin, isOwnerOrAbove } = useAuth()
   const searchParams = useSearchParams()
 
   const [visits, setVisits]   = useState<Visit[]>([])
@@ -167,8 +167,8 @@ export default function VisitsPage() {
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </div>
-            {/* Export */}
-            {isOwnerOrAbove && (
+            {/* Export — admin only (backend enforces requireAdmin) */}
+            {isAdmin && (
               <a href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api'}/cms/export/visits`}
                 target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
                 <button className="btn-ghost" style={{ gap: 6, fontSize: 13 }}>

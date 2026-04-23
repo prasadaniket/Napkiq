@@ -114,25 +114,10 @@
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 20px 16px;
+  justify-content: center;
+  padding: 16px;
   border-bottom: 1px solid var(--color-border);
 }
-
-.sidebar-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary-dim);
-  border: 1px solid var(--color-primary-border);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.sidebar-logo-text { font-size: 15px; font-weight: 700; color: var(--color-text-1); }
-.sidebar-logo-sub  { font-size: 10px; color: var(--color-text-3); margin-top: 1px; }
 
 .sidebar-nav {
   flex: 1;

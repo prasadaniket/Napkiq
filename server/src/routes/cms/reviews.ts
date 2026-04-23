@@ -61,7 +61,7 @@ router.get('/', async (req, res, next) => {
         take: size,
         orderBy: { createdAt: sortDir },
         include: {
-          customer: { select: { fullName: true, phone: true } },
+          customer: { select: { fullName: true, phone: true, email: true, gender: true } },
           outlet:   { select: { name: true, code: true, googleMapsUrl: true } },
         },
       }),

@@ -121,16 +121,12 @@ export default function CMSSidebar() {
 
         {/* Logo */}
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
-              <path d="M16 3L28 10V22L16 29L4 22V10L16 3Z" fill="#F26522" fillOpacity="0.15" stroke="#F26522" strokeWidth="1.5"/>
-              <path d="M16 8L24 13V19L16 24L8 19V13L16 8Z" fill="#F26522"/>
-            </svg>
-          </div>
-          <div>
-            <div className="sidebar-logo-text">StoneOven</div>
-            <div className="sidebar-logo-sub">CMS Portal</div>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo/logo.png"
+            alt="StoneOven"
+            style={{ width: 120, height: 'auto', objectFit: 'contain', mixBlendMode: 'screen' }}
+          />
         </div>
 
         {/* Navigation */}

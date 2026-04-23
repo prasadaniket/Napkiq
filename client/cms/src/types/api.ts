@@ -119,7 +119,7 @@ export interface Review {
   createdAt:    string
   customerId:   string
   outletId:     string
-  customer?:    { fullName: string; phone: string }
+  customer?:    { fullName: string; phone: string; email?: string | null; gender?: string }
   outlet?:      { name: string; code: string; googleMapsUrl: string | null }
 }
 

@@ -41,13 +41,12 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="login-logo">
-          <div className="login-logo-icon">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-              <path d="M16 3L28 10V22L16 29L4 22V10L16 3Z" fill="#F26522" fillOpacity="0.15" stroke="#F26522" strokeWidth="1.5"/>
-              <path d="M16 8L24 13V19L16 24L8 19V13L16 8Z" fill="#F26522"/>
-            </svg>
-          </div>
-          <h1 className="login-brand">StoneOven</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo/logo.png"
+            alt="StoneOven"
+            style={{ width: 180, height: 'auto', objectFit: 'contain', mixBlendMode: 'screen' }}
+          />
           <p className="login-subtitle">CMS Portal</p>
         </div>
 
@@ -159,24 +158,6 @@ export default function LoginPage() {
         .login-logo {
           text-align: center;
           margin-bottom: 32px;
-        }
-        .login-logo-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 52px;
-          height: 52px;
-          background: rgba(242,101,34,0.1);
-          border: 1px solid rgba(242,101,34,0.25);
-          border-radius: 14px;
-          margin-bottom: 12px;
-        }
-        .login-brand {
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: #fff;
-          letter-spacing: -0.5px;
-          margin: 0 0 4px;
         }
         .login-subtitle {
           font-size: 0.8125rem;

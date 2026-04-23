@@ -171,3 +171,52 @@ export function buildReengagementEmail(customerName: string, daysSince: number):
     `,
   }
 }
+
+// ─── Generic builder (used for welcome / promotional / announcement) ───────────
+// Renders any admin-editable template body with variable substitution.
+
+export function buildGenericEmail(opts: {
+  subject:    string
+  body:       string
+  name:       string
+  imageUrl?:  string | null
+  linkUrl?:   string | null
+  extraVars?: Record<string, string>
+}): Pick<EmailPayload, 'subject' | 'html'> {
+  const vars: Record<string, string> = {
+    customer_name: opts.name,
+    name:          opts.name,
+    ...opts.extraVars,
+  }
+
+  const interpolate = (s: string) =>
+    s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`)
+
+  const subj = interpolate(opts.subject)
+  const body = interpolate(opts.body)
+
+  const imageBlock = opts.imageUrl
+    ? `<img src="${opts.imageUrl}" alt="" style="width:100%;max-height:240px;object-fit:cover;display:block;">`
+    : ''
+
+  const linkBlock = opts.linkUrl
+    ? `<a href="${opts.linkUrl}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#F26522;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">View Offer →</a>`
+    : ''
+
+  return {
+    subject: subj,
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;background:#111;color:#fff;border-radius:16px;overflow:hidden">
+        ${imageBlock}
+        <div style="background:#F26522;padding:24px;text-align:center">
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.8);font-weight:600;letter-spacing:0.05em;text-transform:uppercase">StoneOven</p>
+        </div>
+        <div style="padding:32px 24px">
+          <p style="font-size:16px;line-height:1.7;color:#fff">${body}</p>
+          ${linkBlock}
+          <p style="margin-top:32px;color:rgba(255,255,255,0.4);font-size:12px">StoneOven Restaurant · stoneoven.in</p>
+        </div>
+      </div>
+    `,
+  }
+}

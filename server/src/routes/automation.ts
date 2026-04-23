@@ -8,7 +8,9 @@ import {
   buildBirthdayEmail,
   buildAnniversaryEmail,
   buildReengagementEmail,
+  buildGenericEmail,
 } from '../lib/notifications'
+import { getTemplate } from '../lib/templateStore'
 
 const router = Router()
 
@@ -292,6 +294,152 @@ router.post('/reengagement', async (req, res, next) => {
         const { subject, html } = buildReengagementEmail(c.fullName, daysSince)
         const ok = await sendEmail({ to: c.email, subject, html })
         await logSend(c.id, 'reengagement_email', 'thirty_days_inactive', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+    }
+
+    res.json({ ok: true, customers: customers.length, sent, skipped, failed })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── Dual-auth helper (worker secret OR CMS admin JWT) ───────────────────────
+
+function dualAuth(req: any, res: any, next: any) {
+  const secret   = process.env.AUTOMATION_SECRET
+  const provided = req.headers['x-automation-secret']
+  if (secret && provided === secret) return next()
+  requireAuth(req, res, () => requireAdmin(req, res, next))
+}
+
+// ─── POST /api/automation/welcome ────────────────────────────────────────────
+// Sends welcome messages to customers who haven't received one yet.
+
+router.post('/welcome', dualAuth, async (_req, res, next) => {
+  try {
+    const waT  = getTemplate('welcome_whatsapp')
+    const emT  = getTemplate('welcome_email')
+
+    const customers = await prisma.customer.findMany({
+      select: { id: true, fullName: true, phone: true, email: true },
+    })
+
+    let sent = 0, skipped = 0, failed = 0
+
+    for (const c of customers) {
+      const phone = normalizePone(c.phone)
+
+      if (waT?.isActive && !await alreadySent(c.id, 'welcome_whatsapp', 'on_registration')) {
+        const ok = await sendWhatsApp({
+          to:           phone,
+          templateName: 'stoneoven_welcome',
+          variables:    { customer_name: c.fullName, restaurant: 'StoneOven' },
+        })
+        await logSend(c.id, 'welcome_whatsapp', 'on_registration', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+
+      if (emT?.isActive && c.email && !await alreadySent(c.id, 'welcome_email', 'on_registration')) {
+        const { subject, html } = buildGenericEmail({
+          subject:  emT.subject ?? 'Welcome to StoneOven!',
+          body:     emT.body,
+          name:     c.fullName,
+          imageUrl: emT.imageUrl,
+          linkUrl:  emT.linkUrl,
+        })
+        const ok = await sendEmail({ to: c.email, subject, html })
+        await logSend(c.id, 'welcome_email', 'on_registration', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+    }
+
+    res.json({ ok: true, customers: customers.length, sent, skipped, failed })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── POST /api/automation/promotional ────────────────────────────────────────
+// Sends promotional offer to all active customers (no dedup — admin decides).
+
+router.post('/promotional', dualAuth, async (_req, res, next) => {
+  try {
+    const waT = getTemplate('promotional_whatsapp')
+    const emT = getTemplate('promotional_email')
+
+    const customers = await prisma.customer.findMany({
+      select: { id: true, fullName: true, phone: true, email: true },
+    })
+
+    let sent = 0, skipped = 0, failed = 0
+
+    for (const c of customers) {
+      if (waT?.isActive) {
+        const ok = await sendWhatsApp({
+          to:           normalizePone(c.phone),
+          templateName: 'stoneoven_promotional',
+          variables:    { customer_name: c.fullName, restaurant: 'StoneOven' },
+        })
+        await logSend(c.id, 'promotional_whatsapp', 'manual_campaign', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+
+      if (emT?.isActive && c.email) {
+        const { subject, html } = buildGenericEmail({
+          subject:  emT.subject ?? 'Special offer at StoneOven!',
+          body:     emT.body,
+          name:     c.fullName,
+          imageUrl: emT.imageUrl,
+          linkUrl:  emT.linkUrl,
+        })
+        const ok = await sendEmail({ to: c.email, subject, html })
+        await logSend(c.id, 'promotional_email', 'manual_campaign', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+    }
+
+    res.json({ ok: true, customers: customers.length, sent, skipped, failed })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── POST /api/automation/announcement ───────────────────────────────────────
+// Sends product announcement to all customers.
+
+router.post('/announcement', dualAuth, async (_req, res, next) => {
+  try {
+    const waT = getTemplate('announcement_whatsapp')
+    const emT = getTemplate('announcement_email')
+
+    const customers = await prisma.customer.findMany({
+      select: { id: true, fullName: true, phone: true, email: true },
+    })
+
+    let sent = 0, skipped = 0, failed = 0
+
+    for (const c of customers) {
+      if (waT?.isActive) {
+        const ok = await sendWhatsApp({
+          to:           normalizePone(c.phone),
+          templateName: 'stoneoven_announcement',
+          variables:    { customer_name: c.fullName, restaurant: 'StoneOven' },
+        })
+        await logSend(c.id, 'announcement_whatsapp', 'manual_campaign', ok ? 'success' : 'failed')
+        ok ? sent++ : failed++
+      } else { skipped++ }
+
+      if (emT?.isActive && c.email) {
+        const { subject, html } = buildGenericEmail({
+          subject:  emT.subject ?? 'Something new at StoneOven!',
+          body:     emT.body,
+          name:     c.fullName,
+          imageUrl: emT.imageUrl,
+          linkUrl:  emT.linkUrl,
+        })
+        const ok = await sendEmail({ to: c.email, subject, html })
+        await logSend(c.id, 'announcement_email', 'manual_campaign', ok ? 'success' : 'failed')
         ok ? sent++ : failed++
       } else { skipped++ }
     }

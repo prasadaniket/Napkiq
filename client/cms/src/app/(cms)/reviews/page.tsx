@@ -55,7 +55,7 @@ function ReviewRow({ review }: { review: Review }) {
       </td>
       <td style={{ fontSize: 13, color: 'var(--color-text-2)', maxWidth: 280 }}>
         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {review.comment ? `"${review.comment}"` : <span style={{ color: 'var(--color-text-3)', fontStyle: 'italic' }}>No comment</span>}
+          {review.reviewText ? `"${review.reviewText}"` : <span style={{ color: 'var(--color-text-3)', fontStyle: 'italic' }}>No comment</span>}
         </div>
       </td>
       <td>
@@ -282,8 +282,8 @@ export default function ReviewsPage() {
                       <div style={{ fontSize: 10, color: 'var(--color-text-3)', marginTop: 3 }}>{format(new Date(review.createdAt), 'dd MMM yy')}</div>
                     </div>
                   </div>
-                  {review.comment && (
-                    <p style={{ fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.6, margin: '0 0 10px' }}>"{review.comment}"</p>
+                  {review.reviewText && (
+                    <p style={{ fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.6, margin: '0 0 10px' }}>"{review.reviewText}"</p>
                   )}
                   <div style={{ display: 'flex', gap: 6 }}>
                     <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-3)' }}>
