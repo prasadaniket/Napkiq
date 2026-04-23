@@ -17,6 +17,21 @@ function useDebounce<T>(value: T, delay: number): T {
   return dv
 }
 
+function Initials({ name }: { name: string }) {
+  const parts = name.trim().split(' ')
+  const ini = (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')
+  return (
+    <div style={{
+      width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+      background: 'var(--color-primary-dim)', border: '1px solid var(--color-primary-border)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase',
+    }}>
+      {ini.toUpperCase()}
+    </div>
+  )
+}
+
 // ─── Summary card ─────────────────────────────────────────────────────────────
 function SummaryCard({ summary }: { summary: VisitSummary }) {
   const qrPct  = summary.totalVisits > 0 ? Math.round((summary.qrScans  / summary.totalVisits) * 100) : 0
@@ -28,7 +43,7 @@ function SummaryCard({ summary }: { summary: VisitSummary }) {
       border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius-lg)',
       padding: '14px 18px',
-      minWidth: 200,
+      minWidth: 220,
     }}>
       <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
         Visit Breakdown
@@ -63,7 +78,7 @@ function SummaryCard({ summary }: { summary: VisitSummary }) {
       </div>
 
       <div style={{ borderTop: '1px solid var(--color-border)', marginTop: 12, paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Total</span>
+        <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Total Filtered</span>
         <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text-1)' }}>{summary.totalVisits.toLocaleString()}</span>
       </div>
     </div>
@@ -137,19 +152,33 @@ export default function VisitsPage() {
                 : isOwnerOrAbove ? 'All outlet visit activity' : `Visits · ${user?.assignedOutletName}`}
             </p>
           </div>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <input
-              className="input"
-              placeholder="Search customer…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width: 230, paddingLeft: 36 }}
-            />
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-3)" strokeWidth="2"
-              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Search */}
+            <div style={{ position: 'relative' }}>
+              <input
+                className="input"
+                placeholder="Search customer…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ width: 230, paddingLeft: 36 }}
+              />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-3)" strokeWidth="2"
+                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            {/* Export */}
+            {isOwnerOrAbove && (
+              <a href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api'}/cms/export/visits`}
+                target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                <button className="btn-ghost" style={{ gap: 6, fontSize: 13 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Export CSV
+                </button>
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -230,12 +259,15 @@ export default function VisitsPage() {
                   {visits.map(v => (
                     <tr key={v.id}>
                       <td>
-                        <Link href={`/customers/${v.customerId}`} style={{ textDecoration: 'none' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: 13 }}>
-                            {v.customer?.fullName ?? '—'}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
-                            {v.customer?.phone}
+                        <Link href={`/customers/${v.customerId}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <Initials name={v.customer?.fullName ?? ''} />
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: 13 }}>
+                              {v.customer?.fullName ?? '—'}
+                            </div>
+                            <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                              {v.customer?.phone}
+                            </div>
                           </div>
                         </Link>
                       </td>

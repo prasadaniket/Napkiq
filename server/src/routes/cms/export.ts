@@ -45,4 +45,38 @@ router.get('/customers', async (req, res, next) => {
   }
 })
 
+// GET /cms/export/visits
+router.get('/visits', async (req, res, next) => {
+  try {
+    const visits = await prisma.customerVisit.findMany({
+      orderBy: { visitedAt: 'desc' },
+      include: {
+        customer: { select: { fullName: true, phone: true } },
+        outlet: { select: { name: true, code: true } }
+      },
+    })
+
+    const rows = visits.map((v) => ({
+      ID: v.id,
+      'Customer Name': v.customer?.fullName ?? 'Unknown',
+      'Customer Phone': v.customer?.phone ?? 'Unknown',
+      'Visit Type': v.visitType === 'qr_scan' ? 'QR Scan' : 'Payment',
+      'Outlet': v.outlet?.name ?? 'Unknown',
+      'Outlet Code': v.outlet?.code ?? 'Unknown',
+      'Visited At': v.visitedAt.toISOString()
+    }))
+
+    const csv = stringify(rows, { header: true })
+
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="visits.csv"'
+    )
+    res.send(csv)
+  } catch (err) {
+    next(err)
+  }
+})
+
 export default router
