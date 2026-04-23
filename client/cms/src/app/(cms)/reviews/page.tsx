@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import ReviewCard from '@/components/cms/ReviewCard'
@@ -17,6 +18,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function ReviewsPage() {
   const { isOwnerOrAbove } = useAuth()
+  const searchParams = useSearchParams()
   
   const [reviews, setReviews] = useState<Review[]>([])
   const [summary, setSummary] = useState<ReviewSummary | null>(null)
@@ -29,6 +31,9 @@ export default function ReviewsPage() {
   const [stars, setStars] = useState<string>('')
   const [type, setType] = useState<string>('')
   
+  // Pre-populate outletId from URL if coming from Outlets deep link
+  const [outletId] = useState<string>(() => searchParams.get('outletId') ?? '')
+  
   const debouncedSearch = useDebounce(search, 500)
 
   const fetchReviews = useCallback(async () => {
@@ -38,6 +43,7 @@ export default function ReviewsPage() {
       if (debouncedSearch) q.append('search', debouncedSearch)
       if (stars) q.append('stars', stars)
       if (type) q.append('type', type)
+      if (outletId) q.append('outletId', outletId)
       
       const [revRes, sumRes] = await Promise.all([
         api.get<PageResponse<Review>>(`/cms/reviews?${q.toString()}`),
@@ -53,7 +59,7 @@ export default function ReviewsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, stars, type])
+  }, [page, debouncedSearch, stars, type, outletId])
 
   useEffect(() => {
     fetchReviews()

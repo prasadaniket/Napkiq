@@ -111,8 +111,8 @@ export default function CustomerDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar Column (Stats & Timeline) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Sidebar Column (Stats & Visit Timeline) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             
             {/* Quick Stats */}
             <div className="card" style={{ background: 'var(--color-primary-dim)', borderColor: 'var(--color-primary-border)', padding: 24 }}>
@@ -120,8 +120,8 @@ export default function CustomerDetailPage() {
                 <div style={{ fontSize: 12, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, marginBottom: 8 }}>Total Visits</div>
                 <div style={{ fontSize: 42, fontWeight: 800, color: 'var(--color-primary)', lineHeight: 1 }}>{customer.totalVisits}</div>
               </div>
-              <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--color-primary-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--color-primary-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>Last Visit</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-1)' }}>
                     {customer.lastVisitDate ? format(new Date(customer.lastVisitDate), 'dd MMM yy') : '—'}
@@ -133,8 +133,69 @@ export default function CustomerDetailPage() {
                     {format(new Date(customer.createdAt), 'dd MMM yy')}
                   </span>
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>Review</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600,
+                    padding: '1px 7px', borderRadius: 99,
+                    background: customer.hasSubmittedFirstReview ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                    color: customer.hasSubmittedFirstReview ? 'var(--color-success)' : 'var(--color-danger)',
+                  }}>
+                    {customer.hasSubmittedFirstReview ? 'Submitted' : 'Pending'}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* Visit History Timeline */}
+            {customer.visits && customer.visits.length > 0 && (
+              <div className="card" style={{ padding: '16px 20px' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', marginBottom: 14 }}>
+                  Visit History
+                  <span style={{ fontSize: 11, color: 'var(--color-text-3)', marginLeft: 8 }}>(last {customer.visits.length})</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {customer.visits.map((v, idx) => (
+                    <div key={v.id} style={{ display: 'flex', gap: 12, paddingBottom: idx === customer.visits!.length - 1 ? 0 : 14, position: 'relative' }}>
+                      {/* Timeline line */}
+                      {idx < customer.visits!.length - 1 && (
+                        <div style={{ position: 'absolute', left: 10, top: 20, bottom: 0, width: 1, background: 'var(--color-border)' }} />
+                      )}
+                      {/* Dot */}
+                      <div style={{
+                        width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                        background: v.visitType === 'qr_scan' ? 'rgba(59,130,246,0.15)' : 'rgba(34,197,94,0.15)',
+                        border: `1.5px solid ${v.visitType === 'qr_scan' ? 'var(--color-info)' : 'var(--color-success)'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
+                      }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: v.visitType === 'qr_scan' ? 'var(--color-info)' : 'var(--color-success)' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-1)' }}>
+                          {v.visitType === 'qr_scan' ? 'QR Scan' : 'Payment'}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 2 }}>
+                          {format(new Date(v.visitedAt), 'dd MMM yy, HH:mm')}
+                          {v.outlet && (
+                            <span style={{ marginLeft: 6, background: 'rgba(255,255,255,0.05)', padding: '0 5px', borderRadius: 4 }}>
+                              {v.outlet.code}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {customer.visits && customer.visits.length === 0 && (
+              <div className="card" style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-3)' }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📅</div>
+                <div style={{ fontSize: 13 }}>No visits recorded yet</div>
+              </div>
+            )}
+
           </div>
 
         </div>

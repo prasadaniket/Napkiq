@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { format } from 'date-fns'
@@ -19,16 +20,21 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function CustomersPage() {
   const { isOwnerOrAbove } = useAuth()
+  const searchParams = useSearchParams()
+  
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Pagination & Filters
+  // Filters & Pagination
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
   const [inactive, setInactive] = useState(false)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
+  
+  // Pre-populate outletId from URL if coming from Outlets deep link
+  const [outletId] = useState<string>(() => searchParams.get('outletId') ?? '')
   
   const debouncedSearch = useDebounce(search, 500)
 
@@ -43,6 +49,7 @@ export default function CustomersPage() {
       })
       if (debouncedSearch) q.append('search', debouncedSearch)
       if (inactive) q.append('inactive', 'true')
+      if (outletId) q.append('outletId', outletId)
       
       const res = await api.get<PageResponse<Customer>>(`/cms/customers?${q.toString()}`)
       setCustomers(res.data.content)
@@ -53,7 +60,7 @@ export default function CustomersPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, inactive, sortBy, sortDir])
+  }, [page, debouncedSearch, inactive, sortBy, sortDir, outletId])
 
   useEffect(() => {
     fetchCustomers()

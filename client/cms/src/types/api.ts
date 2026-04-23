@@ -93,6 +93,9 @@ export interface Customer {
   firstVisitOutletId:      string
   createdAt:               string
   firstVisitOutlet?:       { name: string; code: string }
+  // Only present on the single-customer /:id endpoint
+  visits?:                 { id: string; visitType: 'qr_scan' | 'payment'; visitedAt: string; outlet?: { name: string; code: string } }[]
+  reviews?:                Review[]
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
