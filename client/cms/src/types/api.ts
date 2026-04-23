@@ -146,3 +146,31 @@ export interface VisitSummary {
   qrScans:     number
   payments:    number
 }
+
+// ─── Menu ─────────────────────────────────────────────────────────────────────
+
+export interface MenuItem {
+  id:            string
+  categoryId:    string
+  name:          string
+  description:   string | null
+  price:         string | null
+  priceVariants: Record<string, number> | null
+  isVeg:         boolean
+  isAvailable:   boolean
+  imageUrl:      string | null
+  displayOrder:  number | null
+  createdAt:     string
+  updatedAt:     string
+}
+
+export interface MenuCategory {
+  id:           string
+  name:         string
+  displayOrder: number | null
+  isActive:     boolean
+  outletId:     string | null
+  createdAt:    string
+  outlet?:      { id: string; name: string; code: string }
+  items:        MenuItem[]
+}

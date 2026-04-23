@@ -15,6 +15,8 @@ import cmsOutletsRouter from './routes/cms/outlets'
 import cmsVisitsRouter from './routes/cms/visits'
 import automationLogsRouter from './routes/cms/automationLogs'
 import exportRouter from './routes/cms/export'
+import cmsMenuRouter from './routes/cms/menu'
+import automationRouter from './routes/automation'
 import { errorHandler } from './middleware/errorHandler'
 
 export function createApp() {
@@ -62,11 +64,10 @@ export function createApp() {
   app.use('/api/cms/visits',          cmsVisitsRouter)
   app.use('/api/cms/automation-logs', automationLogsRouter)
   app.use('/api/cms/export',          exportRouter)
+  app.use('/api/cms/menu',            cmsMenuRouter)
 
-  // Automation trigger — stub until Task 8 (Cloudflare Worker)
-  app.post('/api/cms/reengagement/trigger', (_req, res) => {
-    res.status(501).json({ message: 'Automation worker not yet configured (Task 8)' })
-  })
+  // Automation (Cloudflare Worker cron + CMS manual trigger — dual-auth)
+  app.use('/api/automation',          automationRouter)
 
   app.use(errorHandler)
 

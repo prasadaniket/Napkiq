@@ -50,6 +50,11 @@ const Icon = {
       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
     </svg>
   ),
+  Menu: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18M3 12h18M3 18h18"/>
+    </svg>
+  ),
   Logout: () => (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -66,6 +71,7 @@ const adminNav: NavItem[] = [
   { href: '/customers',  label: 'Customers',  icon: <Icon.Customers /> },
   { href: '/reviews',    label: 'Reviews',    icon: <Icon.Reviews /> },
   { href: '/visits',     label: 'Visits',     icon: <Icon.Visits /> },
+  { href: '/media',      label: 'Menu',       icon: <Icon.Menu /> },
   { href: '/automation', label: 'Automation', icon: <Icon.Automation /> },
 ]
 
@@ -157,7 +163,7 @@ export default function CMSSidebar() {
               >
                 <span className="sidebar-icon">{item.icon}</span>
                 {item.label}
-                {item.label === 'Automation' && (
+                {(item.label === 'Automation' || item.label === 'Menu') && (
                   <span style={{
                     marginLeft: 'auto',
                     background: 'rgba(242,101,34,0.2)',

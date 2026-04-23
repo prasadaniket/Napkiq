@@ -42,10 +42,15 @@ export default function AutomationPage() {
   const triggerReengagement = async () => {
     setTriggering(true)
     try {
-      await api.post('/cms/reengagement/trigger')
-      toast.success('Re-engagement campaign triggered!')
+      const res = await api.post<{ customers: number; sent: number; skipped: number }>('/automation/reengagement')
+      const { customers, sent, skipped } = res.data
+      toast.success(`Campaign sent: ${sent} messages to ${customers} customers (${skipped} skipped)`)
+      // Refresh logs
+      api.get<PageResponse<AutomationLog>>('/cms/automation-logs?page=0&size=50')
+        .then(r => setLogs(r.data.content))
+        .catch(() => {})
     } catch {
-      toast.error('Automation worker not configured yet (Task 8)')
+      toast.error('Failed to trigger re-engagement campaign')
     } finally {
       setTriggering(false)
     }
