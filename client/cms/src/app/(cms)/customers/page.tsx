@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { format, differenceInDays } from 'date-fns'
-import type { Customer, PageResponse } from '@/types/api'
+import type { Customer, Review, PageResponse } from '@/types/api'
 
 function useDebounce<T>(value: T, delay: number): T {
   const [dv, setDv] = useState(value)
@@ -32,6 +32,129 @@ function Initials({ name }: { name: string }) {
   )
 }
 
+type SentimentLabel = 'positive' | 'negative' | 'neutral' | 'mixed'
+
+function sentimentStyle(label: SentimentLabel) {
+  const map: Record<SentimentLabel, { bg: string; color: string; emoji: string }> = {
+    positive: { bg: 'rgba(34,197,94,0.10)',   color: '#16a34a', emoji: '😊' },
+    negative: { bg: 'rgba(239,68,68,0.10)',   color: '#dc2626', emoji: '😞' },
+    neutral:  { bg: 'rgba(100,116,139,0.10)', color: '#64748b', emoji: '😐' },
+    mixed:    { bg: 'rgba(234,88,12,0.10)',   color: '#ea580c', emoji: '🤔' },
+  }
+  return map[label] ?? map.neutral
+}
+
+function starBadgeStyle(stars: number) {
+  if (stars >= 4) return { bg: 'rgba(34,197,94,0.12)',  color: '#22c55e' }
+  if (stars === 3) return { bg: 'rgba(234,179,8,0.12)', color: '#ca8a04' }
+  return               { bg: 'rgba(239,68,68,0.12)',  color: '#ef4444' }
+}
+
+// ─── Expandable reviews sub-row ───────────────────────────────────────────────
+function CustomerReviewsRow({
+  customerId,
+  fullName,
+  colSpan,
+}: {
+  customerId: string
+  fullName: string
+  colSpan: number
+}) {
+  const [reviews, setReviews] = useState<Review[] | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get<Customer>(`/cms/customers/${customerId}`)
+      .then(res => setReviews(res.data.reviews ?? []))
+      .catch(() => setReviews([]))
+      .finally(() => setLoading(false))
+  }, [customerId])
+
+  return (
+    <tr>
+      <td colSpan={colSpan} style={{ padding: '0 0 0 16px', background: 'rgba(255,255,255,0.02)' }}>
+        <div style={{ borderLeft: '2px solid var(--color-primary-border)', paddingLeft: 16, paddingTop: 12, paddingBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
+            Reviews by {fullName}
+          </div>
+
+          {loading && (
+            <div style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Loading…</div>
+          )}
+
+          {!loading && reviews?.length === 0 && (
+            <div style={{ fontSize: 12, color: 'var(--color-text-3)', fontStyle: 'italic' }}>No reviews yet.</div>
+          )}
+
+          {!loading && reviews && reviews.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {reviews.map(r => {
+                const badge = starBadgeStyle(r.stars)
+                const sent = r.sentimentLabel
+                  ? sentimentStyle(r.sentimentLabel as SentimentLabel)
+                  : null
+                return (
+                  <div key={r.id} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '10px 14px', borderRadius: 8,
+                    background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                  }}>
+                    {/* Star badge */}
+                    <span style={{
+                      flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 3,
+                      padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                      background: badge.bg, color: badge.color,
+                    }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill={badge.color} stroke="none">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                      {r.stars}★
+                    </span>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {r.reviewText ? (
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.5 }}>
+                          "{r.reviewText}"
+                        </p>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-3)', fontStyle: 'italic' }}>
+                          No comment
+                        </p>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                          {format(new Date(r.createdAt), 'dd MMM yyyy')}
+                        </span>
+                        {r.outlet?.code && (
+                          <span style={{
+                            fontSize: 10, padding: '1px 6px', borderRadius: 99,
+                            background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-3)',
+                          }}>
+                            {r.outlet.name ?? r.outlet.code}
+                          </span>
+                        )}
+                        {sent && r.sentimentLabel && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 99,
+                            background: sent.bg, color: sent.color,
+                          }}>
+                            {sent.emoji} {r.sentimentLabel}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CustomersPage() {
   const { isAdmin, isOwnerOrAbove } = useAuth()
   const searchParams = useSearchParams()
@@ -40,8 +163,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  // Filters
   const [search, setSearch] = useState('')
   const [inactive, setInactive] = useState(false)
   const [gender, setGender] = useState('')
@@ -49,9 +172,7 @@ export default function CustomersPage() {
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
-  // Pre-populate outletId from URL (deep link from Outlets page)
   const [outletId] = useState(() => searchParams.get('outletId') ?? '')
-
   const debouncedSearch = useDebounce(search, 400)
 
   const fetchCustomers = useCallback(async () => {
@@ -82,6 +203,9 @@ export default function CustomersPage() {
 
   const totalPages = Math.ceil(total / 20)
 
+  // How many visible columns (for colSpan on expanded row)
+  const colCount = isOwnerOrAbove ? 8 : 7
+
   return (
     <div>
       <div className="page-header">
@@ -94,7 +218,6 @@ export default function CustomersPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Search */}
             <div style={{ position: 'relative' }}>
               <input
                 className="input"
@@ -108,7 +231,6 @@ export default function CustomersPage() {
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </div>
-            {/* Export — admin only (backend enforces requireAdmin) */}
             {isAdmin && (
               <a href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api'}/cms/export/customers`}
                 target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
@@ -125,10 +247,8 @@ export default function CustomersPage() {
       </div>
 
       <div className="page-content">
-
         {/* Filter bar */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Gender */}
           <select className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
             value={gender} onChange={e => setGender(e.target.value)}>
             <option value="">All Genders</option>
@@ -138,7 +258,6 @@ export default function CustomersPage() {
             <option value="RatherNotSay">Rather Not Say</option>
           </select>
 
-          {/* Review status */}
           <select className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
             value={hasReview} onChange={e => setHasReview(e.target.value)}>
             <option value="">All Review Status</option>
@@ -146,7 +265,6 @@ export default function CustomersPage() {
             <option value="false">Review Pending</option>
           </select>
 
-          {/* Sort */}
           <select className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
             value={`${sortBy}-${sortDir}`}
             onChange={e => {
@@ -159,8 +277,9 @@ export default function CustomersPage() {
             <option value="totalVisits-desc">Most Visits</option>
           </select>
 
-          {/* Inactive toggle */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-2)', cursor: 'pointer',
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 13,
+            color: 'var(--color-text-2)', cursor: 'pointer',
             background: inactive ? 'rgba(239,68,68,0.1)' : 'transparent',
             border: `1px solid ${inactive ? 'rgba(239,68,68,0.3)' : 'var(--color-border)'}`,
             borderRadius: 8, padding: '5px 10px', transition: 'all 0.2s',
@@ -169,7 +288,6 @@ export default function CustomersPage() {
             <span style={{ color: inactive ? 'var(--color-danger)' : 'var(--color-text-2)' }}>Inactive 30d+</span>
           </label>
 
-          {/* Clear */}
           {hasFilters && (
             <button className="btn-ghost" style={{ fontSize: 12, color: 'var(--color-text-3)' }} onClick={clearFilters}>
               ✕ Clear filters
@@ -177,7 +295,6 @@ export default function CustomersPage() {
           )}
         </div>
 
-        {/* Loading */}
         {loading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[...Array(6)].map((_, i) => (
@@ -187,7 +304,6 @@ export default function CustomersPage() {
           </div>
         )}
 
-        {/* Empty state */}
         {!loading && customers.length === 0 && (
           <div className="empty-state">
             <div className="empty-state-icon">🔍</div>
@@ -197,7 +313,6 @@ export default function CustomersPage() {
           </div>
         )}
 
-        {/* Table */}
         {!loading && customers.length > 0 && (
           <>
             <div className="data-table-wrap">
@@ -208,6 +323,7 @@ export default function CustomersPage() {
                     <th>Contact</th>
                     {isOwnerOrAbove && <th>Outlet</th>}
                     <th>Visits</th>
+                    <th>Reviews</th>
                     <th>Last Visit</th>
                     <th>Status</th>
                     <th>Joined</th>
@@ -215,69 +331,114 @@ export default function CustomersPage() {
                 </thead>
                 <tbody>
                   {customers.map(c => {
-                    const daysSinceVisit = c.lastVisitDate ? differenceInDays(new Date(), new Date(c.lastVisitDate)) : null
+                    const daysSinceVisit = c.lastVisitDate
+                      ? differenceInDays(new Date(), new Date(c.lastVisitDate))
+                      : null
                     const isInactive = daysSinceVisit !== null && daysSinceVisit >= 30
+                    const isExpanded = expandedId === c.id
+                    const reviewCount = c.totalReviews ?? 0
+
                     return (
-                      <tr key={c.id}>
-                        <td>
-                          <Link href={`/customers/${c.id}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Initials name={c.fullName} />
-                            <div>
-                              <div style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{c.fullName}</div>
-                              <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{c.gender} · {c.maritalStatus}</div>
-                            </div>
-                          </Link>
-                        </td>
-                        <td>
-                          <div style={{ fontSize: 13, color: 'var(--color-text-1)' }}>{c.phone}</div>
-                          {c.email && <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{c.email}</div>}
-                        </td>
-                        {isOwnerOrAbove && (
+                      <React.Fragment key={c.id}>
+                        <tr>
                           <td>
-                            <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-2)' }}>
-                              {c.firstVisitOutlet?.code ?? '—'}
+                            <Link href={`/customers/${c.id}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <Initials name={c.fullName} />
+                              <div>
+                                <div style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{c.fullName}</div>
+                                <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{c.gender} · {c.maritalStatus}</div>
+                              </div>
+                            </Link>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: 13, color: 'var(--color-text-1)' }}>{c.phone}</div>
+                            {c.email && <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{c.email}</div>}
+                          </td>
+                          {isOwnerOrAbove && (
+                            <td>
+                              <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-2)' }}>
+                                {c.firstVisitOutlet?.code ?? '—'}
+                              </span>
+                            </td>
+                          )}
+                          <td>
+                            <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: 'var(--color-primary-dim)', color: 'var(--color-primary)' }}>
+                              {c.totalVisits}
                             </span>
                           </td>
+                          {/* Review count badge + expand toggle */}
+                          <td>
+                            <button
+                              onClick={() => setExpandedId(isExpanded ? null : c.id)}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                background: 'none', border: 'none', cursor: reviewCount > 0 ? 'pointer' : 'default',
+                                padding: 0,
+                              }}
+                              title={reviewCount > 0 ? (isExpanded ? 'Collapse reviews' : 'View reviews') : 'No reviews'}
+                            >
+                              <span style={{
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                width: 26, height: 26, borderRadius: '50%', fontSize: 11, fontWeight: 700, color: '#fff',
+                                background: reviewCount > 0 ? 'var(--color-primary)' : 'var(--color-border-strong)',
+                              }}>
+                                {reviewCount}
+                              </span>
+                              {reviewCount > 0 && (
+                                <svg
+                                  width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                  stroke="var(--color-text-3)" strokeWidth="2.5"
+                                  style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+                                >
+                                  <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                              )}
+                            </button>
+                          </td>
+                          <td style={{ fontSize: 12 }}>
+                            {c.lastVisitDate ? (
+                              <div>
+                                <div style={{ color: isInactive ? 'var(--color-danger)' : 'var(--color-text-1)' }}>
+                                  {format(new Date(c.lastVisitDate), 'dd MMM yy')}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                                  {daysSinceVisit === 0 ? 'Today' : `${daysSinceVisit}d ago`}
+                                </div>
+                              </div>
+                            ) : '—'}
+                          </td>
+                          <td>
+                            {c.hasSubmittedFirstReview ? (
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.12)', color: 'var(--color-success)' }}>
+                                ✓ Review
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.10)', color: 'var(--color-danger)' }}>
+                                Pending
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
+                            {format(new Date(c.createdAt), 'dd MMM yy')}
+                          </td>
+                        </tr>
+
+                        {/* Expanded reviews row */}
+                        {isExpanded && (
+                          <CustomerReviewsRow
+                            key={`${c.id}-reviews`}
+                            customerId={c.id}
+                            fullName={c.fullName}
+                            colSpan={colCount}
+                          />
                         )}
-                        <td>
-                          <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: 'var(--color-primary-dim)', color: 'var(--color-primary)' }}>
-                            {c.totalVisits}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: 12 }}>
-                          {c.lastVisitDate ? (
-                            <div>
-                              <div style={{ color: isInactive ? 'var(--color-danger)' : 'var(--color-text-1)' }}>
-                                {format(new Date(c.lastVisitDate), 'dd MMM yy')}
-                              </div>
-                              <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
-                                {daysSinceVisit === 0 ? 'Today' : `${daysSinceVisit}d ago`}
-                              </div>
-                            </div>
-                          ) : '—'}
-                        </td>
-                        <td>
-                          {c.hasSubmittedFirstReview ? (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.12)', color: 'var(--color-success)' }}>
-                              ✓ Review
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(239,68,68,0.10)', color: 'var(--color-danger)' }}>
-                              Pending
-                            </span>
-                          )}
-                        </td>
-                        <td style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
-                          {format(new Date(c.createdAt), 'dd MMM yy')}
-                        </td>
-                      </tr>
+                      </React.Fragment>
                     )
                   })}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: 'var(--color-text-3)' }}>
                 {total.toLocaleString()} customers · Page {page + 1} of {totalPages}

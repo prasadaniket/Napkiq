@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
+import { sentimentService } from '../services/SentimentService'
 import { z } from 'zod'
 
 const router = Router()
@@ -17,7 +18,17 @@ router.post('/', async (req, res, next) => {
   try {
     const body = CreateReviewSchema.parse(req.body)
 
-    const review = await prisma.review.create({ data: body })
+    // Auto-analyze sentiment — caller doesn't need to know this runs
+    const sentiment = sentimentService.analyze(body.reviewText, body.stars)
+
+    const review = await prisma.review.create({
+      data: {
+        ...body,
+        sentimentLabel: sentiment.label,
+        sentimentScore: sentiment.score,
+        sentimentKeywords: sentiment.keywords,
+      },
+    })
 
     // Mark hasSubmittedFirstReview on first visit
     if (body.customerId && body.reviewType === 'first_visit') {

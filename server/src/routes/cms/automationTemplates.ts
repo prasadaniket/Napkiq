@@ -15,7 +15,7 @@ router.get('/', (_req, res) => {
 // Admin only — update subject, body, linkUrl, isActive
 router.put('/:key', requireAdmin, (req, res, next) => {
   try {
-    const { key } = req.params
+    const key = req.params.key as string
     const { subject, body, linkUrl, isActive } = req.body
 
     const updates: Parameters<typeof updateTemplate>[1] = {}

@@ -53,16 +53,25 @@ router.get('/', async (req, res, next) => {
       ]
     }
 
-    const [customers, total] = await Promise.all([
+    const [rawCustomers, total] = await Promise.all([
       prisma.customer.findMany({
         where,
         skip: page * size,
         take: size,
         orderBy: { [sortBy]: sortDir },
-        include: { firstVisitOutlet: { select: { name: true, code: true } } },
+        include: {
+          firstVisitOutlet: { select: { name: true, code: true } },
+          _count: { select: { reviews: true } },
+        },
       }),
       prisma.customer.count({ where }),
     ])
+
+    // Flatten _count.reviews → totalReviews for a clean API shape
+    const customers = rawCustomers.map(({ _count, ...c }) => ({
+      ...c,
+      totalReviews: _count.reviews,
+    }))
 
     res.json(paginate(customers, total, page, size))
   } catch (err) {

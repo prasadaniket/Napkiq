@@ -163,6 +163,9 @@ exports.Prisma.ReviewScalarFieldEnum = {
   reviewType: 'reviewType',
   postedToGoogle: 'postedToGoogle',
   isVisible: 'isVisible',
+  sentimentLabel: 'sentimentLabel',
+  sentimentScore: 'sentimentScore',
+  sentimentKeywords: 'sentimentKeywords',
   createdAt: 'createdAt'
 };
 

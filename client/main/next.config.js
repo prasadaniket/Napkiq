@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'api.stoneoven.in' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'http', hostname: 'localhost' },
     ],
   },

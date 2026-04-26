@@ -4397,10 +4397,12 @@ export namespace Prisma {
 
   export type ReviewAvgAggregateOutputType = {
     stars: number | null
+    sentimentScore: Decimal | null
   }
 
   export type ReviewSumAggregateOutputType = {
     stars: number | null
+    sentimentScore: Decimal | null
   }
 
   export type ReviewMinAggregateOutputType = {
@@ -4412,6 +4414,8 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType | null
     postedToGoogle: boolean | null
     isVisible: boolean | null
+    sentimentLabel: string | null
+    sentimentScore: Decimal | null
     createdAt: Date | null
   }
 
@@ -4424,6 +4428,8 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType | null
     postedToGoogle: boolean | null
     isVisible: boolean | null
+    sentimentLabel: string | null
+    sentimentScore: Decimal | null
     createdAt: Date | null
   }
 
@@ -4436,6 +4442,9 @@ export namespace Prisma {
     reviewType: number
     postedToGoogle: number
     isVisible: number
+    sentimentLabel: number
+    sentimentScore: number
+    sentimentKeywords: number
     createdAt: number
     _all: number
   }
@@ -4443,10 +4452,12 @@ export namespace Prisma {
 
   export type ReviewAvgAggregateInputType = {
     stars?: true
+    sentimentScore?: true
   }
 
   export type ReviewSumAggregateInputType = {
     stars?: true
+    sentimentScore?: true
   }
 
   export type ReviewMinAggregateInputType = {
@@ -4458,6 +4469,8 @@ export namespace Prisma {
     reviewType?: true
     postedToGoogle?: true
     isVisible?: true
+    sentimentLabel?: true
+    sentimentScore?: true
     createdAt?: true
   }
 
@@ -4470,6 +4483,8 @@ export namespace Prisma {
     reviewType?: true
     postedToGoogle?: true
     isVisible?: true
+    sentimentLabel?: true
+    sentimentScore?: true
     createdAt?: true
   }
 
@@ -4482,6 +4497,9 @@ export namespace Prisma {
     reviewType?: true
     postedToGoogle?: true
     isVisible?: true
+    sentimentLabel?: true
+    sentimentScore?: true
+    sentimentKeywords?: true
     createdAt?: true
     _all?: true
   }
@@ -4581,6 +4599,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle: boolean
     isVisible: boolean
+    sentimentLabel: string | null
+    sentimentScore: Decimal | null
+    sentimentKeywords: string[]
     createdAt: Date
     _count: ReviewCountAggregateOutputType | null
     _avg: ReviewAvgAggregateOutputType | null
@@ -4612,6 +4633,9 @@ export namespace Prisma {
     reviewType?: boolean
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: boolean
+    sentimentScore?: boolean
+    sentimentKeywords?: boolean
     createdAt?: boolean
     customer?: boolean | Review$customerArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -4626,6 +4650,9 @@ export namespace Prisma {
     reviewType?: boolean
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: boolean
+    sentimentScore?: boolean
+    sentimentKeywords?: boolean
     createdAt?: boolean
     customer?: boolean | Review$customerArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -4640,6 +4667,9 @@ export namespace Prisma {
     reviewType?: boolean
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: boolean
+    sentimentScore?: boolean
+    sentimentKeywords?: boolean
     createdAt?: boolean
     customer?: boolean | Review$customerArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -4654,10 +4684,13 @@ export namespace Prisma {
     reviewType?: boolean
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: boolean
+    sentimentScore?: boolean
+    sentimentKeywords?: boolean
     createdAt?: boolean
   }
 
-  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "outletId" | "reviewText" | "stars" | "reviewType" | "postedToGoogle" | "isVisible" | "createdAt", ExtArgs["result"]["review"]>
+  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "outletId" | "reviewText" | "stars" | "reviewType" | "postedToGoogle" | "isVisible" | "sentimentLabel" | "sentimentScore" | "sentimentKeywords" | "createdAt", ExtArgs["result"]["review"]>
   export type ReviewInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | Review$customerArgs<ExtArgs>
     outlet?: boolean | OutletDefaultArgs<ExtArgs>
@@ -4686,6 +4719,9 @@ export namespace Prisma {
       reviewType: $Enums.ReviewType
       postedToGoogle: boolean
       isVisible: boolean
+      sentimentLabel: string | null
+      sentimentScore: Prisma.Decimal | null
+      sentimentKeywords: string[]
       createdAt: Date
     }, ExtArgs["result"]["review"]>
     composites: {}
@@ -5120,6 +5156,9 @@ export namespace Prisma {
     readonly reviewType: FieldRef<"Review", 'ReviewType'>
     readonly postedToGoogle: FieldRef<"Review", 'Boolean'>
     readonly isVisible: FieldRef<"Review", 'Boolean'>
+    readonly sentimentLabel: FieldRef<"Review", 'String'>
+    readonly sentimentScore: FieldRef<"Review", 'Decimal'>
+    readonly sentimentKeywords: FieldRef<"Review", 'String[]'>
     readonly createdAt: FieldRef<"Review", 'DateTime'>
   }
     
@@ -11340,6 +11379,9 @@ export namespace Prisma {
     reviewType: 'reviewType',
     postedToGoogle: 'postedToGoogle',
     isVisible: 'isVisible',
+    sentimentLabel: 'sentimentLabel',
+    sentimentScore: 'sentimentScore',
+    sentimentKeywords: 'sentimentKeywords',
     createdAt: 'createdAt'
   };
 
@@ -11556,20 +11598,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'VisitType'
-   */
-  export type EnumVisitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VisitType'>
-    
-
-
-  /**
-   * Reference to a field of type 'VisitType[]'
-   */
-  export type ListEnumVisitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VisitType[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -11580,6 +11608,20 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal[]'
    */
   export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'VisitType'
+   */
+  export type EnumVisitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VisitType'>
+    
+
+
+  /**
+   * Reference to a field of type 'VisitType[]'
+   */
+  export type ListEnumVisitTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VisitType[]'>
     
 
 
@@ -11905,6 +11947,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFilter<"Review"> | $Enums.ReviewType
     postedToGoogle?: BoolFilter<"Review"> | boolean
     isVisible?: BoolFilter<"Review"> | boolean
+    sentimentLabel?: StringNullableFilter<"Review"> | string | null
+    sentimentScore?: DecimalNullableFilter<"Review"> | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: StringNullableListFilter<"Review">
     createdAt?: DateTimeFilter<"Review"> | Date | string
     customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
@@ -11919,6 +11964,9 @@ export namespace Prisma {
     reviewType?: SortOrder
     postedToGoogle?: SortOrder
     isVisible?: SortOrder
+    sentimentLabel?: SortOrderInput | SortOrder
+    sentimentScore?: SortOrderInput | SortOrder
+    sentimentKeywords?: SortOrder
     createdAt?: SortOrder
     customer?: CustomerOrderByWithRelationInput
     outlet?: OutletOrderByWithRelationInput
@@ -11936,6 +11984,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFilter<"Review"> | $Enums.ReviewType
     postedToGoogle?: BoolFilter<"Review"> | boolean
     isVisible?: BoolFilter<"Review"> | boolean
+    sentimentLabel?: StringNullableFilter<"Review"> | string | null
+    sentimentScore?: DecimalNullableFilter<"Review"> | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: StringNullableListFilter<"Review">
     createdAt?: DateTimeFilter<"Review"> | Date | string
     customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
     outlet?: XOR<OutletScalarRelationFilter, OutletWhereInput>
@@ -11950,6 +12001,9 @@ export namespace Prisma {
     reviewType?: SortOrder
     postedToGoogle?: SortOrder
     isVisible?: SortOrder
+    sentimentLabel?: SortOrderInput | SortOrder
+    sentimentScore?: SortOrderInput | SortOrder
+    sentimentKeywords?: SortOrder
     createdAt?: SortOrder
     _count?: ReviewCountOrderByAggregateInput
     _avg?: ReviewAvgOrderByAggregateInput
@@ -11970,6 +12024,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeWithAggregatesFilter<"Review"> | $Enums.ReviewType
     postedToGoogle?: BoolWithAggregatesFilter<"Review"> | boolean
     isVisible?: BoolWithAggregatesFilter<"Review"> | boolean
+    sentimentLabel?: StringNullableWithAggregatesFilter<"Review"> | string | null
+    sentimentScore?: DecimalNullableWithAggregatesFilter<"Review"> | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: StringNullableListFilter<"Review">
     createdAt?: DateTimeWithAggregatesFilter<"Review"> | Date | string
   }
 
@@ -12619,6 +12676,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
     customer?: CustomerCreateNestedOneWithoutReviewsInput
     outlet: OutletCreateNestedOneWithoutReviewsInput
@@ -12633,6 +12693,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -12643,6 +12706,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneWithoutReviewsNestedInput
     outlet?: OutletUpdateOneRequiredWithoutReviewsNestedInput
@@ -12657,6 +12723,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -12669,6 +12738,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -12679,6 +12751,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -12691,6 +12766,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -13522,6 +13600,25 @@ export namespace Prisma {
     not?: NestedEnumReviewTypeFilter<$PrismaModel> | $Enums.ReviewType
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type CustomerNullableScalarRelationFilter = {
     is?: CustomerWhereInput | null
     isNot?: CustomerWhereInput | null
@@ -13541,11 +13638,15 @@ export namespace Prisma {
     reviewType?: SortOrder
     postedToGoogle?: SortOrder
     isVisible?: SortOrder
+    sentimentLabel?: SortOrder
+    sentimentScore?: SortOrder
+    sentimentKeywords?: SortOrder
     createdAt?: SortOrder
   }
 
   export type ReviewAvgOrderByAggregateInput = {
     stars?: SortOrder
+    sentimentScore?: SortOrder
   }
 
   export type ReviewMaxOrderByAggregateInput = {
@@ -13557,6 +13658,8 @@ export namespace Prisma {
     reviewType?: SortOrder
     postedToGoogle?: SortOrder
     isVisible?: SortOrder
+    sentimentLabel?: SortOrder
+    sentimentScore?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -13569,11 +13672,14 @@ export namespace Prisma {
     reviewType?: SortOrder
     postedToGoogle?: SortOrder
     isVisible?: SortOrder
+    sentimentLabel?: SortOrder
+    sentimentScore?: SortOrder
     createdAt?: SortOrder
   }
 
   export type ReviewSumOrderByAggregateInput = {
     stars?: SortOrder
+    sentimentScore?: SortOrder
   }
 
   export type EnumReviewTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -13584,6 +13690,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumReviewTypeFilter<$PrismaModel>
     _max?: NestedEnumReviewTypeFilter<$PrismaModel>
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type EnumVisitTypeFilter<$PrismaModel = never> = {
@@ -13701,17 +13823,6 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
-
-  export type DecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -13792,22 +13903,6 @@ export namespace Prisma {
   export type MenuItemSumOrderByAggregateInput = {
     price?: SortOrder
     displayOrder?: SortOrder
-  }
-
-  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -14364,6 +14459,10 @@ export namespace Prisma {
     deleteMany?: AutomationLogScalarWhereInput | AutomationLogScalarWhereInput[]
   }
 
+  export type ReviewCreatesentimentKeywordsInput = {
+    set: string[]
+  }
+
   export type CustomerCreateNestedOneWithoutReviewsInput = {
     create?: XOR<CustomerCreateWithoutReviewsInput, CustomerUncheckedCreateWithoutReviewsInput>
     connectOrCreate?: CustomerCreateOrConnectWithoutReviewsInput
@@ -14378,6 +14477,19 @@ export namespace Prisma {
 
   export type EnumReviewTypeFieldUpdateOperationsInput = {
     set?: $Enums.ReviewType
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type ReviewUpdatesentimentKeywordsInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type CustomerUpdateOneWithoutReviewsNestedInput = {
@@ -14502,14 +14614,6 @@ export namespace Prisma {
     create?: XOR<MenuCategoryCreateWithoutItemsInput, MenuCategoryUncheckedCreateWithoutItemsInput>
     connectOrCreate?: MenuCategoryCreateOrConnectWithoutItemsInput
     connect?: MenuCategoryWhereUniqueInput
-  }
-
-  export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string | null
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type MenuCategoryUpdateOneRequiredWithoutItemsNestedInput = {
@@ -14833,6 +14937,17 @@ export namespace Prisma {
     not?: NestedEnumReviewTypeFilter<$PrismaModel> | $Enums.ReviewType
   }
 
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type NestedEnumReviewTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ReviewType | EnumReviewTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ReviewType[] | ListEnumReviewTypeFieldRefInput<$PrismaModel>
@@ -14841,6 +14956,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumReviewTypeFilter<$PrismaModel>
     _max?: NestedEnumReviewTypeFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumVisitTypeFilter<$PrismaModel = never> = {
@@ -14885,33 +15016,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -15062,6 +15166,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
     customer?: CustomerCreateNestedOneWithoutReviewsInput
   }
@@ -15074,6 +15181,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -15242,6 +15352,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFilter<"Review"> | $Enums.ReviewType
     postedToGoogle?: BoolFilter<"Review"> | boolean
     isVisible?: BoolFilter<"Review"> | boolean
+    sentimentLabel?: StringNullableFilter<"Review"> | string | null
+    sentimentScore?: DecimalNullableFilter<"Review"> | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: StringNullableListFilter<"Review">
     createdAt?: DateTimeFilter<"Review"> | Date | string
   }
 
@@ -15386,6 +15499,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
     outlet: OutletCreateNestedOneWithoutReviewsInput
   }
@@ -15398,6 +15514,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -16398,6 +16517,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -16494,6 +16616,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneWithoutReviewsNestedInput
   }
@@ -16506,6 +16631,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16517,6 +16645,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16617,6 +16748,9 @@ export namespace Prisma {
     reviewType: $Enums.ReviewType
     postedToGoogle?: boolean
     isVisible?: boolean
+    sentimentLabel?: string | null
+    sentimentScore?: Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewCreatesentimentKeywordsInput | string[]
     createdAt?: Date | string
   }
 
@@ -16644,6 +16778,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outlet?: OutletUpdateOneRequiredWithoutReviewsNestedInput
   }
@@ -16656,6 +16793,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16667,6 +16807,9 @@ export namespace Prisma {
     reviewType?: EnumReviewTypeFieldUpdateOperationsInput | $Enums.ReviewType
     postedToGoogle?: BoolFieldUpdateOperationsInput | boolean
     isVisible?: BoolFieldUpdateOperationsInput | boolean
+    sentimentLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    sentimentScore?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    sentimentKeywords?: ReviewUpdatesentimentKeywordsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

@@ -18,6 +18,7 @@ import exportRouter from './routes/cms/export'
 import cmsMenuRouter from './routes/cms/menu'
 import automationRouter          from './routes/automation'
 import automationTemplatesRouter from './routes/cms/automationTemplates'
+import qrRouter from './routes/cms/qr'
 import { errorHandler } from './middleware/errorHandler'
 
 export function createApp() {
@@ -67,6 +68,7 @@ export function createApp() {
   app.use('/api/cms/export',          exportRouter)
   app.use('/api/cms/menu',                 cmsMenuRouter)
   app.use('/api/cms/automation-templates', automationTemplatesRouter)
+  app.use('/api/cms/qr',                  qrRouter)
 
   // Automation (Cloudflare Worker cron + CMS manual trigger — dual-auth)
   app.use('/api/automation',               automationRouter)

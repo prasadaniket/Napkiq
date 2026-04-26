@@ -99,6 +99,7 @@ export interface Customer {
   birthDate:               string | null
   anniversaryDate:         string | null
   totalVisits:             number
+  totalReviews?:           number
   lastVisitDate:           string | null
   hasSubmittedFirstReview: boolean
   firstVisitOutletId:      string
@@ -112,15 +113,18 @@ export interface Customer {
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 
 export interface Review {
-  id:           string
-  stars:        number
-  reviewType:   'first_visit' | 'repeat'
-  reviewText:   string | null
-  createdAt:    string
-  customerId:   string
-  outletId:     string
-  customer?:    { fullName: string; phone: string; email?: string | null; gender?: string }
-  outlet?:      { name: string; code: string; googleMapsUrl: string | null }
+  id:                string
+  stars:             number
+  reviewType:        'first_visit' | 'repeat'
+  reviewText:        string | null
+  createdAt:         string
+  customerId:        string
+  outletId:          string
+  sentimentLabel?:   'positive' | 'negative' | 'neutral' | 'mixed' | null
+  sentimentScore?:   number | null
+  sentimentKeywords?: string[]
+  customer?:         { fullName: string; phone: string; email?: string | null; gender?: string }
+  outlet?:           { name: string; code: string; googleMapsUrl: string | null }
 }
 
 export interface ReviewSummary {
