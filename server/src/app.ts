@@ -31,7 +31,8 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Allow if origin is in the list, or if it's local development
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.length === 0) {
           callback(null, true)
         } else {
           console.error(`[CORS Error] Origin "${origin}" is not allowed. Allowed:`, allowedOrigins)
