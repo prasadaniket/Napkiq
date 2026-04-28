@@ -9,12 +9,28 @@
  *
  * Until then, DRY_RUN mode logs the payload and returns success=true
  * so automation_logs populate correctly for testing.
+ *
+ * TEMPORARY TESTING: set WASENDER_API_KEY to send real WhatsApp messages
+ * via WaSenderAPI while Twilio is not yet configured.
  */
+
+import { createWasender, WasenderAPIError } from 'wasenderapi'
+import { getTemplate } from './templateStore'
 
 const DRY_RUN =
   process.env.AUTOMATION_DRY_RUN === 'true' ||
-  !process.env.TWILIO_ACCOUNT_SID ||
+  (!process.env.TWILIO_ACCOUNT_SID && !process.env.WASENDER_API_KEY) ||
   !process.env.RESEND_API_KEY
+
+// Maps Twilio template name prefix → automationTemplates.json key
+const WASENDER_TEMPLATE_MAP: Record<string, string> = {
+  birthday:     'birthday_whatsapp',
+  anniversary:  'anniversary_whatsapp',
+  reengagement: 'reengagement_whatsapp',
+  welcome:      'welcome_whatsapp',
+  promotional:  'promotional_whatsapp',
+  announcement: 'announcement_whatsapp',
+}
 
 // ─── WhatsApp ────────────────────────────────────────────────────────────────
 
@@ -34,6 +50,22 @@ export async function sendWhatsApp(payload: WhatsAppPayload): Promise<boolean> {
   }
 
   try {
+    // ── WaSenderAPI (temporary testing path) ─────────────────────────────
+    if (process.env.WASENDER_API_KEY) {
+      const baseWord   = payload.templateName.replace('stoneoven_', '').split('_')[0]
+      const templateKey = WASENDER_TEMPLATE_MAP[baseWord]
+      const tmpl       = templateKey ? getTemplate(templateKey) : null
+      const text       = tmpl
+        ? tmpl.body.replace(/\{(\w+)\}/g, (_, k) => payload.variables[k] ?? '')
+        : Object.entries(payload.variables).map(([k, v]) => `${k}: ${v}`).join('\n')
+
+      const wasender = createWasender(process.env.WASENDER_API_KEY)
+      await wasender.sendText({ to: payload.to, text })
+      console.log(`[AUTOMATION] WhatsApp sent via WaSenderAPI to ${payload.to}`)
+      return true
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     // ── Twilio WhatsApp (uncomment when configured) ──────────────────────
     // const twilio = require('twilio')
     // const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
@@ -54,7 +86,13 @@ export async function sendWhatsApp(payload: WhatsAppPayload): Promise<boolean> {
     console.log(`[AUTOMATION] WhatsApp sent to ${payload.to}`)
     return true
   } catch (err) {
-    console.error(`[AUTOMATION] WhatsApp failed to ${payload.to}:`, err)
+    if (err instanceof WasenderAPIError) {
+      console.error(`[AUTOMATION] WhatsApp failed to ${payload.to}: ${err.apiMessage}`, {
+        status: err.statusCode, rateLimit: err.rateLimit,
+      })
+    } else {
+      console.error(`[AUTOMATION] WhatsApp failed to ${payload.to}:`, err)
+    }
     return false
   }
 }
