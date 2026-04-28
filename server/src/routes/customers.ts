@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
 import { z } from 'zod'
+import { sendWhatsApp } from '../lib/notifications'
+import { getTemplate } from '../lib/templateStore'
 
 const router = Router()
 
@@ -100,6 +102,9 @@ router.post('/', async (req, res, next) => {
         }
       }
 
+      // Fire welcome WhatsApp on first registration — async, doesn't block response
+      if (isNew) void sendWelcomeWhatsApp(customer.id, customer.fullName, customer.phone)
+
       res.status(201).json(customer)
     } catch (prismaErr: any) {
       // P2002 = unique constraint violation
@@ -125,5 +130,47 @@ router.post('/', async (req, res, next) => {
     next(err)
   }
 })
+
+// ─── Welcome notification (fires async on first registration) ─────────────────
+
+async function sendWelcomeWhatsApp(customerId: string, fullName: string, phone: string) {
+  try {
+    const tmpl = getTemplate('welcome_whatsapp')
+    if (!tmpl?.isActive) return
+
+    // Deduplicate across all time — welcome is sent once per customer ever
+    const already = await prisma.automationLog.findFirst({
+      where: {
+        customerId,
+        automationType: 'welcome_whatsapp' as any,
+        messageStage:   'on_registration' as any,
+      },
+    })
+    if (already) return
+
+    const digits = phone.replace(/\D/g, '')
+    const to     = digits.startsWith('91') ? `+${digits}` : `+91${digits}`
+
+    const ok = await sendWhatsApp({
+      to,
+      templateName: 'stoneoven_welcome',
+      variables:    { customer_name: fullName, restaurant: 'StoneOven' },
+    })
+
+    await prisma.automationLog.create({
+      data: {
+        customerId,
+        automationType: 'welcome_whatsapp' as any,
+        messageStage:   'on_registration' as any,
+        status:          ok ? 'success' : 'failed',
+        errorMessage:    null,
+      },
+    })
+
+    console.log(`[REGISTRATION] Welcome WhatsApp ${ok ? 'sent' : 'failed'} → ${to}`)
+  } catch (err) {
+    console.error('[REGISTRATION] Welcome WhatsApp error:', err)
+  }
+}
 
 export default router

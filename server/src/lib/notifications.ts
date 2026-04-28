@@ -17,9 +17,11 @@
 import { createWasender, WasenderAPIError } from 'wasenderapi'
 import { getTemplate } from './templateStore'
 
-const DRY_RUN =
-  process.env.AUTOMATION_DRY_RUN === 'true' ||
-  (!process.env.TWILIO_ACCOUNT_SID && !process.env.WASENDER_API_KEY) ||
+// Evaluated per-call so env vars set dynamically (e.g. forwarded from Cloudflare Worker)
+// are respected. A module-level constant would freeze at server-startup values.
+const isWADryRun  = () => process.env.AUTOMATION_DRY_RUN === 'true' ||
+  (!process.env.TWILIO_ACCOUNT_SID && !process.env.WASENDER_API_KEY)
+const isEmailDryRun = () => process.env.AUTOMATION_DRY_RUN === 'true' ||
   !process.env.RESEND_API_KEY
 
 // Maps Twilio template name prefix → automationTemplates.json key
@@ -41,7 +43,7 @@ export interface WhatsAppPayload {
 }
 
 export async function sendWhatsApp(payload: WhatsAppPayload): Promise<boolean> {
-  if (DRY_RUN) {
+  if (isWADryRun()) {
     console.log(`[AUTOMATION:DRY_RUN] WhatsApp → ${payload.to}`, {
       template: payload.templateName,
       vars:     payload.variables,
@@ -106,7 +108,7 @@ export interface EmailPayload {
 }
 
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
-  if (DRY_RUN) {
+  if (isEmailDryRun()) {
     console.log(`[AUTOMATION:DRY_RUN] Email → ${payload.to}`, {
       subject: payload.subject,
     })
