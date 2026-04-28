@@ -70,14 +70,14 @@ export const DEFAULT_TEMPLATES: TemplateMap = {
     trigger: 'automatic', triggerDesc: 'Sent on first customer registration',
     subject: null,
     body: "Welcome to StoneOven, {customer_name}! 🍽️ We're thrilled to have you. Scan your QR on every visit to unlock rewards and surprises.",
-    imageUrl: null, linkUrl: null, isActive: false,
+    imageUrl: null, linkUrl: null, isActive: true,
   },
   welcome_email: {
     key: 'welcome_email', label: 'Welcome', channel: 'email',
     trigger: 'automatic', triggerDesc: 'Sent on first customer registration',
     subject: 'Welcome to StoneOven, {name}!',
     body: "We're thrilled to welcome you to the StoneOven family. Every visit earns you loyalty points and exclusive birthday & anniversary surprises.",
-    imageUrl: null, linkUrl: null, isActive: false,
+    imageUrl: null, linkUrl: null, isActive: true,
   },
   promotional_whatsapp: {
     key: 'promotional_whatsapp', label: 'Promotional Offer', channel: 'whatsapp',
