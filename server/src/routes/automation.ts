@@ -107,7 +107,6 @@ async function runAutomation() {
   const in5   = addDays(today, 5)
 
   const allCustomers = await prisma.customer.findMany({
-    where: { email: { not: null } },
     select: {
       id:              true,
       fullName:        true,
@@ -123,7 +122,7 @@ async function runAutomation() {
 
   for (const customer of allCustomers) {
     const phone = normalizePone(customer.phone)
-    const email = customer.email!
+    const email = customer.email
 
     // ── Birthday ──────────────────────────────────────────────────────────
     if (customer.birthDate) {
@@ -150,7 +149,7 @@ async function runAutomation() {
         } else { results.skipped++ }
 
         // Email
-        if (!await alreadySent(customer.id, 'birthday_email', stage)) {
+        if (email && !await alreadySent(customer.id, 'birthday_email', stage)) {
           const { subject, html } = buildBirthdayEmail(customer.fullName, daysUntil)
           const ok = await sendEmail({ to: email, subject, html })
           await logSend(customer.id, 'birthday_email', stage, ok ? 'success' : 'failed')
@@ -186,7 +185,7 @@ async function runAutomation() {
           ok ? results.sent++ : results.failed++
         } else { results.skipped++ }
 
-        if (!await alreadySent(customer.id, 'anniversary_email', stage)) {
+        if (email && !await alreadySent(customer.id, 'anniversary_email', stage)) {
           const { subject, html } = buildAnniversaryEmail(customer.fullName, daysUntil)
           const ok = await sendEmail({ to: email, subject, html })
           await logSend(customer.id, 'anniversary_email', stage, ok ? 'success' : 'failed')
@@ -215,7 +214,7 @@ async function runAutomation() {
           ok ? results.sent++ : results.failed++
         } else { results.skipped++ }
 
-        if (!await alreadySent(customer.id, 'reengagement_email', 'thirty_days_inactive')) {
+        if (email && !await alreadySent(customer.id, 'reengagement_email', 'thirty_days_inactive')) {
           const { subject, html } = buildReengagementEmail(customer.fullName, daysSince)
           const ok = await sendEmail({ to: email, subject, html })
           await logSend(customer.id, 'reengagement_email', 'thirty_days_inactive', ok ? 'success' : 'failed')
