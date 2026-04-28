@@ -65,7 +65,7 @@ router.get('/', async (req, res, next) => {
 
     // For visits where customerId is null, look up customer by deviceId
     const anonymousDeviceIds = [...new Set(
-      rawVisits.filter(v => !v.customerId).map(v => v.deviceId)
+      rawVisits.filter(v => !v.customerId && v.deviceId).map(v => v.deviceId as string)
     )]
     const deviceCustomers = anonymousDeviceIds.length > 0
       ? await prisma.customer.findMany({
