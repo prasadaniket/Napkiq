@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getToken, getRefreshToken, saveTokens, clearSession } from '@/lib/auth'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://so-4ntt.onrender.com/api'
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://so-ta1t.onrender.com/api'
 
 export const api = axios.create({
   baseURL: BASE_URL,
