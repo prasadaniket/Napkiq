@@ -45,6 +45,8 @@ router.post('/', async (req, res, next) => {
     const parsedAnniversary = body.anniversaryDate ? new Date(body.anniversaryDate) : null
 
     try {
+      const now = new Date()
+      const isNew = !(await prisma.customer.findUnique({ where: { deviceId: body.deviceId }, select: { id: true } }))
       const customer = await prisma.customer.upsert({
         where: { deviceId: body.deviceId },
         create: {
@@ -57,7 +59,7 @@ router.post('/', async (req, res, next) => {
           gender:             body.gender,
           maritalStatus:      body.maritalStatus,
           firstVisitOutletId: body.firstVisitOutletId ?? null,
-          lastVisitDate:      new Date(),
+          lastVisitDate:      now,
           totalVisits:        1,
         },
         update: {
@@ -68,9 +70,36 @@ router.post('/', async (req, res, next) => {
           anniversaryDate: parsedAnniversary,
           gender:          body.gender,
           maritalStatus:   body.maritalStatus,
-          lastVisitDate:   new Date(),
+          lastVisitDate:   now,
         },
       })
+
+      // On first registration, ensure a CustomerVisit row exists so the Visits
+      // page stays in sync with the totalVisits counter on the Customer model.
+      if (isNew && body.firstVisitOutletId) {
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+        const existing = await prisma.customerVisit.findFirst({
+          where: { deviceId: body.deviceId, outletId: body.firstVisitOutletId, visitedAt: { gte: oneHourAgo } },
+        })
+        if (!existing) {
+          await prisma.customerVisit.create({
+            data: {
+              customerId: customer.id,
+              deviceId:   body.deviceId,
+              outletId:   body.firstVisitOutletId,
+              visitType:  'qr_scan',
+              visitedAt:  now,
+            },
+          })
+        } else if (!existing.customerId) {
+          // Link the anonymous visit created by POST /visits to this customer
+          await prisma.customerVisit.update({
+            where: { id: existing.id },
+            data:  { customerId: customer.id },
+          })
+        }
+      }
+
       res.status(201).json(customer)
     } catch (prismaErr: any) {
       // P2002 = unique constraint violation
