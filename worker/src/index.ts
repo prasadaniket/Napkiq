@@ -18,6 +18,7 @@ export interface Env {
   SERVER_URL:         string
   AUTOMATION_SECRET:  string
   TRIGGER_KEY?:       string   // optional key for manual HTTP trigger
+  WASENDER_API_KEY?:  string   // temporary testing key — remove when Twilio is live
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -95,14 +96,14 @@ async function runAutomation(env: Env, source: 'cron' | 'manual'): Promise<void>
 
   console.log(`[${source.toUpperCase()}] Calling automation at ${endpoint}`)
 
+  const headers: Record<string, string> = {
+    'Content-Type':        'application/json',
+    'x-automation-secret': env.AUTOMATION_SECRET ?? '',
+  }
+  if (env.WASENDER_API_KEY) headers['x-wasender-api-key'] = env.WASENDER_API_KEY
+
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type':       'application/json',
-        'x-automation-secret': env.AUTOMATION_SECRET ?? '',
-      },
-    })
+    const res = await fetch(endpoint, { method: 'POST', headers })
 
     const body = await res.json() as Record<string, unknown>
 
@@ -122,14 +123,14 @@ async function runReengagement(env: Env): Promise<void> {
 
   console.log(`[REENGAGEMENT] Calling ${endpoint}`)
 
+  const headers: Record<string, string> = {
+    'Content-Type':        'application/json',
+    'x-automation-secret': env.AUTOMATION_SECRET ?? '',
+  }
+  if (env.WASENDER_API_KEY) headers['x-wasender-api-key'] = env.WASENDER_API_KEY
+
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type':       'application/json',
-        'x-automation-secret': env.AUTOMATION_SECRET ?? '',
-      },
-    })
+    const res = await fetch(endpoint, { method: 'POST', headers })
 
     const body = await res.json() as Record<string, unknown>
 

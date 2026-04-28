@@ -226,15 +226,6 @@ exports.Prisma.StaffScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.OtpVerificationScalarFieldEnum = {
-  id: 'id',
-  phone: 'phone',
-  otp: 'otp',
-  expiresAt: 'expiresAt',
-  used: 'used',
-  createdAt: 'createdAt'
-};
-
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -288,14 +279,22 @@ exports.AutomationType = exports.$Enums.AutomationType = {
   anniversary_whatsapp: 'anniversary_whatsapp',
   anniversary_email: 'anniversary_email',
   reengagement_whatsapp: 'reengagement_whatsapp',
-  reengagement_email: 'reengagement_email'
+  reengagement_email: 'reengagement_email',
+  welcome_whatsapp: 'welcome_whatsapp',
+  welcome_email: 'welcome_email',
+  promotional_whatsapp: 'promotional_whatsapp',
+  promotional_email: 'promotional_email',
+  announcement_whatsapp: 'announcement_whatsapp',
+  announcement_email: 'announcement_email'
 };
 
 exports.MessageStage = exports.$Enums.MessageStage = {
   five_days_before: 'five_days_before',
   one_day_before: 'one_day_before',
   thirty_days_inactive: 'thirty_days_inactive',
-  on_day: 'on_day'
+  on_day: 'on_day',
+  on_registration: 'on_registration',
+  manual_campaign: 'manual_campaign'
 };
 
 exports.AutomationStatus = exports.$Enums.AutomationStatus = {
@@ -318,8 +317,7 @@ exports.Prisma.ModelName = {
   MenuCategory: 'MenuCategory',
   MenuItem: 'MenuItem',
   AutomationLog: 'AutomationLog',
-  Staff: 'Staff',
-  OtpVerification: 'OtpVerification'
+  Staff: 'Staff'
 };
 
 /**

@@ -8,9 +8,11 @@ account_id = "11de51483dbed991a23c44341f0ca00d"
 [triggers]
 crons = ["0 3 * * *"]
 
-# Env vars — set secrets via: wrangler secret put AUTOMATION_SECRET
+# Env vars — set secrets via:
+#   wrangler secret put AUTOMATION_SECRET
+#   wrangler secret put WASENDER_API_KEY   ← temporary testing; remove when Twilio is live
 [vars]
-SERVER_URL = "https://api.stoneoven.in"
+SERVER_URL = "https://so-ta1t.onrender.com"
 
 # ── Local dev overrides ──────────────────────────────────────────────────────
 [env.development]

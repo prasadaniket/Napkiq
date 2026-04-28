@@ -36,6 +36,12 @@ enum AutomationType {
   anniversary_email
   reengagement_whatsapp
   reengagement_email
+  welcome_whatsapp
+  welcome_email
+  promotional_whatsapp
+  promotional_email
+  announcement_whatsapp
+  announcement_email
 }
 
 enum MessageStage {
@@ -43,6 +49,8 @@ enum MessageStage {
   one_day_before
   thirty_days_inactive
   on_day
+  on_registration
+  manual_campaign
 }
 
 enum AutomationStatus {

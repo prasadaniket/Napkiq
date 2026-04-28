@@ -14,6 +14,15 @@ import { getTemplate } from '../lib/templateStore'
 
 const router = Router()
 
+// Apply WaSenderAPI key forwarded by the Cloudflare Worker (temporary testing).
+// When WASENDER_API_KEY is managed as a Worker secret, the Worker forwards it
+// here so the Render server doesn't need it in its own env vars.
+router.use((req, _res, next) => {
+  const key = req.headers['x-wasender-api-key'] as string | undefined
+  if (key) process.env.WASENDER_API_KEY = key
+  next()
+})
+
 // ─── Worker secret guard ──────────────────────────────────────────────────────
 
 function requireWorkerSecret(req: any, res: any, next: any) {
