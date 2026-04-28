@@ -53,6 +53,11 @@ export type AutomationLog = $Result.DefaultSelection<Prisma.$AutomationLogPayloa
  * 
  */
 export type Staff = $Result.DefaultSelection<Prisma.$StaffPayload>
+/**
+ * Model OtpVerification
+ * 
+ */
+export type OtpVerification = $Result.DefaultSelection<Prisma.$OtpVerificationPayload>
 
 /**
  * Enums
@@ -365,6 +370,16 @@ export class PrismaClient<
     * ```
     */
   get staff(): Prisma.StaffDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.otpVerification`: Exposes CRUD operations for the **OtpVerification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OtpVerifications
+    * const otpVerifications = await prisma.otpVerification.findMany()
+    * ```
+    */
+  get otpVerification(): Prisma.OtpVerificationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -806,7 +821,8 @@ export namespace Prisma {
     MenuCategory: 'MenuCategory',
     MenuItem: 'MenuItem',
     AutomationLog: 'AutomationLog',
-    Staff: 'Staff'
+    Staff: 'Staff',
+    OtpVerification: 'OtpVerification'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -822,7 +838,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "outlet" | "customer" | "review" | "customerVisit" | "menuCategory" | "menuItem" | "automationLog" | "staff"
+      modelProps: "outlet" | "customer" | "review" | "customerVisit" | "menuCategory" | "menuItem" | "automationLog" | "staff" | "otpVerification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1418,6 +1434,80 @@ export namespace Prisma {
           }
         }
       }
+      OtpVerification: {
+        payload: Prisma.$OtpVerificationPayload<ExtArgs>
+        fields: Prisma.OtpVerificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OtpVerificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OtpVerificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          findFirst: {
+            args: Prisma.OtpVerificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OtpVerificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          findMany: {
+            args: Prisma.OtpVerificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>[]
+          }
+          create: {
+            args: Prisma.OtpVerificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          createMany: {
+            args: Prisma.OtpVerificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OtpVerificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>[]
+          }
+          delete: {
+            args: Prisma.OtpVerificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          update: {
+            args: Prisma.OtpVerificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.OtpVerificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OtpVerificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OtpVerificationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>[]
+          }
+          upsert: {
+            args: Prisma.OtpVerificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OtpVerificationPayload>
+          }
+          aggregate: {
+            args: Prisma.OtpVerificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOtpVerification>
+          }
+          groupBy: {
+            args: Prisma.OtpVerificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OtpVerificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OtpVerificationCountArgs<ExtArgs>
+            result: $Utils.Optional<OtpVerificationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1534,6 +1624,7 @@ export namespace Prisma {
     menuItem?: MenuItemOmit
     automationLog?: AutomationLogOmit
     staff?: StaffOmit
+    otpVerification?: OtpVerificationOmit
   }
 
   /* Types for Logging */
@@ -3278,7 +3369,7 @@ export namespace Prisma {
 
   export type CustomerGroupByOutputType = {
     id: string
-    deviceId: string
+    deviceId: string | null
     fullName: string
     phone: string
     email: string | null
@@ -3417,7 +3508,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      deviceId: string
+      deviceId: string | null
       fullName: string
       phone: string
       email: string | null
@@ -5740,7 +5831,7 @@ export namespace Prisma {
   export type CustomerVisitGroupByOutputType = {
     id: string
     customerId: string | null
-    deviceId: string
+    deviceId: string | null
     outletId: string
     visitType: $Enums.VisitType
     visitedAt: Date
@@ -5828,7 +5919,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       customerId: string | null
-      deviceId: string
+      deviceId: string | null
       outletId: string
       visitType: $Enums.VisitType
       visitedAt: Date
@@ -11317,6 +11408,1019 @@ export namespace Prisma {
 
 
   /**
+   * Model OtpVerification
+   */
+
+  export type AggregateOtpVerification = {
+    _count: OtpVerificationCountAggregateOutputType | null
+    _min: OtpVerificationMinAggregateOutputType | null
+    _max: OtpVerificationMaxAggregateOutputType | null
+  }
+
+  export type OtpVerificationMinAggregateOutputType = {
+    id: string | null
+    phone: string | null
+    otp: string | null
+    expiresAt: Date | null
+    used: boolean | null
+    createdAt: Date | null
+  }
+
+  export type OtpVerificationMaxAggregateOutputType = {
+    id: string | null
+    phone: string | null
+    otp: string | null
+    expiresAt: Date | null
+    used: boolean | null
+    createdAt: Date | null
+  }
+
+  export type OtpVerificationCountAggregateOutputType = {
+    id: number
+    phone: number
+    otp: number
+    expiresAt: number
+    used: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type OtpVerificationMinAggregateInputType = {
+    id?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    used?: true
+    createdAt?: true
+  }
+
+  export type OtpVerificationMaxAggregateInputType = {
+    id?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    used?: true
+    createdAt?: true
+  }
+
+  export type OtpVerificationCountAggregateInputType = {
+    id?: true
+    phone?: true
+    otp?: true
+    expiresAt?: true
+    used?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type OtpVerificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OtpVerification to aggregate.
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpVerifications to fetch.
+     */
+    orderBy?: OtpVerificationOrderByWithRelationInput | OtpVerificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OtpVerificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpVerifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpVerifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OtpVerifications
+    **/
+    _count?: true | OtpVerificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OtpVerificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OtpVerificationMaxAggregateInputType
+  }
+
+  export type GetOtpVerificationAggregateType<T extends OtpVerificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateOtpVerification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOtpVerification[P]>
+      : GetScalarType<T[P], AggregateOtpVerification[P]>
+  }
+
+
+
+
+  export type OtpVerificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OtpVerificationWhereInput
+    orderBy?: OtpVerificationOrderByWithAggregationInput | OtpVerificationOrderByWithAggregationInput[]
+    by: OtpVerificationScalarFieldEnum[] | OtpVerificationScalarFieldEnum
+    having?: OtpVerificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OtpVerificationCountAggregateInputType | true
+    _min?: OtpVerificationMinAggregateInputType
+    _max?: OtpVerificationMaxAggregateInputType
+  }
+
+  export type OtpVerificationGroupByOutputType = {
+    id: string
+    phone: string
+    otp: string
+    expiresAt: Date
+    used: boolean
+    createdAt: Date
+    _count: OtpVerificationCountAggregateOutputType | null
+    _min: OtpVerificationMinAggregateOutputType | null
+    _max: OtpVerificationMaxAggregateOutputType | null
+  }
+
+  type GetOtpVerificationGroupByPayload<T extends OtpVerificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OtpVerificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OtpVerificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OtpVerificationGroupByOutputType[P]>
+            : GetScalarType<T[P], OtpVerificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OtpVerificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    used?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["otpVerification"]>
+
+  export type OtpVerificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    used?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["otpVerification"]>
+
+  export type OtpVerificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    used?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["otpVerification"]>
+
+  export type OtpVerificationSelectScalar = {
+    id?: boolean
+    phone?: boolean
+    otp?: boolean
+    expiresAt?: boolean
+    used?: boolean
+    createdAt?: boolean
+  }
+
+  export type OtpVerificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "phone" | "otp" | "expiresAt" | "used" | "createdAt", ExtArgs["result"]["otpVerification"]>
+
+  export type $OtpVerificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OtpVerification"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      phone: string
+      otp: string
+      expiresAt: Date
+      used: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["otpVerification"]>
+    composites: {}
+  }
+
+  type OtpVerificationGetPayload<S extends boolean | null | undefined | OtpVerificationDefaultArgs> = $Result.GetResult<Prisma.$OtpVerificationPayload, S>
+
+  type OtpVerificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OtpVerificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OtpVerificationCountAggregateInputType | true
+    }
+
+  export interface OtpVerificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OtpVerification'], meta: { name: 'OtpVerification' } }
+    /**
+     * Find zero or one OtpVerification that matches the filter.
+     * @param {OtpVerificationFindUniqueArgs} args - Arguments to find a OtpVerification
+     * @example
+     * // Get one OtpVerification
+     * const otpVerification = await prisma.otpVerification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OtpVerificationFindUniqueArgs>(args: SelectSubset<T, OtpVerificationFindUniqueArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OtpVerification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OtpVerificationFindUniqueOrThrowArgs} args - Arguments to find a OtpVerification
+     * @example
+     * // Get one OtpVerification
+     * const otpVerification = await prisma.otpVerification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OtpVerificationFindUniqueOrThrowArgs>(args: SelectSubset<T, OtpVerificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OtpVerification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationFindFirstArgs} args - Arguments to find a OtpVerification
+     * @example
+     * // Get one OtpVerification
+     * const otpVerification = await prisma.otpVerification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OtpVerificationFindFirstArgs>(args?: SelectSubset<T, OtpVerificationFindFirstArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OtpVerification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationFindFirstOrThrowArgs} args - Arguments to find a OtpVerification
+     * @example
+     * // Get one OtpVerification
+     * const otpVerification = await prisma.otpVerification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OtpVerificationFindFirstOrThrowArgs>(args?: SelectSubset<T, OtpVerificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OtpVerifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OtpVerifications
+     * const otpVerifications = await prisma.otpVerification.findMany()
+     * 
+     * // Get first 10 OtpVerifications
+     * const otpVerifications = await prisma.otpVerification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const otpVerificationWithIdOnly = await prisma.otpVerification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends OtpVerificationFindManyArgs>(args?: SelectSubset<T, OtpVerificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OtpVerification.
+     * @param {OtpVerificationCreateArgs} args - Arguments to create a OtpVerification.
+     * @example
+     * // Create one OtpVerification
+     * const OtpVerification = await prisma.otpVerification.create({
+     *   data: {
+     *     // ... data to create a OtpVerification
+     *   }
+     * })
+     * 
+     */
+    create<T extends OtpVerificationCreateArgs>(args: SelectSubset<T, OtpVerificationCreateArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OtpVerifications.
+     * @param {OtpVerificationCreateManyArgs} args - Arguments to create many OtpVerifications.
+     * @example
+     * // Create many OtpVerifications
+     * const otpVerification = await prisma.otpVerification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OtpVerificationCreateManyArgs>(args?: SelectSubset<T, OtpVerificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OtpVerifications and returns the data saved in the database.
+     * @param {OtpVerificationCreateManyAndReturnArgs} args - Arguments to create many OtpVerifications.
+     * @example
+     * // Create many OtpVerifications
+     * const otpVerification = await prisma.otpVerification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OtpVerifications and only return the `id`
+     * const otpVerificationWithIdOnly = await prisma.otpVerification.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OtpVerificationCreateManyAndReturnArgs>(args?: SelectSubset<T, OtpVerificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a OtpVerification.
+     * @param {OtpVerificationDeleteArgs} args - Arguments to delete one OtpVerification.
+     * @example
+     * // Delete one OtpVerification
+     * const OtpVerification = await prisma.otpVerification.delete({
+     *   where: {
+     *     // ... filter to delete one OtpVerification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OtpVerificationDeleteArgs>(args: SelectSubset<T, OtpVerificationDeleteArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OtpVerification.
+     * @param {OtpVerificationUpdateArgs} args - Arguments to update one OtpVerification.
+     * @example
+     * // Update one OtpVerification
+     * const otpVerification = await prisma.otpVerification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OtpVerificationUpdateArgs>(args: SelectSubset<T, OtpVerificationUpdateArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OtpVerifications.
+     * @param {OtpVerificationDeleteManyArgs} args - Arguments to filter OtpVerifications to delete.
+     * @example
+     * // Delete a few OtpVerifications
+     * const { count } = await prisma.otpVerification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OtpVerificationDeleteManyArgs>(args?: SelectSubset<T, OtpVerificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OtpVerifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OtpVerifications
+     * const otpVerification = await prisma.otpVerification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OtpVerificationUpdateManyArgs>(args: SelectSubset<T, OtpVerificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OtpVerifications and returns the data updated in the database.
+     * @param {OtpVerificationUpdateManyAndReturnArgs} args - Arguments to update many OtpVerifications.
+     * @example
+     * // Update many OtpVerifications
+     * const otpVerification = await prisma.otpVerification.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more OtpVerifications and only return the `id`
+     * const otpVerificationWithIdOnly = await prisma.otpVerification.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OtpVerificationUpdateManyAndReturnArgs>(args: SelectSubset<T, OtpVerificationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one OtpVerification.
+     * @param {OtpVerificationUpsertArgs} args - Arguments to update or create a OtpVerification.
+     * @example
+     * // Update or create a OtpVerification
+     * const otpVerification = await prisma.otpVerification.upsert({
+     *   create: {
+     *     // ... data to create a OtpVerification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OtpVerification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OtpVerificationUpsertArgs>(args: SelectSubset<T, OtpVerificationUpsertArgs<ExtArgs>>): Prisma__OtpVerificationClient<$Result.GetResult<Prisma.$OtpVerificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OtpVerifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationCountArgs} args - Arguments to filter OtpVerifications to count.
+     * @example
+     * // Count the number of OtpVerifications
+     * const count = await prisma.otpVerification.count({
+     *   where: {
+     *     // ... the filter for the OtpVerifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends OtpVerificationCountArgs>(
+      args?: Subset<T, OtpVerificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OtpVerificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OtpVerification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OtpVerificationAggregateArgs>(args: Subset<T, OtpVerificationAggregateArgs>): Prisma.PrismaPromise<GetOtpVerificationAggregateType<T>>
+
+    /**
+     * Group by OtpVerification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OtpVerificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OtpVerificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OtpVerificationGroupByArgs['orderBy'] }
+        : { orderBy?: OtpVerificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OtpVerificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOtpVerificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OtpVerification model
+   */
+  readonly fields: OtpVerificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OtpVerification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OtpVerificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OtpVerification model
+   */
+  interface OtpVerificationFieldRefs {
+    readonly id: FieldRef<"OtpVerification", 'String'>
+    readonly phone: FieldRef<"OtpVerification", 'String'>
+    readonly otp: FieldRef<"OtpVerification", 'String'>
+    readonly expiresAt: FieldRef<"OtpVerification", 'DateTime'>
+    readonly used: FieldRef<"OtpVerification", 'Boolean'>
+    readonly createdAt: FieldRef<"OtpVerification", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OtpVerification findUnique
+   */
+  export type OtpVerificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpVerification to fetch.
+     */
+    where: OtpVerificationWhereUniqueInput
+  }
+
+  /**
+   * OtpVerification findUniqueOrThrow
+   */
+  export type OtpVerificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpVerification to fetch.
+     */
+    where: OtpVerificationWhereUniqueInput
+  }
+
+  /**
+   * OtpVerification findFirst
+   */
+  export type OtpVerificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpVerification to fetch.
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpVerifications to fetch.
+     */
+    orderBy?: OtpVerificationOrderByWithRelationInput | OtpVerificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OtpVerifications.
+     */
+    cursor?: OtpVerificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpVerifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpVerifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OtpVerifications.
+     */
+    distinct?: OtpVerificationScalarFieldEnum | OtpVerificationScalarFieldEnum[]
+  }
+
+  /**
+   * OtpVerification findFirstOrThrow
+   */
+  export type OtpVerificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpVerification to fetch.
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpVerifications to fetch.
+     */
+    orderBy?: OtpVerificationOrderByWithRelationInput | OtpVerificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OtpVerifications.
+     */
+    cursor?: OtpVerificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpVerifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpVerifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OtpVerifications.
+     */
+    distinct?: OtpVerificationScalarFieldEnum | OtpVerificationScalarFieldEnum[]
+  }
+
+  /**
+   * OtpVerification findMany
+   */
+  export type OtpVerificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter, which OtpVerifications to fetch.
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OtpVerifications to fetch.
+     */
+    orderBy?: OtpVerificationOrderByWithRelationInput | OtpVerificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OtpVerifications.
+     */
+    cursor?: OtpVerificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OtpVerifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OtpVerifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OtpVerifications.
+     */
+    distinct?: OtpVerificationScalarFieldEnum | OtpVerificationScalarFieldEnum[]
+  }
+
+  /**
+   * OtpVerification create
+   */
+  export type OtpVerificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * The data needed to create a OtpVerification.
+     */
+    data: XOR<OtpVerificationCreateInput, OtpVerificationUncheckedCreateInput>
+  }
+
+  /**
+   * OtpVerification createMany
+   */
+  export type OtpVerificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OtpVerifications.
+     */
+    data: OtpVerificationCreateManyInput | OtpVerificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OtpVerification createManyAndReturn
+   */
+  export type OtpVerificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * The data used to create many OtpVerifications.
+     */
+    data: OtpVerificationCreateManyInput | OtpVerificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OtpVerification update
+   */
+  export type OtpVerificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * The data needed to update a OtpVerification.
+     */
+    data: XOR<OtpVerificationUpdateInput, OtpVerificationUncheckedUpdateInput>
+    /**
+     * Choose, which OtpVerification to update.
+     */
+    where: OtpVerificationWhereUniqueInput
+  }
+
+  /**
+   * OtpVerification updateMany
+   */
+  export type OtpVerificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OtpVerifications.
+     */
+    data: XOR<OtpVerificationUpdateManyMutationInput, OtpVerificationUncheckedUpdateManyInput>
+    /**
+     * Filter which OtpVerifications to update
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * Limit how many OtpVerifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpVerification updateManyAndReturn
+   */
+  export type OtpVerificationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * The data used to update OtpVerifications.
+     */
+    data: XOR<OtpVerificationUpdateManyMutationInput, OtpVerificationUncheckedUpdateManyInput>
+    /**
+     * Filter which OtpVerifications to update
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * Limit how many OtpVerifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpVerification upsert
+   */
+  export type OtpVerificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * The filter to search for the OtpVerification to update in case it exists.
+     */
+    where: OtpVerificationWhereUniqueInput
+    /**
+     * In case the OtpVerification found by the `where` argument doesn't exist, create a new OtpVerification with this data.
+     */
+    create: XOR<OtpVerificationCreateInput, OtpVerificationUncheckedCreateInput>
+    /**
+     * In case the OtpVerification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OtpVerificationUpdateInput, OtpVerificationUncheckedUpdateInput>
+  }
+
+  /**
+   * OtpVerification delete
+   */
+  export type OtpVerificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+    /**
+     * Filter which OtpVerification to delete.
+     */
+    where: OtpVerificationWhereUniqueInput
+  }
+
+  /**
+   * OtpVerification deleteMany
+   */
+  export type OtpVerificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OtpVerifications to delete
+     */
+    where?: OtpVerificationWhereInput
+    /**
+     * Limit how many OtpVerifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OtpVerification without action
+   */
+  export type OtpVerificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OtpVerification
+     */
+    select?: OtpVerificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OtpVerification
+     */
+    omit?: OtpVerificationOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -11458,6 +12562,18 @@ export namespace Prisma {
   };
 
   export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof StaffScalarFieldEnum]
+
+
+  export const OtpVerificationScalarFieldEnum: {
+    id: 'id',
+    phone: 'phone',
+    otp: 'otp',
+    expiresAt: 'expiresAt',
+    used: 'used',
+    createdAt: 'createdAt'
+  };
+
+  export type OtpVerificationScalarFieldEnum = (typeof OtpVerificationScalarFieldEnum)[keyof typeof OtpVerificationScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -11824,7 +12940,7 @@ export namespace Prisma {
     OR?: CustomerWhereInput[]
     NOT?: CustomerWhereInput | CustomerWhereInput[]
     id?: UuidFilter<"Customer"> | string
-    deviceId?: StringFilter<"Customer"> | string
+    deviceId?: StringNullableFilter<"Customer"> | string | null
     fullName?: StringFilter<"Customer"> | string
     phone?: StringFilter<"Customer"> | string
     email?: StringNullableFilter<"Customer"> | string | null
@@ -11846,7 +12962,7 @@ export namespace Prisma {
 
   export type CustomerOrderByWithRelationInput = {
     id?: SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     fullName?: SortOrder
     phone?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -11893,7 +13009,7 @@ export namespace Prisma {
 
   export type CustomerOrderByWithAggregationInput = {
     id?: SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     fullName?: SortOrder
     phone?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -11919,7 +13035,7 @@ export namespace Prisma {
     OR?: CustomerScalarWhereWithAggregatesInput[]
     NOT?: CustomerScalarWhereWithAggregatesInput | CustomerScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Customer"> | string
-    deviceId?: StringWithAggregatesFilter<"Customer"> | string
+    deviceId?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     fullName?: StringWithAggregatesFilter<"Customer"> | string
     phone?: StringWithAggregatesFilter<"Customer"> | string
     email?: StringNullableWithAggregatesFilter<"Customer"> | string | null
@@ -12036,7 +13152,7 @@ export namespace Prisma {
     NOT?: CustomerVisitWhereInput | CustomerVisitWhereInput[]
     id?: UuidFilter<"CustomerVisit"> | string
     customerId?: UuidNullableFilter<"CustomerVisit"> | string | null
-    deviceId?: StringFilter<"CustomerVisit"> | string
+    deviceId?: StringNullableFilter<"CustomerVisit"> | string | null
     outletId?: UuidFilter<"CustomerVisit"> | string
     visitType?: EnumVisitTypeFilter<"CustomerVisit"> | $Enums.VisitType
     visitedAt?: DateTimeFilter<"CustomerVisit"> | Date | string
@@ -12047,7 +13163,7 @@ export namespace Prisma {
   export type CustomerVisitOrderByWithRelationInput = {
     id?: SortOrder
     customerId?: SortOrderInput | SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     visitType?: SortOrder
     visitedAt?: SortOrder
@@ -12061,7 +13177,7 @@ export namespace Prisma {
     OR?: CustomerVisitWhereInput[]
     NOT?: CustomerVisitWhereInput | CustomerVisitWhereInput[]
     customerId?: UuidNullableFilter<"CustomerVisit"> | string | null
-    deviceId?: StringFilter<"CustomerVisit"> | string
+    deviceId?: StringNullableFilter<"CustomerVisit"> | string | null
     outletId?: UuidFilter<"CustomerVisit"> | string
     visitType?: EnumVisitTypeFilter<"CustomerVisit"> | $Enums.VisitType
     visitedAt?: DateTimeFilter<"CustomerVisit"> | Date | string
@@ -12072,7 +13188,7 @@ export namespace Prisma {
   export type CustomerVisitOrderByWithAggregationInput = {
     id?: SortOrder
     customerId?: SortOrderInput | SortOrder
-    deviceId?: SortOrder
+    deviceId?: SortOrderInput | SortOrder
     outletId?: SortOrder
     visitType?: SortOrder
     visitedAt?: SortOrder
@@ -12087,7 +13203,7 @@ export namespace Prisma {
     NOT?: CustomerVisitScalarWhereWithAggregatesInput | CustomerVisitScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"CustomerVisit"> | string
     customerId?: UuidNullableWithAggregatesFilter<"CustomerVisit"> | string | null
-    deviceId?: StringWithAggregatesFilter<"CustomerVisit"> | string
+    deviceId?: StringNullableWithAggregatesFilter<"CustomerVisit"> | string | null
     outletId?: UuidWithAggregatesFilter<"CustomerVisit"> | string
     visitType?: EnumVisitTypeWithAggregatesFilter<"CustomerVisit"> | $Enums.VisitType
     visitedAt?: DateTimeWithAggregatesFilter<"CustomerVisit"> | Date | string
@@ -12400,6 +13516,63 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Staff"> | Date | string
   }
 
+  export type OtpVerificationWhereInput = {
+    AND?: OtpVerificationWhereInput | OtpVerificationWhereInput[]
+    OR?: OtpVerificationWhereInput[]
+    NOT?: OtpVerificationWhereInput | OtpVerificationWhereInput[]
+    id?: UuidFilter<"OtpVerification"> | string
+    phone?: StringFilter<"OtpVerification"> | string
+    otp?: StringFilter<"OtpVerification"> | string
+    expiresAt?: DateTimeFilter<"OtpVerification"> | Date | string
+    used?: BoolFilter<"OtpVerification"> | boolean
+    createdAt?: DateTimeFilter<"OtpVerification"> | Date | string
+  }
+
+  export type OtpVerificationOrderByWithRelationInput = {
+    id?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    used?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type OtpVerificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: OtpVerificationWhereInput | OtpVerificationWhereInput[]
+    OR?: OtpVerificationWhereInput[]
+    NOT?: OtpVerificationWhereInput | OtpVerificationWhereInput[]
+    phone?: StringFilter<"OtpVerification"> | string
+    otp?: StringFilter<"OtpVerification"> | string
+    expiresAt?: DateTimeFilter<"OtpVerification"> | Date | string
+    used?: BoolFilter<"OtpVerification"> | boolean
+    createdAt?: DateTimeFilter<"OtpVerification"> | Date | string
+  }, "id">
+
+  export type OtpVerificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    used?: SortOrder
+    createdAt?: SortOrder
+    _count?: OtpVerificationCountOrderByAggregateInput
+    _max?: OtpVerificationMaxOrderByAggregateInput
+    _min?: OtpVerificationMinOrderByAggregateInput
+  }
+
+  export type OtpVerificationScalarWhereWithAggregatesInput = {
+    AND?: OtpVerificationScalarWhereWithAggregatesInput | OtpVerificationScalarWhereWithAggregatesInput[]
+    OR?: OtpVerificationScalarWhereWithAggregatesInput[]
+    NOT?: OtpVerificationScalarWhereWithAggregatesInput | OtpVerificationScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"OtpVerification"> | string
+    phone?: StringWithAggregatesFilter<"OtpVerification"> | string
+    otp?: StringWithAggregatesFilter<"OtpVerification"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"OtpVerification"> | Date | string
+    used?: BoolWithAggregatesFilter<"OtpVerification"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"OtpVerification"> | Date | string
+  }
+
   export type OutletCreateInput = {
     id?: string
     code: string
@@ -12534,7 +13707,7 @@ export namespace Prisma {
 
   export type CustomerCreateInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -12555,7 +13728,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedCreateInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -12576,7 +13749,7 @@ export namespace Prisma {
 
   export type CustomerUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12597,7 +13770,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12618,7 +13791,7 @@ export namespace Prisma {
 
   export type CustomerCreateManyInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -12636,7 +13809,7 @@ export namespace Prisma {
 
   export type CustomerUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12653,7 +13826,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -12774,7 +13947,7 @@ export namespace Prisma {
 
   export type CustomerVisitCreateInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
     customer?: CustomerCreateNestedOneWithoutVisitsInput
@@ -12784,7 +13957,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedCreateInput = {
     id?: string
     customerId?: string | null
-    deviceId: string
+    deviceId?: string | null
     outletId: string
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
@@ -12792,7 +13965,7 @@ export namespace Prisma {
 
   export type CustomerVisitUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneWithoutVisitsNestedInput
@@ -12802,7 +13975,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12811,7 +13984,7 @@ export namespace Prisma {
   export type CustomerVisitCreateManyInput = {
     id?: string
     customerId?: string | null
-    deviceId: string
+    deviceId?: string | null
     outletId: string
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
@@ -12819,7 +13992,7 @@ export namespace Prisma {
 
   export type CustomerVisitUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12827,7 +14000,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13167,6 +14340,69 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OtpVerificationCreateInput = {
+    id?: string
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    used?: boolean
+    createdAt?: Date | string
+  }
+
+  export type OtpVerificationUncheckedCreateInput = {
+    id?: string
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    used?: boolean
+    createdAt?: Date | string
+  }
+
+  export type OtpVerificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    used?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OtpVerificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    used?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OtpVerificationCreateManyInput = {
+    id?: string
+    phone: string
+    otp: string
+    expiresAt: Date | string
+    used?: boolean
+    createdAt?: Date | string
+  }
+
+  export type OtpVerificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    used?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OtpVerificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    otp?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    used?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -14069,6 +15305,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumStaffRoleFilter<$PrismaModel>
     _max?: NestedEnumStaffRoleFilter<$PrismaModel>
+  }
+
+  export type OtpVerificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    used?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type OtpVerificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    used?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type OtpVerificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    phone?: SortOrder
+    otp?: SortOrder
+    expiresAt?: SortOrder
+    used?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type CustomerCreateNestedManyWithoutFirstVisitOutletInput = {
@@ -15111,7 +16374,7 @@ export namespace Prisma {
 
   export type CustomerCreateWithoutFirstVisitOutletInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15131,7 +16394,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedCreateWithoutFirstVisitOutletInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15199,7 +16462,7 @@ export namespace Prisma {
 
   export type CustomerVisitCreateWithoutOutletInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
     customer?: CustomerCreateNestedOneWithoutVisitsInput
@@ -15208,7 +16471,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedCreateWithoutOutletInput = {
     id?: string
     customerId?: string | null
-    deviceId: string
+    deviceId?: string | null
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
   }
@@ -15308,7 +16571,7 @@ export namespace Prisma {
     OR?: CustomerScalarWhereInput[]
     NOT?: CustomerScalarWhereInput | CustomerScalarWhereInput[]
     id?: UuidFilter<"Customer"> | string
-    deviceId?: StringFilter<"Customer"> | string
+    deviceId?: StringNullableFilter<"Customer"> | string | null
     fullName?: StringFilter<"Customer"> | string
     phone?: StringFilter<"Customer"> | string
     email?: StringNullableFilter<"Customer"> | string | null
@@ -15380,7 +16643,7 @@ export namespace Prisma {
     NOT?: CustomerVisitScalarWhereInput | CustomerVisitScalarWhereInput[]
     id?: UuidFilter<"CustomerVisit"> | string
     customerId?: UuidNullableFilter<"CustomerVisit"> | string | null
-    deviceId?: StringFilter<"CustomerVisit"> | string
+    deviceId?: StringNullableFilter<"CustomerVisit"> | string | null
     outletId?: UuidFilter<"CustomerVisit"> | string
     visitType?: EnumVisitTypeFilter<"CustomerVisit"> | $Enums.VisitType
     visitedAt?: DateTimeFilter<"CustomerVisit"> | Date | string
@@ -15532,7 +16795,7 @@ export namespace Prisma {
 
   export type CustomerVisitCreateWithoutCustomerInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
     outlet: OutletCreateNestedOneWithoutVisitsInput
@@ -15540,7 +16803,7 @@ export namespace Prisma {
 
   export type CustomerVisitUncheckedCreateWithoutCustomerInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     outletId: string
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
@@ -15698,7 +16961,7 @@ export namespace Prisma {
 
   export type CustomerCreateWithoutReviewsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15718,7 +16981,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedCreateWithoutReviewsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15799,7 +17062,7 @@ export namespace Prisma {
 
   export type CustomerUpdateWithoutReviewsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15819,7 +17082,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateWithoutReviewsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15890,7 +17153,7 @@ export namespace Prisma {
 
   export type CustomerCreateWithoutVisitsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15910,7 +17173,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedCreateWithoutVisitsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -15991,7 +17254,7 @@ export namespace Prisma {
 
   export type CustomerUpdateWithoutVisitsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16011,7 +17274,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateWithoutVisitsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16302,7 +17565,7 @@ export namespace Prisma {
 
   export type CustomerCreateWithoutAutomationLogsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -16322,7 +17585,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedCreateWithoutAutomationLogsInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -16358,7 +17621,7 @@ export namespace Prisma {
 
   export type CustomerUpdateWithoutAutomationLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16378,7 +17641,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateWithoutAutomationLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16494,7 +17757,7 @@ export namespace Prisma {
 
   export type CustomerCreateManyFirstVisitOutletInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     fullName: string
     phone: string
     email?: string | null
@@ -16526,7 +17789,7 @@ export namespace Prisma {
   export type CustomerVisitCreateManyOutletInput = {
     id?: string
     customerId?: string | null
-    deviceId: string
+    deviceId?: string | null
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
   }
@@ -16554,7 +17817,7 @@ export namespace Prisma {
 
   export type CustomerUpdateWithoutFirstVisitOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16574,7 +17837,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateWithoutFirstVisitOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16594,7 +17857,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateManyWithoutFirstVisitOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     fullName?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16653,7 +17916,7 @@ export namespace Prisma {
 
   export type CustomerVisitUpdateWithoutOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneWithoutVisitsNestedInput
@@ -16662,7 +17925,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedUpdateWithoutOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16670,7 +17933,7 @@ export namespace Prisma {
   export type CustomerVisitUncheckedUpdateManyWithoutOutletInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16756,7 +18019,7 @@ export namespace Prisma {
 
   export type CustomerVisitCreateManyCustomerInput = {
     id?: string
-    deviceId: string
+    deviceId?: string | null
     outletId: string
     visitType?: $Enums.VisitType
     visitedAt?: Date | string
@@ -16815,7 +18078,7 @@ export namespace Prisma {
 
   export type CustomerVisitUpdateWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     outlet?: OutletUpdateOneRequiredWithoutVisitsNestedInput
@@ -16823,7 +18086,7 @@ export namespace Prisma {
 
   export type CustomerVisitUncheckedUpdateWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16831,7 +18094,7 @@ export namespace Prisma {
 
   export type CustomerVisitUncheckedUpdateManyWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
-    deviceId?: StringFieldUpdateOperationsInput | string
+    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
     outletId?: StringFieldUpdateOperationsInput | string
     visitType?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
     visitedAt?: DateTimeFieldUpdateOperationsInput | Date | string

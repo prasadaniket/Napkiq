@@ -226,6 +226,15 @@ exports.Prisma.StaffScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.OtpVerificationScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  otp: 'otp',
+  expiresAt: 'expiresAt',
+  used: 'used',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -309,7 +318,8 @@ exports.Prisma.ModelName = {
   MenuCategory: 'MenuCategory',
   MenuItem: 'MenuItem',
   AutomationLog: 'AutomationLog',
-  Staff: 'Staff'
+  Staff: 'Staff',
+  OtpVerification: 'OtpVerification'
 };
 
 /**

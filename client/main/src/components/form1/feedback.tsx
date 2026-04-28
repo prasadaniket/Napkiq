@@ -105,7 +105,17 @@ export default function FeedbackForm({ outlet, deviceId, onSuccess }: Props) {
 
           <div>
             <label className={labelStyles}>Phone Number <span className="text-[#E88C3A]">*</span></label>
-            <input type="tel" {...register('phone')} className={inputStyles} placeholder="10-digit mobile number" />
+            <input
+              type="tel"
+              {...register('phone')}
+              className={inputStyles}
+              placeholder="10-digit mobile number"
+              maxLength={10}
+              onInput={(e) => {
+                const input = e.currentTarget
+                input.value = input.value.replace(/\D/g, '').slice(0, 10)
+              }}
+            />
             {errors.phone && <p className={errorStyles}>{errors.phone.message}</p>}
           </div>
 

@@ -23,9 +23,17 @@ export default function OutletPage() {
 
   useEffect(() => {
     if (!deviceId || !outlet || visitRecorded) return
+    const sessionKey = `so_visit_${outlet.id}`
+    if (sessionStorage.getItem(sessionKey)) {
+      setVisitRecorded(true)
+      return
+    }
     api.post('/visits', { deviceId, outletId: outlet.id, visitType: 'qr_scan' })
       .catch(console.error)
-      .finally(() => setVisitRecorded(true))
+      .finally(() => {
+        sessionStorage.setItem(sessionKey, '1')
+        setVisitRecorded(true)
+      })
   }, [deviceId, outlet, visitRecorded])
 
   const handleFormSuccess = () => {
@@ -57,23 +65,21 @@ export default function OutletPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center pt-10 px-6 bg-gradient-to-b from-[#1A1A1A] to-[#000000] overflow-x-hidden">
-      
-      {/* Radial soft glow behind content - Animated */}
-      <motion.div 
+
+      <motion.div
         className="absolute top-[5%] left-1/2 w-[400px] h-[400px] bg-[#E88C3A] opacity-10 blur-[130px] rounded-full pointer-events-none"
         style={{ x: '-50%' }}
-        animate={{ 
-           scale: [1, 1.05, 1], 
+        animate={{
+           scale: [1, 1.05, 1],
            x: ['-50%', '-48%', '-52%', '-50%'],
-           y: [0, 15, -10, 0] 
+           y: [0, 15, -10, 0]
         }}
         transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       <main className="relative z-10 flex-1 w-full max-w-sm md:max-w-md lg:max-w-lg mx-auto flex flex-col pt-4 pb-10">
-        
-        {/* LOGO AREA */}
-        <motion.div 
+
+        <motion.div
            initial={{ scale: 0.9, opacity: 0 }}
            animate={{ scale: 1, opacity: 1 }}
            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
@@ -92,7 +98,6 @@ export default function OutletPage() {
             </Avatar>
           </motion.div>
 
-          {/* TYPOGRAPHY */}
           <h1 className="font-extrabold text-2xl mb-1 text-center tracking-[0.5px]">
             <span className="text-white">STONE</span>
             <motion.span
@@ -111,7 +116,6 @@ export default function OutletPage() {
           </p>
         </motion.div>
 
-        {/* OUTLET CONTEXT */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,15 +126,14 @@ export default function OutletPage() {
           <p className="text-[#E88C3A] text-sm mt-1 opacity-80">{outlet.location}</p>
         </motion.div>
 
-        {/* CTA ACTIONS */}
         <div className="w-full flex flex-col gap-4 mb-10">
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Link href={`/outlet/${code}/menu`} className="block w-full">
+            <Link href={`/${code}/menu`} className="block w-full">
               <motion.div
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
@@ -152,7 +155,7 @@ export default function OutletPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.30, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
             >
-              <motion.a 
+              <motion.a
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 href={outlet.googleMapsUrl} target="_blank" rel="noopener noreferrer"
@@ -169,52 +172,88 @@ export default function OutletPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Link href={`/outlet/${code}/feedback`} className="block w-full">
-              <motion.div 
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="w-full flex flex-col items-center justify-center px-6 py-3.5 rounded-[32px] bg-[#EEEEEE] shadow-[0_6px_16px_rgba(0,0,0,0.12)] border border-transparent transition-shadow duration-300"
-              >
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-[16px] tracking-wide text-[#1A1A1A]">Your First Visit</span>
-                  <span className="text-[12px] text-[#1A1A1A]/60 font-medium mt-0.5">Tell us how it went</span>
+            {showOngoingForm ? (
+              <div className="w-full flex flex-col items-center justify-center px-6 py-3.5 rounded-[32px] bg-[#EEEEEE]/40 border border-dashed border-white/10 cursor-not-allowed">
+                <div className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E88C3A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span className="font-bold text-[15px] tracking-wide text-[#1A1A1A]/40">Your First Visit</span>
                 </div>
-              </motion.div>
-            </Link>
+                <span className="text-[11px] text-[#E88C3A]/70 font-medium mt-0.5">Already submitted — thank you!</span>
+              </div>
+            ) : (
+              <Link href={`/${code}/feedback`} className="block w-full">
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="w-full flex flex-col items-center justify-center px-6 py-3.5 rounded-[32px] bg-[#EEEEEE] shadow-[0_6px_16px_rgba(0,0,0,0.12)] border border-transparent transition-shadow duration-300"
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-[16px] tracking-wide text-[#1A1A1A]">Your First Visit</span>
+                    <span className="text-[12px] text-[#1A1A1A]/60 font-medium mt-0.5">Tell us how it went</span>
+                  </div>
+                </motion.div>
+              </Link>
+            )}
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.40, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <Link href={`/outlet/${code}/review`} className="block w-full">
-              <motion.div 
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                className="w-full flex flex-col items-center justify-center px-6 py-3.5 rounded-[32px] bg-[#EEEEEE] shadow-[0_6px_16px_rgba(0,0,0,0.12)] border border-transparent transition-shadow duration-300"
-              >
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-[16px] tracking-wide text-[#1A1A1A]">Share Your Experience</span>
-                  <span className="text-[12px] text-[#1A1A1A]/60 font-medium mt-0.5">Rate your visit and leave a review</span>
-                </div>
-              </motion.div>
-            </Link>
-          </motion.div>
+          {showOngoingForm && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.40, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Link href={`/${code}/review`} className="block w-full">
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="w-full flex flex-col items-center justify-center px-6 py-3.5 rounded-[32px] bg-[#EEEEEE] shadow-[0_6px_16px_rgba(0,0,0,0.12)] border border-transparent transition-shadow duration-300"
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-[16px] tracking-wide text-[#1A1A1A]">Share Your Experience</span>
+                    <span className="text-[12px] text-[#1A1A1A]/60 font-medium mt-0.5">Rate your visit and leave a review</span>
+                  </div>
+                </motion.div>
+              </Link>
+            </motion.div>
+          )}
         </div>
 
       </main>
 
+      {(outlet.instagramUrl || outlet.facebookUrl) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="relative z-10 w-full flex flex-col items-center gap-4 pb-6"
+        >
+          <p className="text-[11px] text-white/30 tracking-[0.2em] font-medium uppercase">Connect With Us</p>
+          <div className="flex items-center gap-5">
+            {outlet.instagramUrl && (
+              <a href={outlet.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/60 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+              </a>
+            )}
+            {outlet.facebookUrl && (
+              <a href={outlet.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/60 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+              </a>
+            )}
+          </div>
+          <p className="text-[10px] text-white/20 tracking-wide font-medium">© 2026 UniCord. All rights reserved.</p>
+        </motion.div>
+      )}
 
-      
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        className="relative z-10 w-full text-center pb-6 text-[10px] text-white/30 tracking-wide font-medium"
-      >
-        © 2026 UniCord. All rights reserved.
-      </motion.div>
+      {!outlet.instagramUrl && !outlet.facebookUrl && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="relative z-10 w-full text-center pb-6 text-[10px] text-white/30 tracking-wide font-medium"
+        >
+          © 2026 UniCord. All rights reserved.
+        </motion.div>
+      )}
     </div>
   )
 }

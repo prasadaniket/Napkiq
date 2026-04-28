@@ -197,7 +197,7 @@ export default function MenuPage() {
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
           className="flex items-center gap-3 mb-6"
         >
-          <Link href={`/outlet/${code}`}>
+          <Link href={`/${code}`}>
             <motion.div
               whileHover={{ scale: 1.05, x: -3 }}
               whileTap={{ scale: 0.95 }}

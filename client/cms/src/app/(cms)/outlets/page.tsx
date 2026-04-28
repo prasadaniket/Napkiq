@@ -24,6 +24,7 @@ export default function OutletsPage() {
   const { isOwnerOrAbove } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<OutletStats[]>([])
+  const [uniqueCustomers, setUniqueCustomers] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,21 +32,29 @@ export default function OutletsPage() {
       router.replace('/dashboard')
       return
     }
-    api.get<OutletStats[]>('/cms/outlets/stats')
-      .then(res => setStats(res.data))
+    Promise.all([
+      api.get<OutletStats[]>('/cms/outlets/stats'),
+      api.get<{ totalCustomers: number }>('/cms/dashboard/stats'),
+    ])
+      .then(([outletRes, dashRes]) => {
+        setStats(outletRes.data)
+        setUniqueCustomers(dashRes.data.totalCustomers)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [isOwnerOrAbove, router])
 
   if (!isOwnerOrAbove) return null
 
-  // Summary totals across all outlets
+  // Visits, reviews, inactive are summed per-outlet (no dedup needed).
+  // Customers use the unique count from dashboard/stats to avoid double-counting
+  // customers who have visited multiple outlets.
   const totals = stats.reduce((acc, o) => ({
-    customers: acc.customers + o.totalCustomers,
-    visits:    acc.visits    + o.visitsThisMonth,
-    reviews:   acc.reviews   + o.totalReviews,
-    inactive:  acc.inactive  + o.inactiveCustomers,
-  }), { customers: 0, visits: 0, reviews: 0, inactive: 0 })
+    customers: uniqueCustomers,
+    visits:    acc.visits   + o.visitsThisMonth,
+    reviews:   acc.reviews  + o.totalReviews,
+    inactive:  acc.inactive + o.inactiveCustomers,
+  }), { customers: uniqueCustomers, visits: 0, reviews: 0, inactive: 0 })
 
   return (
     <div>

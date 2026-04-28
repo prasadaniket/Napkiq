@@ -81,7 +81,7 @@ router.get('/stats', async (req, res, next) => {
     const stats = await Promise.all(
       outlets.map(async (outlet) => {
         const oId = outlet.id
-        const cWhere = { firstVisitOutletId: oId }
+        const cWhere = { reviews: { some: { outletId: oId } } }
         const rWhere = { outletId: oId }
         const vWhere = { outletId: oId }
 
@@ -159,7 +159,7 @@ router.get('/:id', async (req, res, next) => {
 
     const thirtyDaysAgo = daysAgo(30)
     const { start: monthStart, end: monthEnd } = monthRange()
-    const cWhere = { firstVisitOutletId: outletId }
+    const cWhere = { reviews: { some: { outletId } } }
     const rWhere = { outletId }
     const vWhere = { outletId }
 

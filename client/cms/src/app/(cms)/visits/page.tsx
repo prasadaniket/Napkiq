@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
@@ -15,6 +15,31 @@ function useDebounce<T>(value: T, delay: number): T {
     return () => clearTimeout(t)
   }, [value, delay])
   return dv
+}
+
+function DateInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  const ref = useRef<HTMLInputElement>(null)
+  const display = value ? new Date(value + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : placeholder
+
+  return (
+    <div
+      className="input"
+      onClick={() => ref.current?.showPicker()}
+      style={{ width: 'auto', padding: '6px 10px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', minWidth: 155, userSelect: 'none' }}
+    >
+      <span style={{ flex: 1, color: value ? 'var(--color-text-1)' : 'var(--color-text-3)' }}>{display}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <input
+        ref={ref}
+        type="date"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+      />
+    </div>
+  )
 }
 
 function Initials({ name }: { name: string }) {
@@ -197,11 +222,9 @@ export default function VisitsPage() {
               <option value="payment">Payment</option>
             </select>
 
-            <input type="date" className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
-              value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="From date" />
+            <DateInput value={dateFrom} onChange={setDateFrom} placeholder="Select Date From" />
             <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>–</span>
-            <input type="date" className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
-              value={dateTo} onChange={e => setDateTo(e.target.value)} title="To date" />
+            <DateInput value={dateTo} onChange={setDateTo} placeholder="Select Date To" />
 
             <select className="input" style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
               value={sortDir} onChange={e => setSortDir(e.target.value as 'asc' | 'desc')}>
@@ -250,6 +273,7 @@ export default function VisitsPage() {
                 <thead>
                   <tr>
                     <th>Customer</th>
+                    <th>Status</th>
                     {isOwnerOrAbove && <th>Outlet</th>}
                     <th>Type</th>
                     <th>Visited At</th>
@@ -259,17 +283,51 @@ export default function VisitsPage() {
                   {visits.map(v => (
                     <tr key={v.id}>
                       <td>
-                        <Link href={`/customers/${v.customerId}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Initials name={v.customer?.fullName ?? ''} />
-                          <div>
-                            <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: 13 }}>
-                              {v.customer?.fullName ?? '—'}
+                        {v.converted && v.customerId ? (
+                          <Link href={`/customers/${v.customerId}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Initials name={v.customer?.fullName ?? ''} />
+                            <div>
+                              <div style={{ fontWeight: 600, color: 'var(--color-primary)', fontSize: 13 }}>
+                                {v.customer?.fullName}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                                {v.customer?.phone}
+                              </div>
                             </div>
-                            <div style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
-                              {v.customer?.phone}
+                          </Link>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                              width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 14, color: 'var(--color-text-3)',
+                            }}>?</div>
+                            <div>
+                              <div style={{ fontWeight: 500, color: 'var(--color-text-3)', fontSize: 13 }}>
+                                Anonymous Visitor
+                              </div>
+                              <div style={{ fontSize: 10, color: 'var(--color-text-3)', opacity: 0.5, fontFamily: 'monospace' }}>
+                                No form submitted
+                              </div>
                             </div>
                           </div>
-                        </Link>
+                        )}
+                      </td>
+                      <td>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          padding: '3px 9px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                          background: v.converted ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)',
+                          color: v.converted ? 'var(--color-success)' : 'var(--color-text-3)',
+                        }}>
+                          <span style={{
+                            width: 6, height: 6, borderRadius: '50%',
+                            background: v.converted ? 'var(--color-success)' : 'rgba(255,255,255,0.2)',
+                            flexShrink: 0,
+                          }} />
+                          {v.converted ? 'Converted' : 'Not Converted'}
+                        </span>
                       </td>
                       {isOwnerOrAbove && (
                         <td>

@@ -71,7 +71,7 @@ const adminNav: NavItem[] = [
   { href: '/customers',  label: 'Customers',  icon: <Icon.Customers /> },
   { href: '/reviews',    label: 'Reviews',    icon: <Icon.Reviews /> },
   { href: '/visits',     label: 'Visits',     icon: <Icon.Visits /> },
-  { href: '/media',      label: 'Menu',       icon: <Icon.Menu /> },
+  { href: '/menu',       label: 'Menu',       icon: <Icon.Menu /> },
   { href: '/automation', label: 'Automation', icon: <Icon.Automation /> },
 ]
 

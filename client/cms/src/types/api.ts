@@ -139,9 +139,10 @@ export interface Visit {
   id:          string
   visitType:   'qr_scan' | 'payment'
   visitedAt:   string
-  customerId:  string
+  customerId:  string | null
   outletId:    string
-  customer?:   { fullName: string; phone: string }
+  converted:   boolean
+  customer?:   { fullName: string; phone: string } | null
   outlet?:     { name: string; code: string }
 }
 

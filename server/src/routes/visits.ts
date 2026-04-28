@@ -16,6 +16,20 @@ router.post('/', async (req, res, next) => {
   try {
     const body = CreateVisitSchema.parse(req.body)
 
+    // Dedup: one visit per device per outlet per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+    const existing = await prisma.customerVisit.findFirst({
+      where: {
+        deviceId: body.deviceId,
+        outletId: body.outletId,
+        visitedAt: { gte: oneHourAgo },
+      },
+    })
+    if (existing) {
+      res.status(200).json(existing)
+      return
+    }
+
     const visit = await prisma.customerVisit.create({ data: body })
 
     // Update customer's lastVisitDate and totalVisits

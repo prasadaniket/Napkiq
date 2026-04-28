@@ -2,7 +2,7 @@ import axios from 'axios'
 import { mockApi } from './mock-api'
 
 const realApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://so-4ntt.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },

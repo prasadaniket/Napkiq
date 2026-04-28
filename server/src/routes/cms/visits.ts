@@ -49,19 +49,41 @@ router.get('/', async (req, res, next) => {
       }
     }
 
-    const [visits, total] = await Promise.all([
+    const [rawVisits, total] = await Promise.all([
       prisma.customerVisit.findMany({
         where,
         skip: page * size,
         take: size,
         orderBy: { visitedAt: sortDir },
         include: {
-          customer: { select: { fullName: true, phone: true } },
+          customer: { select: { id: true, fullName: true, phone: true } },
           outlet:   { select: { name: true, code: true } },
         },
       }),
       prisma.customerVisit.count({ where }),
     ])
+
+    // For visits where customerId is null, look up customer by deviceId
+    const anonymousDeviceIds = [...new Set(
+      rawVisits.filter(v => !v.customerId).map(v => v.deviceId)
+    )]
+    const deviceCustomers = anonymousDeviceIds.length > 0
+      ? await prisma.customer.findMany({
+          where: { deviceId: { in: anonymousDeviceIds } },
+          select: { id: true, deviceId: true, fullName: true, phone: true },
+        })
+      : []
+    const deviceMap = new Map(deviceCustomers.map(c => [c.deviceId, c]))
+
+    const visits = rawVisits.map(v => {
+      const linked = v.customer ?? deviceMap.get(v.deviceId) ?? null
+      return {
+        ...v,
+        customerId: v.customerId ?? linked?.id ?? null,
+        customer:   linked ? { fullName: linked.fullName, phone: linked.phone } : null,
+        converted:  !!linked,
+      }
+    })
 
     res.json(paginate(visits, total, page, size))
   } catch (err) {

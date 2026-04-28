@@ -70,9 +70,15 @@ router.get('/stats', async (req, res, next) => {
     const thirtyDaysAgo = daysAgo(30)
     const { start: monthStart, end: monthEnd } = monthRange()
 
-    const customerWhere = { firstVisitOutletId: { in: outletIds } }
-    const reviewWhere   = { outletId: { in: outletIds } }
-    const visitWhere    = { outletId: { in: outletIds } }
+    const reviewWhere = { outletId: { in: outletIds } }
+    const visitWhere  = { outletId: { in: outletIds } }
+
+    // Customer counts: outlet-scoped roles count customers who have a review at their outlet(s).
+    // Admin/owner viewing all outlets count unique customers directly (no double-counting).
+    const isScoped = isFranchise || !!req.query.outletId
+    const customerWhere: any = isScoped
+      ? { reviews: { some: { outletId: { in: outletIds } } } }
+      : {}
 
     const [
       totalCustomers,

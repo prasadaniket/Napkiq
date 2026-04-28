@@ -1,340 +1,281 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-25
+**Analysis Date:** 2026-04-28
 
-## Top-Level Layout
+## Directory Layout
 
 ```
 StoneOven/
 ├── client/
-│   ├── main/          # Public customer frontend (stoneoven.in)
-│   ├── cms/           # CMS admin frontend
-│   └── shared/        # Placeholder — empty, no shared code yet
-├── server/            # Express REST API
-├── worker/            # Cloudflare Worker cron scheduler
-├── .planning/
-│   └── codebase/      # Codebase map documents (this file)
-└── .git/
+│   ├── cms/                        # Next.js 14 CMS dashboard
+│   │   ├── public/                 # Static assets (logo, diagrams)
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── (cms)/          # Auth-guarded route group
+│   │       │   │   ├── layout.tsx  # CMS shell + AuthProvider
+│   │       │   │   ├── dashboard/
+│   │       │   │   ├── customers/
+│   │       │   │   │   └── [id]/
+│   │       │   │   ├── outlets/
+│   │       │   │   │   └── [id]/
+│   │       │   │   ├── visits/
+│   │       │   │   ├── reviews/
+│   │       │   │   ├── menu/
+│   │       │   │   ├── automation/
+│   │       │   │   └── media/
+│   │       │   ├── login/
+│   │       │   ├── layout.tsx      # Root layout
+│   │       │   └── page.tsx        # Redirects to /dashboard
+│   │       ├── components/
+│   │       │   ├── cms/            # Page-level UI (ReviewCard)
+│   │       │   ├── layout/         # CMSSidebar
+│   │       │   └── login/          # Login form component
+│   │       ├── context/            # AuthContext.tsx
+│   │       ├── hooks/              # useAuth.ts
+│   │       ├── lib/                # api.ts, auth.ts, utils.ts, validators.ts
+│   │       ├── styles/             # Global CSS
+│   │       ├── types/              # api.ts (all CMS TS interfaces), outlet.ts
+│   │       └── utils/supabase/     # client.ts, server.ts
+│   │
+│   ├── main/                       # Next.js 14 customer-facing app
+│   │   ├── public/
+│   │   │   ├── images/logo/        # logo.jpg
+│   │   │   ├── images/menu/        # Static menu images (legacy)
+│   │   │   └── qr-codes/           # Generated QR code PNGs
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── [code]/         # Dynamic outlet route (slug or code)
+│   │       │   │   ├── page.tsx    # Outlet landing page
+│   │       │   │   ├── menu/       # DB-driven menu page
+│   │       │   │   ├── feedback/   # First-visit form
+│   │       │   │   └── review/     # Repeat review form
+│   │       │   ├── api/fingerprint/ # Next.js API route (server-side FP)
+│   │       │   ├── layout.tsx
+│   │       │   └── page.tsx        # Homepage
+│   │       ├── components/
+│   │       │   ├── boisar/         # Legacy Boisar outlet component
+│   │       │   ├── form1/          # feedback.tsx (first-visit form)
+│   │       │   ├── form2/          # review.tsx (repeat review form)
+│   │       │   ├── home/           # Homepage content
+│   │       │   ├── layout/         # Footer
+│   │       │   ├── map/            # Map page component
+│   │       │   ├── menu/           # Menu UI components + legacy per-outlet menus
+│   │       │   ├── palghar/        # Legacy Palghar outlet component
+│   │       │   ├── social/         # Social links page
+│   │       │   ├── ui/             # Shared primitives (Button, Input, Loader, Modal, etc.)
+│   │       │   ├── vasai/          # Legacy Vasai outlet component
+│   │       │   └── virar/          # Legacy Virar outlet component
+│   │       ├── hooks/
+│   │       │   ├── useAuth.ts
+│   │       │   ├── useCustomer.ts
+│   │       │   ├── useDeviceFingerprint.ts
+│   │       │   └── useOutlet.ts
+│   │       ├── lib/
+│   │       │   ├── api.ts          # Axios client (real + mock switch)
+│   │       │   ├── auth.ts
+│   │       │   ├── fingerprint.ts  # Device fingerprint generation
+│   │       │   ├── mock-api.ts     # Mock responses for local dev
+│   │       │   ├── outletConfig.ts # Per-outlet feature flags (hasMenu)
+│   │       │   ├── utils.ts
+│   │       │   └── validators.ts
+│   │       ├── styles/
+│   │       ├── types/
+│   │       │   ├── api.ts
+│   │       │   ├── customer.ts
+│   │       │   ├── menu.ts         # MenuItem, MenuCategory interfaces
+│   │       │   ├── outlet.ts
+│   │       │   └── review.ts
+│   │       └── utils/supabase/
+│   │
+│   └── shared/types/               # (Reserved — currently unused)
+│
+└── server/
+    ├── data/                       # Seed data files
+    ├── generated/prisma/           # Prisma-generated client (committed)
+    └── src/
+        ├── app.ts                  # Express app factory + route mounting
+        ├── index.ts                # Server entry point (listen)
+        ├── lib/
+        │   ├── cloudinary.ts       # Cloudinary client + MENU_FOLDER constant
+        │   ├── notifications.ts    # WhatsApp + email send helpers
+        │   ├── paginate.ts         # Pagination utility
+        │   ├── prisma.ts           # Prisma singleton
+        │   ├── supabase.ts         # Supabase admin client
+        │   └── templateStore.ts    # Automation template store
+        ├── middleware/
+        │   ├── auth.ts             # requireAuth, requireAdmin, requireOwnerOrAbove
+        │   └── errorHandler.ts     # Global Express error handler
+        ├── routes/
+        │   ├── auth.ts             # POST /api/auth/login, GET /api/auth/me
+        │   ├── automation.ts       # POST /api/automation (dual-auth: worker secret OR JWT)
+        │   ├── customers.ts        # POST /api/customers, GET /api/customers/by-device/:id
+        │   ├── menu.ts             # GET /api/menu/outlet/:code (public)
+        │   ├── outlets.ts          # GET /api/outlets/:code (public)
+        │   ├── reviews.ts          # POST /api/reviews (public)
+        │   ├── visits.ts           # POST /api/visits (public)
+        │   └── cms/
+        │       ├── automationLogs.ts
+        │       ├── automationTemplates.ts
+        │       ├── customers.ts
+        │       ├── dashboard.ts
+        │       ├── export.ts
+        │       ├── menu.ts         # Full CRUD for categories + items + image upload
+        │       ├── outlets.ts
+        │       ├── qr.ts
+        │       ├── reviews.ts
+        │       └── visits.ts
+        ├── scripts/                # One-off admin scripts (seed, wipe, setup staff)
+        │   ├── seed_boisar_menu.ts
+        │   ├── setup_staff.ts
+        │   ├── wipe_data.ts
+        │   └── remove_old_staff.ts
+        └── services/
+            ├── BaseService.ts      # Prisma client + paginate helper
+            ├── QRService.ts        # QR code generation
+            └── SentimentService.ts # Review sentiment analysis
 ```
 
----
+## Directory Purposes
 
-## server/
+**`server/src/routes/` (public):**
+- Purpose: Unauthenticated endpoints consumed by the customer app
+- Contains: `auth.ts`, `customers.ts`, `visits.ts`, `reviews.ts`, `outlets.ts`, `menu.ts`, `automation.ts`
+- Key files: `server/src/routes/menu.ts` (public menu fetch), `server/src/routes/visits.ts` (QR visit recording)
 
-```
-server/
-├── src/
-│   ├── index.ts              # Entrypoint: Google DNS override, createApp(), HTTP listen()
-│   ├── app.ts                # Express factory: CORS allowlist, JSON body, all route mounts, errorHandler
-│   ├── middleware/
-│   │   ├── auth.ts           # requireAuth (JWT + Prisma Staff lookup), requireAdmin, requireOwnerOrAbove, requireMainOwner (deprecated)
-│   │   └── errorHandler.ts   # Global error handler → { error: message } JSON with 500
-│   ├── routes/
-│   │   ├── outlets.ts        # GET /api/outlets, GET /api/outlets/:code (public)
-│   │   ├── customers.ts      # GET /api/customers/by-device/:id, POST /api/customers (upsert on deviceId)
-│   │   ├── visits.ts         # POST /api/visits (records QR scan / payment visit)
-│   │   ├── reviews.ts        # POST /api/reviews (calls SentimentService inline)
-│   │   ├── menu.ts           # GET /api/menu (public)
-│   │   ├── auth.ts           # POST /api/auth/login, POST /api/auth/refresh, GET /api/auth/me
-│   │   ├── automation.ts     # POST /api/automation/run|reengagement|welcome|promotional|announcement (dual-auth)
-│   │   └── cms/
-│   │       ├── dashboard.ts         # GET /api/cms/dashboard/stats (scoped by role/outlet)
-│   │       ├── customers.ts         # GET /api/cms/customers, GET /api/cms/customers/:id
-│   │       ├── reviews.ts           # GET /api/cms/reviews (paginated, filterable)
-│   │       ├── outlets.ts           # GET /api/cms/outlets, /stats, /:id (analytics)
-│   │       ├── visits.ts            # GET /api/cms/visits, /summary
-│   │       ├── automationLogs.ts    # GET /api/cms/automation-logs
-│   │       ├── automationTemplates.ts # GET/PATCH /api/cms/automation-templates/:key
-│   │       ├── export.ts            # GET /api/cms/export/customers|visits (CSV download)
-│   │       ├── menu.ts              # Full CRUD /api/cms/menu (categories + items + Cloudinary image upload)
-│   │       └── qr.ts                # GET /api/cms/qr/:outletCode (SVG/dataURL QR generation)
-│   ├── services/
-│   │   ├── BaseService.ts    # Abstract parent — protected prisma, handleError(), paginate()
-│   │   ├── SentimentService.ts # Text + star sentiment analysis; singleton sentimentService
-│   │   └── QRService.ts      # QR code generation (SVG/dataURL/PNG); singleton qrService
-│   ├── lib/
-│   │   ├── prisma.ts         # PrismaClient singleton via @prisma/adapter-pg (pg.Pool)
-│   │   ├── supabase.ts       # supabaseAdmin (service-role key; autoRefreshToken: false)
-│   │   ├── cloudinary.ts     # Cloudinary v2 config; MENU_FOLDER = 'StoneOven/menu'
-│   │   ├── notifications.ts  # sendWhatsApp(), sendEmail(), HTML email builders (DRY_RUN until providers configured)
-│   │   ├── templateStore.ts  # File-based template store at server/data/automationTemplates.json
-│   │   └── paginate.ts       # Stateless paginate<T>() → PageResponse envelope
-│   └── scripts/
-│       ├── setup_staff.ts    # One-time: create Staff records in Prisma + Supabase Auth
-│       ├── remove_old_staff.ts # One-time: remove deprecated staff accounts
-│       └── wipe_data.ts      # Dev utility: truncate customer/visit/review data
-├── prisma/
-│   └── schema.prisma         # Prisma schema source-of-truth (models: Outlet, Customer, CustomerVisit, Review, Staff, MenuItem, MenuCategory, AutomationLog)
-├── generated/
-│   └── prisma/               # Auto-generated Prisma client (output of npx prisma generate)
-├── data/
-│   └── automationTemplates.json # Persisted automation template overrides (auto-created on first boot)
-└── scratch/                  # Throwaway dev files (not part of app)
-```
+**`server/src/routes/cms/`:**
+- Purpose: Protected endpoints consumed by the CMS app — all require `requireAuth`
+- Contains: Full CRUD routers for all entities
+- Key file: `server/src/routes/cms/menu.ts` — categories + items CRUD + Cloudinary image upload/delete
 
-### Key server files
+**`server/src/lib/`:**
+- Purpose: Singleton clients and shared utilities (not HTTP-layer logic)
+- Key files: `prisma.ts` (Prisma singleton), `supabase.ts` (Supabase admin), `cloudinary.ts` (image CDN), `notifications.ts` (messaging)
 
-| File | Purpose |
-|------|---------|
-| `server/src/app.ts` | All route mounts are here — start here to trace any endpoint |
-| `server/src/middleware/auth.ts` | All RBAC logic — `requireAuth`, `requireAdmin`, `requireOwnerOrAbove` |
-| `server/src/routes/automation.ts` | All automation types + dual-auth pattern (Worker secret OR CMS admin JWT) |
-| `server/src/lib/notifications.ts` | WhatsApp + Email stubs + HTML email builders — uncomment providers here |
-| `server/src/lib/templateStore.ts` | Template persistence + `DEFAULT_TEMPLATES` seed values |
-| `server/prisma/schema.prisma` | DB schema — edit this first for any model change |
-| `server/src/services/BaseService.ts` | Parent class for all services — extend this when creating new service |
+**`server/src/middleware/`:**
+- Purpose: Express middleware applied at router or app level
+- Key file: `auth.ts` — do not modify role names without updating `schema.prisma` and `AuthContext.tsx`
 
----
+**`client/cms/src/app/(cms)/`:**
+- Purpose: All CMS pages — wrapped by `layout.tsx` which enforces auth guard
+- Naming: One directory per domain (customers, outlets, visits, reviews, menu, automation, media)
 
-## client/main/
+**`client/cms/src/types/api.ts`:**
+- Purpose: Single source of truth for all CMS TypeScript interfaces — `LoginResponse`, `Customer`, `Review`, `Visit`, `Outlet`, `MenuItem`, `MenuCategory`, `AutomationTemplate`, etc.
+- Rule: Add new response types here, not inline in page files
 
-Public customer-facing app — served at `stoneoven.in`.
+**`client/main/src/app/[code]/`:**
+- Purpose: All customer-facing pages for a given outlet — resolved by slug or outlet code
+- Contains: `page.tsx` (landing), `menu/page.tsx`, `feedback/page.tsx`, `review/page.tsx`
 
-```
-client/main/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx                    # Root layout (fonts, globals, metadata)
-│   │   ├── page.tsx                      # Home page (stoneoven.in/)
-│   │   ├── outlet/
-│   │   │   └── [code]/
-│   │   │       ├── page.tsx              # QR landing page — fingerprint + visit record + CTAs
-│   │   │       ├── feedback/page.tsx     # First-visit registration form page
-│   │   │       ├── review/page.tsx       # Repeat review form page
-│   │   │       └── menu/page.tsx         # Dynamic API-driven menu page
-│   │   ├── boisar/
-│   │   │   ├── page.tsx                  # Static Boisar outlet landing page
-│   │   │   └── menu/page.tsx             # Static Boisar menu
-│   │   ├── palghar/page.tsx              # Static Palghar outlet landing page
-│   │   ├── virar/page.tsx                # Static Virar outlet landing page
-│   │   └── vasai/page.tsx                # Static Vasai outlet landing page
-│   ├── components/
-│   │   ├── form1/
-│   │   │   └── feedback.tsx              # First-visit form — collects customer data + first review + clipboard copy
-│   │   ├── form2/
-│   │   │   └── review.tsx                # Repeat review form — stars + text only
-│   │   ├── menu/                         # Menu display components (API-driven + static legacy)
-│   │   ├── ui/
-│   │   │   ├── Loader.tsx                # Spinner
-│   │   │   ├── Modal.tsx                 # Modal wrapper (used for Google Review prompt)
-│   │   │   ├── StarRating.tsx            # Interactive star rating input
-│   │   │   ├── DatePicker.tsx            # Date picker for birthday/anniversary fields
-│   │   │   ├── avatar.tsx                # shadcn Avatar component
-│   │   │   └── ...                       # Button, Input, Select
-│   │   ├── layout/
-│   │   │   └── Footer.tsx                # Footer
-│   │   ├── home/                         # Home page sections
-│   │   ├── map/                          # Google Maps embed
-│   │   ├── social/                       # Social links section
-│   │   ├── boisar/                       # Static Boisar content component
-│   │   ├── palghar/                      # Static Palghar content component
-│   │   ├── virar/                        # Static Virar content component
-│   │   └── vasai/                        # Static Vasai content component
-│   ├── hooks/
-│   │   ├── useDeviceFingerprint.ts       # FingerprintJS → stable deviceId; must run before any customer API call
-│   │   ├── useCustomer.ts                # GET /api/customers/by-device/:id
-│   │   ├── useOutlet.ts                  # GET /api/outlets/:code
-│   │   └── useAuth.ts                    # Auth hook (not used in public app flow)
-│   ├── lib/
-│   │   ├── api.ts                        # Axios instance; baseURL = NEXT_PUBLIC_API_URL
-│   │   ├── fingerprint.ts                # getDeviceFingerprint() — module-scoped FingerprintJS singleton
-│   │   ├── validators.ts                 # Zod schemas for form validation (firstVisitFormSchema, etc.)
-│   │   ├── outletConfig.ts               # Static map of outlet codes to display config
-│   │   ├── clipboard.ts                  # copyToClipboard() — used to pre-fill Google Review
-│   │   ├── mock-api.ts                   # Mock responses (NEXT_PUBLIC_MOCK_API=true in dev)
-│   │   ├── auth.ts                       # Auth helpers (not active in public flow)
-│   │   └── utils.ts                      # General utilities
-│   ├── types/
-│   │   ├── api.ts                        # Generic API types
-│   │   ├── customer.ts                   # Customer type
-│   │   ├── outlet.ts                     # Outlet type
-│   │   ├── review.ts                     # Review type
-│   │   └── menu.ts                       # MenuCategory, MenuItem types
-│   ├── utils/supabase/
-│   │   ├── client.ts                     # Supabase browser client (not active in public flow)
-│   │   └── server.ts                     # Supabase server client (not active in public flow)
-│   └── styles/                           # Global CSS
-└── public/
-    ├── images/
-    │   ├── logo/logo.jpg                 # StoneOven logo (used in outlet landing pages)
-    │   └── menu/                         # Static menu images (legacy)
-    └── qr-codes/                         # Per-outlet QR code PNGs (printed for tables)
-```
+**`client/main/src/components/menu/`:**
+- Purpose: Reusable menu UI components + legacy per-outlet static menus
+- Active components: `MenuCategorySection.tsx`, `MenuItemCard.tsx`, `MenuSearch.tsx`
+- Legacy (static): `boisarmenu.tsx`, `palgharmenu.tsx`, `vasaimenu.tsx`, `virarmenu.tsx`, `page1-4.tsx` — superseded by DB-driven menu
 
-### Key client/main files
+**`client/main/src/components/ui/`:**
+- Purpose: Generic primitives shared across forms and pages
+- Contains: `Button.tsx`, `Input.tsx`, `Select.tsx`, `DatePicker.tsx`, `StarRating.tsx`, `Loader.tsx`, `Modal.tsx`, `avatar.tsx`
 
-| File | Purpose |
-|------|---------|
-| `client/main/src/app/outlet/[code]/page.tsx` | Core QR journey entry — fingerprint, visit record, outlet display, CTAs |
-| `client/main/src/components/form1/feedback.tsx` | First-visit form — customer registration + review + Google Review clipboard copy |
-| `client/main/src/components/form2/review.tsx` | Repeat review form — stars + text, no re-registration |
-| `client/main/src/hooks/useDeviceFingerprint.ts` | Device identity — call this before any customer lookup or visit post |
-| `client/main/src/lib/fingerprint.ts` | FingerprintJS singleton — module-level promise cache (one load per session) |
-| `client/main/src/lib/validators.ts` | Zod form schemas — shared between form components and API layer |
+**`client/main/src/components/{boisar,palghar,vasai,virar}/`:**
+- Purpose: Legacy per-outlet landing components — predates dynamic `[code]` routing
+- Status: Superseded by `app/[code]/page.tsx`; retained but no longer used as primary pages
 
----
+**`server/src/scripts/`:**
+- Purpose: One-off admin scripts — run with `ts-node` or `npx tsx`, never via HTTP
+- Key script: `seed_boisar_menu.ts` — seeded 11 categories and 61 items for Boisar outlet
 
-## client/cms/
+## Key File Locations
 
-Staff admin portal.
+**Entry Points:**
+- `server/src/index.ts` — Express server listen
+- `server/src/app.ts` — Route mounting and CORS config
+- `client/main/src/app/[code]/page.tsx` — Customer outlet landing (QR target)
+- `client/cms/src/app/(cms)/layout.tsx` — CMS shell + auth guard
 
-```
-client/cms/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx                    # Root layout (fonts, globals)
-│   │   ├── page.tsx                      # Root redirect → /dashboard
-│   │   ├── login/page.tsx                # Login page (renders LoginPage component)
-│   │   └── (cms)/                        # Route group — all pages share CMS shell + auth guard
-│   │       ├── layout.tsx                # Wraps AuthProvider + CMSSidebar + auth redirect
-│   │       ├── dashboard/page.tsx        # Aggregate stats cards + outlet list + admin shortcuts
-│   │       ├── outlets/
-│   │       │   ├── page.tsx              # Per-outlet performance cards (admin/owner only)
-│   │       │   └── [id]/page.tsx         # Single outlet full analytics (recent customers, reviews, visits, star chart)
-│   │       ├── customers/
-│   │       │   ├── page.tsx              # Paginated customer list — search, outlet filter, inactive flag
-│   │       │   └── [id]/page.tsx         # Customer profile — timeline of visits + reviews
-│   │       ├── reviews/page.tsx          # Paginated review list — outlet/star/type filters, sentiment display
-│   │       ├── visits/page.tsx           # Paginated visit list — QR vs payment breakdown
-│   │       ├── automation/page.tsx       # Automation templates editor + log viewer + manual trigger buttons
-│   │       └── media/page.tsx            # Menu management — categories, items, Cloudinary image upload (admin only)
-│   ├── components/
-│   │   ├── layout/
-│   │   │   └── CMSSidebar.tsx            # Navigation sidebar — role-aware nav items, logout
-│   │   ├── login/
-│   │   │   └── loginpage.tsx             # Login form UI (username + password)
-│   │   └── cms/
-│   │       └── ReviewCard.tsx            # Reusable review card with sentiment badge
-│   ├── context/
-│   │   └── AuthContext.tsx               # Auth context — user, loading, logout, isAdmin, isOwner, isFranchise, isOwnerOrAbove
-│   ├── hooks/
-│   │   └── useAuth.ts                    # Re-export of useAuth() from AuthContext
-│   ├── lib/
-│   │   ├── api.ts                        # Axios instance — Bearer token from cookie, 401 → refresh → retry
-│   │   ├── auth.ts                       # Cookie session: saveSession, getToken, getRefreshToken, saveTokens, clearSession, isAuthenticated
-│   │   ├── utils.ts                      # cn() and general utilities
-│   │   └── validators.ts                 # Form validation helpers
-│   ├── types/
-│   │   ├── api.ts                        # All API types: LoginResponse, DashboardStats, OutletStats, Customer, Review, Visit, AutomationTemplate, MenuItem, MenuCategory, PageResponse<T>
-│   │   └── outlet.ts                     # Outlet type
-│   ├── utils/supabase/
-│   │   ├── client.ts                     # Supabase browser client (not primary auth path)
-│   │   └── server.ts                     # Supabase server client
-│   ├── proxy.ts                          # Dev proxy utility (not active in main flows)
-│   └── styles/                           # Global CMS CSS (dark theme, CSS custom properties)
-└── public/
-    ├── diagram/                          # Architecture diagram images
-    └── logo/                             # Logo assets
-```
+**Configuration:**
+- `client/main/src/lib/outletConfig.ts` — Per-outlet `hasMenu` flag (update when menu goes live for new outlets)
+- `server/generated/prisma/schema.prisma` — Database schema source of truth
+- `server/src/app.ts` — CORS origins, route prefixes
 
-### Key client/cms files
+**Core Logic:**
+- `server/src/middleware/auth.ts` — JWT validation, role normalization, role guards
+- `server/src/routes/cms/menu.ts` — Full menu CRUD with Cloudinary image management
+- `server/src/routes/menu.ts` — Public menu fetch (outlet by slug OR code)
+- `server/src/routes/visits.ts` — Visit recording with 1-hour dedup
+- `client/cms/src/context/AuthContext.tsx` — CMS session and role flags
+- `client/cms/src/lib/api.ts` — CMS Axios client with token refresh queue
 
-| File | Purpose |
-|------|---------|
-| `client/cms/src/app/(cms)/layout.tsx` | Auth guard + CMS shell layout — all protected pages inherit this |
-| `client/cms/src/context/AuthContext.tsx` | Single source of truth for auth state + role booleans across all CMS pages |
-| `client/cms/src/lib/api.ts` | All API calls go through this instance — token injection + 401 auto-refresh + queue |
-| `client/cms/src/lib/auth.ts` | Cookie session helpers — use `saveSession()` after login, `getToken()` in api.ts |
-| `client/cms/src/types/api.ts` | Type definitions for every CMS API response — check here before adding new calls |
-
----
-
-## worker/
-
-```
-worker/
-├── src/
-│   └── index.ts              # Cloudflare Worker: scheduled() cron + fetch() HTTP handler
-├── wrangler.toml             # Cloudflare Worker config: cron = "0 3 * * *", bindings
-└── package.json
-```
-
-The Worker calls `POST {SERVER_URL}/api/automation/run` with `x-automation-secret` header. All business logic is in the server.
-
----
+**Types:**
+- `client/cms/src/types/api.ts` — All CMS entity interfaces
+- `client/main/src/types/menu.ts` — `MenuItem`, `MenuCategory` for customer app
+- `client/main/src/lib/outletConfig.ts` — `OutletConfig` interface + record
 
 ## Naming Conventions
 
 **Files:**
-- Next.js pages: `page.tsx` (App Router convention)
-- React components: PascalCase (`CMSSidebar.tsx`, `ReviewCard.tsx`, `FeedbackForm`)
-- Hooks: camelCase prefixed with `use` (`useDeviceFingerprint.ts`, `useCustomer.ts`)
-- Lib utilities: camelCase (`fingerprint.ts`, `paginate.ts`, `validators.ts`)
-- Server routes: camelCase resource name (`customers.ts`, `automationLogs.ts`)
+- Pages: `page.tsx` (Next.js App Router convention)
+- Layouts: `layout.tsx`
+- Components: PascalCase (`MenuCategorySection.tsx`, `CMSSidebar.tsx`)
+- Hooks: camelCase with `use` prefix (`useCustomer.ts`, `useDeviceFingerprint.ts`)
+- Lib/utils: camelCase (`fingerprint.ts`, `outletConfig.ts`)
+- Server routes: camelCase module name matching the resource (`visits.ts`, `customers.ts`)
 
 **Directories:**
-- CMS pages use route group `(cms)` to share layout without affecting URL paths
-- Server routes split into top-level (public) and `cms/` subdirectory (protected)
-- Components grouped by feature/domain, not by type
-
----
+- Route groups: lowercase with parentheses (`(cms)`)
+- Dynamic segments: bracket notation (`[code]`, `[id]`)
+- Feature components: lowercase resource name (`menu/`, `form1/`, `form2/`)
+- CMS route dirs: lowercase resource name matching API path (`outlets/`, `customers/`)
 
 ## Where to Add New Code
 
-**New public customer page:**
-- Route: `client/main/src/app/outlet/[code]/[new-route]/page.tsx`
-- Component: `client/main/src/components/[feature]/[ComponentName].tsx`
-
-**New CMS page:**
-- Route: `client/cms/src/app/(cms)/[feature]/page.tsx`
-- Automatically receives CMS layout (sidebar + AuthProvider)
+**New CMS page (e.g., loyalty):**
+- Create `client/cms/src/app/(cms)/loyalty/page.tsx`
 - Add nav link in `client/cms/src/components/layout/CMSSidebar.tsx`
-- Guard with `const { isAdmin } = useAuth()` inside the page component
+- Add API type interfaces to `client/cms/src/types/api.ts`
 
 **New public API endpoint:**
-- Add route file: `server/src/routes/[resource].ts`
-- Mount in `server/src/app.ts` under `/api/`
+- Create route file in `server/src/routes/{resource}.ts`
+- Mount in `server/src/app.ts` under `app.use('/api/{resource}', router)`
 
-**New CMS-protected API endpoint:**
-- Add route file: `server/src/routes/cms/[resource].ts`
-- Apply `router.use(requireAuth)` at the top
-- Mount in `server/src/app.ts` under `/api/cms/`
+**New CMS API endpoint (protected):**
+- Create or extend file in `server/src/routes/cms/{resource}.ts`
+- Mount in `server/src/app.ts` under `app.use('/api/cms/{resource}', router)`
+- Apply `router.use(requireAuth)` at the top; add `requireAdmin` or `requireOwnerOrAbove` per route as needed
 
-**New DB model:**
-- Edit `server/prisma/schema.prisma`
-- Run `npx prisma generate` from `server/`
+**New menu UI component:**
+- Place in `client/main/src/components/menu/`
+- Import in `client/main/src/app/[code]/menu/page.tsx`
 
-**New service class:**
-- Create `server/src/services/[Name]Service.ts`
-- Extend `BaseService`
-- Export a singleton instance at the bottom of the file
+**New outlet:**
+- Add a `Staff` record and `Outlet` record in DB
+- Add entry to `client/main/src/lib/outletConfig.ts` with `hasMenu: false` initially
+- Set `hasMenu: true` once menu is seeded and verified
 
-**New automation campaign type:**
-1. Add template key to `DEFAULT_TEMPLATES` in `server/src/lib/templateStore.ts`
-2. Add sending logic in `server/src/routes/automation.ts`
-3. Add HTML builder in `server/src/lib/notifications.ts` if needed
-4. Add template card in `client/cms/src/app/(cms)/automation/page.tsx`
-
-**New type definition:**
-- CMS API types: `client/cms/src/types/api.ts`
-- Public app types: `client/main/src/types/[resource].ts`
-- Note: no shared type package between main and cms — duplicate as needed
-
----
+**One-off data script:**
+- Create in `server/src/scripts/`
+- Run with `npx tsx server/src/scripts/{name}.ts`
 
 ## Special Directories
 
-**`server/generated/prisma/`**
-- Auto-generated by `npx prisma generate`
-- Do not edit directly — regenerate from `server/prisma/schema.prisma`
+**`server/generated/prisma/`:**
+- Purpose: Prisma-generated client output
+- Generated: Yes — via `npx prisma generate`
+- Committed: Yes (for Render deployment compatibility)
 
-**`server/src/scripts/`**
-- One-time admin scripts; run via `npx ts-node` directly, not part of the API
-- `setup_staff.ts` creates initial staff records; `wipe_data.ts` resets dev data
+**`server/data/`:**
+- Purpose: Static seed/reference data files
+- Generated: No
+- Committed: Yes
 
-**`server/data/`**
-- Runtime-created directory holding `automationTemplates.json`
-- Created automatically by `templateStore.ts` on first access
-- Should be committed or backed up — holds admin template edits
+**`client/main/public/qr-codes/`:**
+- Purpose: QR code PNG files generated by `QRService`
+- Generated: Yes (server-side via `server/src/services/QRService.ts`)
+- Committed: Yes
 
-**`client/main/public/qr-codes/`**
-- QR code PNGs per outlet — printed and placed on restaurant tables
-- Generated once via CMS QR download; committed to repo
-
-**`client/shared/`**
-- Intended for shared types between main and cms clients
-- Currently empty — types are duplicated between the two apps
+**`client/main/src/components/{boisar,palghar,vasai,virar}/`:**
+- Purpose: Legacy per-outlet static landing components, predating dynamic routing
+- Status: No longer used as primary outlet pages; safe to delete once fully migrated
 
 ---
 
-*Structure analysis: 2026-04-25*
+*Structure analysis: 2026-04-28*

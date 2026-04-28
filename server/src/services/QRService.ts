@@ -15,7 +15,7 @@ class QRService {
   }
 
   async generateForOutlet(outletCode: string, format: QRFormat = 'svg'): Promise<string | Buffer> {
-    const url = `${this.baseUrl}/outlet/${outletCode}`
+    const url = `${this.baseUrl}/${outletCode}`
     const options = {
       width: 512,
       margin: 2,

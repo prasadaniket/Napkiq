@@ -40,7 +40,9 @@ router.get('/', async (req, res, next) => {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
     const where: any = {}
-    if (outletId) where.firstVisitOutletId = outletId
+    // Franchise owners see customers who have a review at their outlet
+    // (visits have nullable customerId so can't be used for joining)
+    if (outletId) where.reviews = { some: { outletId } }
     if (req.query.inactive === 'true') where.lastVisitDate = { lt: thirtyDaysAgo }
     if (req.query.gender)              where.gender = req.query.gender
     if (req.query.hasReview === 'true')  where.hasSubmittedFirstReview = true
@@ -61,7 +63,11 @@ router.get('/', async (req, res, next) => {
         orderBy: { [sortBy]: sortDir },
         include: {
           firstVisitOutlet: { select: { name: true, code: true } },
-          _count: { select: { reviews: true } },
+          _count: {
+            select: {
+              reviews: outletId ? { where: { outletId } } : true,
+            },
+          },
         },
       }),
       prisma.customer.count({ where }),
@@ -83,16 +89,30 @@ router.get('/', async (req, res, next) => {
 // Full customer profile with visit history + reviews
 router.get('/:id', async (req, res, next) => {
   try {
+    const scopedOutletId = req.staff!.role === 'franchise_owner'
+      ? req.staff!.assignedOutletId ?? undefined
+      : undefined
+
+    // For franchise owners: deny if this customer has no reviews at their outlet
+    if (scopedOutletId) {
+      const hasReview = await prisma.review.count({
+        where: { customerId: req.params.id, outletId: scopedOutletId },
+      })
+      if (!hasReview) { res.status(403).json({ error: 'Access denied' }); return }
+    }
+
     const customer = await prisma.customer.findUnique({
       where:   { id: req.params.id },
       include: {
         firstVisitOutlet: { select: { name: true, code: true } },
         visits: {
+          where:   scopedOutletId ? { outletId: scopedOutletId } : {},
           orderBy: { visitedAt: 'desc' },
           take:    20,
           include: { outlet: { select: { name: true, code: true } } },
         },
         reviews: {
+          where:   scopedOutletId ? { outletId: scopedOutletId } : {},
           orderBy: { createdAt: 'desc' },
           include: { outlet: { select: { name: true, code: true } } },
         },
@@ -100,15 +120,6 @@ router.get('/:id', async (req, res, next) => {
     })
 
     if (!customer) { res.status(404).json({ error: 'Customer not found' }); return }
-
-    // Franchise owners can only see customers from their outlet
-    if (
-      req.staff!.role === 'franchise_owner' &&
-      customer.firstVisitOutletId !== req.staff!.assignedOutletId
-    ) {
-      res.status(403).json({ error: 'Access denied' })
-      return
-    }
 
     res.json(customer)
   } catch (err) {

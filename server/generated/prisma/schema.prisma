@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "."
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -51,10 +51,10 @@ enum AutomationStatus {
 }
 
 enum StaffRole {
-  admin // UniCord — full CMS access including automation
-  owner // Nitesh Save — all outlets, no automation
-  franchise_owner // Per-outlet staff — single outlet only
-  main_owner // @deprecated — kept for migration safety, will be removed
+  admin
+  owner
+  franchise_owner
+  main_owner
 }
 
 model Outlet {
@@ -83,7 +83,7 @@ model Outlet {
 
 model Customer {
   id                      String        @id @default(uuid()) @db.Uuid
-  deviceId                String        @unique
+  deviceId                String?       @unique
   fullName                String
   phone                   String        @unique @db.VarChar(15)
   email                   String?
@@ -137,7 +137,7 @@ model CustomerVisit {
   id         String    @id @default(uuid()) @db.Uuid
   customerId String?   @db.Uuid
   customer   Customer? @relation(fields: [customerId], references: [id])
-  deviceId   String
+  deviceId   String?
   outletId   String    @db.Uuid
   outlet     Outlet    @relation(fields: [outletId], references: [id])
   visitType  VisitType @default(qr_scan)
@@ -196,10 +196,9 @@ model AutomationLog {
   @@map("automation_logs")
 }
 
-// staff.id mirrors auth.users.id in Supabase Auth
 model Staff {
   id               String    @id @db.Uuid
-  username         String?   @unique // Used for CMS login (populated via setup script)
+  username         String?   @unique
   fullName         String
   email            String    @unique
   phone            String?   @db.VarChar(15)
@@ -212,4 +211,16 @@ model Staff {
   updatedAt        DateTime  @updatedAt
 
   @@map("staff")
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid()) @db.Uuid
+  phone     String   @db.VarChar(15)
+  otp       String   @db.VarChar(6)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+  @@map("otp_verifications")
 }
