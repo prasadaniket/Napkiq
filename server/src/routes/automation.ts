@@ -318,6 +318,8 @@ function dualAuth(req: any, res: any, next: any) {
   const secret   = process.env.AUTOMATION_SECRET
   const provided = req.headers['x-automation-secret']
   if (secret && provided === secret) return next()
+  // No secret configured (e.g. not set in Render env) — allow worker calls in non-production
+  if (!secret && process.env.NODE_ENV !== 'production') return next()
   requireAuth(req, res, () => requireAdmin(req, res, next))
 }
 
