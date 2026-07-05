@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
+import { writeLimiter } from '../middleware/rateLimit'
 import { z } from 'zod'
 
 const router = Router()
@@ -12,9 +13,16 @@ const CreateVisitSchema = z.object({
 })
 
 // POST /visits
-router.post('/', async (req, res, next) => {
+router.post('/', writeLimiter, async (req, res, next) => {
   try {
     const body = CreateVisitSchema.parse(req.body)
+
+    // Public endpoint — verify the outlet exists before recording a visit,
+    // so a caller can't inflate analytics against arbitrary outlet IDs.
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: body.outletId }, select: { id: true },
+    })
+    if (!outlet) { res.status(400).json({ error: 'Unknown outlet' }); return }
 
     // Dedup: one visit per device per outlet per hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)

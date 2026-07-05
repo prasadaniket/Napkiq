@@ -9,8 +9,13 @@ const USER_KEY    = 'cms_user'
 function setCookie(name: string, value: string, days = 7) {
   if (typeof document === 'undefined') return
   const expires = new Date(Date.now() + days * 864e5).toUTCString()
+  // Secure on HTTPS (skipped on http://localhost so dev still works); SameSite=Strict.
+  // NOTE: these cookies are set from JS and therefore CANNOT be HttpOnly. The
+  // proper hardening is for the backend to issue HttpOnly+Secure cookies — tracked
+  // as a follow-up. Until then, Secure + SameSite=Strict limits the exposure.
+  const secure = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : ''
   // path=/ ensures the cookie is readable by the middleware at any route
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax; Secure=false`
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict${secure}`
 }
 
 function getCookie(name: string): string | null {
@@ -23,7 +28,7 @@ function getCookie(name: string): string | null {
 
 function deleteCookie(name: string) {
   if (typeof document === 'undefined') return
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`
 }
 
 // ─── Session API ───────────────────────────────────────────────────────────────

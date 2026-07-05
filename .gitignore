@@ -8,6 +8,7 @@ target/
 out/
 build/
 dist/
+*.tsbuildinfo
 
 # IDE files
 .vscode/

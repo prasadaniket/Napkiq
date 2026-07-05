@@ -20,9 +20,14 @@ import automationRouter          from './routes/automation'
 import automationTemplatesRouter from './routes/cms/automationTemplates'
 import qrRouter from './routes/cms/qr'
 import { errorHandler } from './middleware/errorHandler'
+import { generalLimiter, automationLimiter } from './middleware/rateLimit'
 
 export function createApp() {
   const app = express()
+
+  // Behind Render/other reverse proxies — required so rate limiting keys on the
+  // real client IP (X-Forwarded-For) rather than the proxy's.
+  app.set('trust proxy', 1)
 
   const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
@@ -44,6 +49,9 @@ export function createApp() {
   )
 
   app.use(express.json())
+
+  // Broad rate-limit safety net across the whole API.
+  app.use('/api', generalLimiter)
 
   // Health check
   app.get('/api/health', (_req, res) => {
@@ -73,7 +81,7 @@ export function createApp() {
   app.use('/api/cms/qr',                  qrRouter)
 
   // Automation (Cloudflare Worker cron + CMS manual trigger — dual-auth)
-  app.use('/api/automation',               automationRouter)
+  app.use('/api/automation',               automationLimiter, automationRouter)
 
   app.use(errorHandler)
 

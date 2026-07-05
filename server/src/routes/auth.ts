@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { supabaseAdmin } from '../lib/supabase'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
+import { authLimiter } from '../middleware/rateLimit'
 import { z } from 'zod'
 
 const router = Router()
@@ -12,7 +13,7 @@ const LoginSchema = z.object({
 })
 
 // POST /auth/login
-router.post('/login', async (req, res, next) => {
+router.post('/login', authLimiter, async (req, res, next) => {
   try {
     const { username, password } = LoginSchema.parse(req.body)
 

@@ -14,26 +14,15 @@ import { getTemplate } from '../lib/templateStore'
 
 const router = Router()
 
-// Apply WaSenderAPI key forwarded by the Cloudflare Worker (temporary testing).
-// When WASENDER_API_KEY is managed as a Worker secret, the Worker forwards it
-// here so the Render server doesn't need it in its own env vars.
-router.use((req, _res, next) => {
-  const key = req.headers['x-wasender-api-key'] as string | undefined
-  if (key) process.env.WASENDER_API_KEY = key
-  next()
-})
-
 // ─── Worker secret guard ──────────────────────────────────────────────────────
+// Fail closed: a valid AUTOMATION_SECRET is required unconditionally. A missing
+// secret is a misconfiguration, never an open door — reject in every environment.
 
 function requireWorkerSecret(req: any, res: any, next: any) {
   const secret = process.env.AUTOMATION_SECRET
   if (!secret) {
-    // No secret configured — allow only in development
-    if (process.env.NODE_ENV === 'production') {
-      res.status(403).json({ error: 'Automation secret not configured' })
-      return
-    }
-    return next()
+    res.status(503).json({ error: 'Automation secret not configured' })
+    return
   }
   const provided = req.headers['x-automation-secret']
   if (provided !== secret) {
@@ -317,9 +306,9 @@ router.post('/reengagement', async (req, res, next) => {
 function dualAuth(req: any, res: any, next: any) {
   const secret   = process.env.AUTOMATION_SECRET
   const provided = req.headers['x-automation-secret']
+  // Path 1: valid worker secret. Only usable when the secret is actually configured.
   if (secret && provided === secret) return next()
-  // No secret configured (e.g. not set in Render env) — allow worker calls in non-production
-  if (!secret && process.env.NODE_ENV !== 'production') return next()
+  // Path 2: fall back to CMS admin JWT. Never allow through on a missing secret.
   requireAuth(req, res, () => requireAdmin(req, res, next))
 }
 

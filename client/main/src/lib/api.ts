@@ -2,7 +2,9 @@ import axios from 'axios'
 import { mockApi } from './mock-api'
 
 const realApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://so-ta1t.onrender.com/api',
+  // Fail to the real production API, never a stray host. Set NEXT_PUBLIC_API_URL
+  // per environment (e.g. http://localhost:8080/api in dev).
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api.napkiq.in/api',
   headers: {
     'Content-Type': 'application/json',
   },

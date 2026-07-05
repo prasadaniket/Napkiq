@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { getToken, getRefreshToken, saveTokens, clearSession } from '@/lib/auth'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://so-ta1t.onrender.com/api'
+// Fail to the real production API, never a stray host. Set NEXT_PUBLIC_API_URL
+// per environment (e.g. http://localhost:8080/api in dev).
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.napkiq.in/api'
 
 export const api = axios.create({
   baseURL: BASE_URL,

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
 import { sentimentService } from '../services/SentimentService'
+import { writeLimiter } from '../middleware/rateLimit'
 import { z } from 'zod'
 
 const router = Router()
@@ -14,9 +15,24 @@ const CreateReviewSchema = z.object({
 })
 
 // POST /reviews
-router.post('/', async (req, res, next) => {
+router.post('/', writeLimiter, async (req, res, next) => {
   try {
     const body = CreateReviewSchema.parse(req.body)
+
+    // Integrity checks — this endpoint is public, so verify referenced records
+    // exist before writing. Prevents review-bombing arbitrary outlets and
+    // tampering with the state of customers the caller doesn't own.
+    const outlet = await prisma.outlet.findUnique({
+      where: { id: body.outletId }, select: { id: true },
+    })
+    if (!outlet) { res.status(400).json({ error: 'Unknown outlet' }); return }
+
+    if (body.customerId) {
+      const cust = await prisma.customer.findUnique({
+        where: { id: body.customerId }, select: { id: true },
+      })
+      if (!cust) { res.status(400).json({ error: 'Unknown customer' }); return }
+    }
 
     // Auto-analyze sentiment — caller doesn't need to know this runs
     const sentiment = sentimentService.analyze(body.reviewText, body.stars)
