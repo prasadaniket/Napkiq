@@ -26,7 +26,13 @@ import { replaceStoneOven } from '@/utils/normalize'
 // On 401 — try to refresh token once, then redirect to login
 api.interceptors.response.use(
   (response) => {
-    if (response.data) {
+    // Skip brand normalization for binary payloads (CSV/file downloads) —
+    // replaceStoneOven would walk a Blob/ArrayBuffer as a plain object and
+    // destroy it. Only normalize JSON-ish responses.
+    const rt = response.config?.responseType
+    const isBinary = rt === 'blob' || rt === 'arraybuffer' ||
+      (typeof Blob !== 'undefined' && response.data instanceof Blob)
+    if (response.data && !isBinary) {
       response.data = replaceStoneOven(response.data)
     }
     return response

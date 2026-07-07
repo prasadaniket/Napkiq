@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { api } from '@/lib/api'
 import { outletConfig } from '@/lib/outletConfig'
+import { useDeviceFingerprint } from '@/hooks/useDeviceFingerprint'
 import type { MenuItem, MenuCategory } from '@/types/menu'
 import MenuSearch from '@/components/menu/MenuSearch'
 import MenuCategorySection from '@/components/menu/MenuCategorySection'
@@ -89,13 +90,16 @@ export default function MenuPage() {
   const [search, setSearch] = useState('')
   const [vegOnly, setVegOnly] = useState(false)
 
-  // Interactive Swiggy/Zomato Cart State
-  const [cart, setCart] = useState<Record<string, { item: MenuItem; quantity: number }>>({})
+  // Interactive Swiggy/Zomato Cart State — keyed by item + chosen variant
+  const [cart, setCart] = useState<Record<string, { item: MenuItem; variantLabel: string | null; quantity: number }>>({})
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   // Dining Concept States (McDonald's Board & Table vs Self Service)
   const [serviceType, setServiceType] = useState<'table' | 'self'>('table')
   const [boardNumber, setBoardNumber] = useState('')
+  const [placingOrder, setPlacingOrder] = useState(false)
+
+  const { deviceId } = useDeviceFingerprint()
 
   useEffect(() => {
     if (config) {
@@ -117,25 +121,30 @@ export default function MenuPage() {
       .finally(() => setLoading(false))
   }, [code, config?.hasMenu])
 
-  const getItemPrice = (item: MenuItem): number => {
-    if (item.priceVariants) {
-      const prices = Object.values(item.priceVariants)
-      return Math.min(...prices)
-    }
+  const cartKey = (itemId: string, variantLabel: string | null) =>
+    variantLabel ? `${itemId}::${variantLabel}` : itemId
+
+  const getItemPrice = (item: MenuItem, variantLabel: string | null): number => {
+    if (variantLabel && item.priceVariants) return item.priceVariants[variantLabel] ?? 0
+    if (item.priceVariants) return Math.min(...Object.values(item.priceVariants))
     return item.price ? parseFloat(String(item.price)) : 0
   }
 
-  const updateQuantity = (item: MenuItem, change: number) => {
+  const getQuantity = (item: MenuItem, variantLabel: string | null): number =>
+    cart[cartKey(item.id, variantLabel)]?.quantity || 0
+
+  const updateQuantity = (item: MenuItem, change: number, variantLabel: string | null) => {
+    const key = cartKey(item.id, variantLabel)
     setCart(prev => {
-      const current = prev[item.id]
+      const current = prev[key]
       const nextQty = (current?.quantity || 0) + change
       if (nextQty <= 0) {
-        const { [item.id]: removed, ...rest } = prev
+        const { [key]: removed, ...rest } = prev
         return rest
       }
       return {
         ...prev,
-        [item.id]: { item, quantity: nextQty }
+        [key]: { item, variantLabel, quantity: nextQty }
       }
     })
   }
@@ -146,7 +155,7 @@ export default function MenuPage() {
     toast.success('Cart cleared')
   }
 
-  const handleCheckoutClick = () => {
+  const handleCheckoutClick = async () => {
     if (serviceType === 'table' && !boardNumber.trim()) {
       toast.error('🔢 Please enter your Board Number first!', {
         duration: 3500,
@@ -161,28 +170,56 @@ export default function MenuPage() {
       return
     }
 
-    const message = serviceType === 'table'
-      ? `🛎️ Table Service requested! Waiter will bring plates to Board #${boardNumber}.`
-      : '🥡 Self Service selected! Collect plate from the counter.'
+    if (placingOrder) return
+    setPlacingOrder(true)
 
-    toast.success(`🛒 Order Placed! ${message} (Soon in next update)`, {
-      icon: '✨',
-      duration: 5000,
-      style: {
-        background: '#00021D',
-        color: '#ffffff',
-        borderRadius: '16px',
-        fontSize: '13px',
-        fontWeight: '600',
-        border: '1px solid rgba(255,255,255,0.1)',
-      }
-    })
-    setIsCartOpen(false)
+    try {
+      const res = await api.post('/orders', {
+        outletCode: code,
+        deviceId:   deviceId ?? undefined,
+        serviceType,
+        boardNumber: serviceType === 'table' ? boardNumber.trim() : undefined,
+        items: Object.values(cart).map(({ item, variantLabel, quantity }) => ({
+          menuItemId:   item.id,
+          variantLabel: variantLabel ?? undefined,
+          quantity,
+        })),
+      })
+
+      const message = serviceType === 'table'
+        ? `🛎️ Table Service requested! Waiter will bring plates to Board #${boardNumber}.`
+        : '🥡 Self Service selected! Collect plate from the counter.'
+
+      toast.success(`🛒 Order Placed! ${message}`, {
+        icon: '✨',
+        duration: 4000,
+        style: {
+          background: '#00021D',
+          color: '#ffffff',
+          borderRadius: '16px',
+          fontSize: '13px',
+          fontWeight: '600',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }
+      })
+
+      setCart({})
+      setBoardNumber('')
+      setIsCartOpen(false)
+
+      // Take the customer to their live order-tracking page.
+      const orderId = res.data?.id
+      if (orderId) router.push(`/${code}/order/${orderId}`)
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Could not place your order. Please try again.')
+    } finally {
+      setPlacingOrder(false)
+    }
   }
 
   // Derived Cart stats
   const totalCartItems = Object.values(cart).reduce((sum, entry) => sum + entry.quantity, 0)
-  const totalCartPrice = Object.values(cart).reduce((sum, entry) => sum + (entry.quantity * getItemPrice(entry.item)), 0)
+  const totalCartPrice = Object.values(cart).reduce((sum, entry) => sum + (entry.quantity * getItemPrice(entry.item, entry.variantLabel)), 0)
 
   if (!config?.hasMenu) {
     return (
@@ -277,6 +314,12 @@ export default function MenuPage() {
           <h2 className="text-xl font-serif font-extrabold text-[#1c1917] tracking-tight">
             Our Menu
           </h2>
+          <Link
+            href={`/${code}/orders`}
+            className="ml-auto flex items-center gap-1.5 text-[11px] font-bold text-neutral-600 hover:text-[#D64238] bg-white border border-neutral-100/80 shadow-sm rounded-full px-3 py-1.5 transition-colors"
+          >
+            🧾 My Orders
+          </Link>
         </motion.div>
 
         {/* Premium search bar */}
@@ -339,7 +382,7 @@ export default function MenuPage() {
                     <MenuCategorySection
                       category={g.category}
                       items={g.items}
-                      cart={cart}
+                      getQuantity={getQuantity}
                       onUpdateQuantity={updateQuantity}
                     />
                   </div>
@@ -436,24 +479,27 @@ export default function MenuPage() {
 
               {/* Items List */}
               <div className="overflow-y-auto max-h-[150px] divide-y divide-neutral-100 pr-1">
-                {Object.values(cart).map(({ item, quantity }) => (
-                  <div key={item.id} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
+                {Object.values(cart).map(({ item, variantLabel, quantity }) => (
+                  <div key={cartKey(item.id, variantLabel)} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-bold text-sm text-[#1c1917]">{item.name}</span>
-                      <span className="text-[11px] font-bold text-[#D64238]">₹{getItemPrice(item)}</span>
+                      <span className="font-bold text-sm text-[#1c1917]">
+                        {item.name}
+                        {variantLabel && <span className="text-neutral-400 font-semibold capitalize"> · {variantLabel}</span>}
+                      </span>
+                      <span className="text-[11px] font-bold text-[#D64238]">₹{getItemPrice(item, variantLabel)}</span>
                     </div>
 
                     {/* Quantity selectors inside drawer */}
                     <div className="bg-neutral-50 border border-neutral-200/80 rounded-xl flex items-center justify-between h-[30px] w-[80px] text-emerald-600 font-extrabold text-[11px]">
                       <button
-                        onClick={() => updateQuantity(item, -1)}
+                        onClick={() => updateQuantity(item, -1, variantLabel)}
                         className="w-7 h-full flex items-center justify-center hover:bg-neutral-100 cursor-pointer"
                       >
                         -
                       </button>
                       <span className="flex-1 text-center text-[#1c1917] font-extrabold">{quantity}</span>
                       <button
-                        onClick={() => updateQuantity(item, 1)}
+                        onClick={() => updateQuantity(item, 1, variantLabel)}
                         className="w-7 h-full flex items-center justify-center hover:bg-neutral-100 cursor-pointer"
                       >
                         +
@@ -543,8 +589,8 @@ export default function MenuPage() {
               <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-3.5 flex items-start gap-3">
                 <span className="text-lg">🎁</span>
                 <div>
-                  <h4 className="text-[12px] font-extrabold text-emerald-800">Table Order Integrated!</h4>
-                  <p className="text-[10px] text-emerald-600/80 leading-normal mt-0.5 font-medium">You will be able to order directly from your table and checkout on your phone in the next update.</p>
+                  <h4 className="text-[12px] font-extrabold text-emerald-800">Order directly from your table!</h4>
+                  <p className="text-[10px] text-emerald-600/80 leading-normal mt-0.5 font-medium">Place your order below and our kitchen starts preparing it right away.</p>
                 </div>
               </div>
 
@@ -556,12 +602,13 @@ export default function MenuPage() {
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: placingOrder ? 1 : 1.02 }}
+                  whileTap={{ scale: placingOrder ? 1 : 0.98 }}
                   onClick={handleCheckoutClick}
-                  className="bg-[#00021D] hover:bg-[#0a0f3d] text-white font-extrabold text-xs uppercase tracking-wider px-6 h-12 rounded-xl shadow-lg transition-all duration-300 cursor-pointer"
+                  disabled={placingOrder}
+                  className="bg-[#00021D] hover:bg-[#0a0f3d] text-white font-extrabold text-xs uppercase tracking-wider px-6 h-12 rounded-xl shadow-lg transition-all duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Pay & Order (Soon)
+                  {placingOrder ? 'Placing…' : 'Place Order'}
                 </motion.button>
               </div>
             </motion.div>

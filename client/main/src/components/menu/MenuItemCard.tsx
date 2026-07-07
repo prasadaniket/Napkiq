@@ -1,12 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { MenuItem } from '@/types/menu'
 
 interface MenuItemCardProps {
   item: MenuItem
-  quantity: number
-  onUpdateQuantity: (change: number) => void
+  // Quantity/updates are keyed by the chosen variant (null for single-priced items).
+  getQuantity: (variantLabel: string | null) => number
+  onUpdateQuantity: (change: number, variantLabel: string | null) => void
 }
 
 // Iconic FSSAI Indian diet indicator badges (Swiggy / Zomato style)
@@ -22,22 +24,25 @@ const NonVegIcon = () => (
   </span>
 )
 
-export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuItemCardProps) {
-  // Get base/lowest price or display range
-  const getBasePrice = () => {
-    if (item.priceVariants) {
-      const prices = Object.values(item.priceVariants)
-      const min = Math.min(...prices)
-      return { price: `₹${min}`, isRange: true }
-    }
-    if (item.price === null || item.price === undefined) {
-      return { price: '—', isRange: false }
-    }
-    const numPrice = typeof item.price === 'string' ? parseFloat(item.price) : item.price
-    return { price: !isNaN(numPrice) ? `₹${numPrice.toFixed(0)}` : '—', isRange: false }
-  }
+export default function MenuItemCard({ item, getQuantity, onUpdateQuantity }: MenuItemCardProps) {
+  const variantEntries = item.priceVariants ? Object.entries(item.priceVariants) : []
+  const hasVariants = variantEntries.length > 0
 
-  const { price: basePrice, isRange } = getBasePrice()
+  // Default to the cheapest variant so the price shown matches "from ₹X".
+  const cheapestVariant = hasVariants
+    ? [...variantEntries].sort((a, b) => a[1] - b[1])[0][0]
+    : null
+  const [selected, setSelected] = useState<string | null>(cheapestVariant)
+
+  const variantLabel = hasVariants ? selected : null
+  const quantity = getQuantity(variantLabel)
+
+  const displayPrice = (() => {
+    if (hasVariants && selected) return `₹${item.priceVariants![selected]}`
+    if (item.price === null || item.price === undefined) return '—'
+    const n = typeof item.price === 'string' ? parseFloat(item.price) : item.price
+    return !isNaN(n) ? `₹${n.toFixed(0)}` : '—'
+  })()
 
   return (
     <motion.div
@@ -65,16 +70,11 @@ export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuI
             {item.name}
           </h4>
 
-          {/* Clean Price display */}
+          {/* Price display (reflects the selected variant) */}
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-[15px] font-extrabold text-[#D64238]">
-              {basePrice}
+              {displayPrice}
             </span>
-            {isRange && (
-              <span className="text-[10px] font-bold text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                Onwards
-              </span>
-            )}
           </div>
 
           {/* Dish Description */}
@@ -85,17 +85,26 @@ export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuI
           )}
         </div>
 
-        {/* Pricing variants tags if present */}
-        {item.priceVariants && (
+        {/* Selectable price-variant pills */}
+        {hasVariants && (
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {Object.entries(item.priceVariants).map(([vName, vPrice]) => (
-              <span 
-                key={vName}
-                className="text-[9.5px] font-bold text-neutral-600 bg-neutral-100/70 border border-neutral-200/50 px-2 py-0.5 rounded-full capitalize"
-              >
-                {vName}: ₹{vPrice}
-              </span>
-            ))}
+            {variantEntries.map(([vName, vPrice]) => {
+              const isActive = selected === vName
+              return (
+                <button
+                  key={vName}
+                  type="button"
+                  onClick={() => setSelected(vName)}
+                  className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full capitalize border transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#D64238] text-white border-[#D64238] shadow-sm'
+                      : 'text-neutral-600 bg-neutral-100/70 border-neutral-200/50 hover:border-[#D64238]/40'
+                  }`}
+                >
+                  {vName}: ₹{vPrice}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
@@ -124,13 +133,13 @@ export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuI
           </div>
         )}
 
-        {/* Floating Add / Quantity Selector Button Overlay (Centered perfectly via flex wrapper to avoid Framer translate bug) */}
+        {/* Floating Add / Quantity Selector Button Overlay */}
         {quantity > 0 ? (
           <div className="absolute bottom-[-10px] left-0 right-0 flex justify-center pointer-events-none">
             <div className="pointer-events-auto bg-white border border-neutral-200/80 shadow-md rounded-xl flex items-center justify-between overflow-hidden h-[34px] w-[88px] text-emerald-600 font-extrabold text-[12px]">
               <motion.button
                 whileTap={{ scale: 0.88 }}
-                onClick={() => onUpdateQuantity(-1)}
+                onClick={() => onUpdateQuantity(-1, variantLabel)}
                 type="button"
                 className="w-8 h-full flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100 transition-colors cursor-pointer"
               >
@@ -141,7 +150,7 @@ export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuI
               </span>
               <motion.button
                 whileTap={{ scale: 0.88 }}
-                onClick={() => onUpdateQuantity(1)}
+                onClick={() => onUpdateQuantity(1, variantLabel)}
                 type="button"
                 className="w-8 h-full flex items-center justify-center hover:bg-neutral-50 active:bg-neutral-100 transition-colors cursor-pointer"
               >
@@ -154,7 +163,7 @@ export default function MenuItemCard({ item, quantity, onUpdateQuantity }: MenuI
             <motion.button
               whileHover={{ scale: 1.04, y: 1 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => onUpdateQuantity(1)}
+              onClick={() => onUpdateQuantity(1, variantLabel)}
               type="button"
               className="pointer-events-auto bg-white text-emerald-600 font-extrabold text-[11px] px-6 py-2 rounded-xl border border-neutral-200/80 shadow-md hover:shadow-lg flex items-center gap-1 transition-all duration-300 tracking-wide uppercase cursor-pointer"
             >

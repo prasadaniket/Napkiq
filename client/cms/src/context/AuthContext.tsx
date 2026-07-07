@@ -20,9 +20,9 @@ interface AuthContextValue {
   loading:     boolean
   logout:      () => void
   // Role helpers — use these everywhere in the UI
-  isAdmin:     boolean   // unicord26 — full access + automation
-  isOwner:     boolean   // niteshsve — all outlets, no automation
-  isFranchise: boolean   // fbowner / fpowner / fviowner / fvaowner
+  isAdmin:     boolean   // admin — full access + automation
+  isOwner:     boolean   // owner — all outlets, no automation
+  isFranchise: boolean   // f1owner / f2owner / f3owner / f4owner
   // Convenience: true for admin OR owner (can see all outlets)
   isOwnerOrAbove: boolean
 }

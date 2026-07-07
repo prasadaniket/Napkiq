@@ -10,6 +10,120 @@ import { saveSession } from '@/lib/auth'
 import { loginSchema, type LoginFormData } from '@/lib/validators'
 import type { LoginResponse } from '@/types/api'
 
+// ─── Live Flowing Waves Background Component ───────────────────────────────────────────
+
+function CanvasBackground() {
+  useEffect(() => {
+    const canvas = document.getElementById('live-bg-canvas') as HTMLCanvasElement
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    
+    let animationFrameId: number
+    let width = canvas.width = window.innerWidth
+    let height = canvas.height = window.innerHeight
+
+    const handleResize = () => {
+      if (!canvas) return
+      width = canvas.width = window.innerWidth
+      height = canvas.height = window.innerHeight
+    }
+    
+    window.addEventListener('resize', handleResize)
+
+    // Waves configuration (amplitude, frequency, offset, speed, color)
+    const waves = [
+      {
+        y: height * 0.55,
+        length: 0.0018,
+        amplitude: 55,
+        speed: 0.006,
+        offset: 0,
+        color: 'rgba(214, 66, 56, 0.05)' // Brand red
+      },
+      {
+        y: height * 0.65,
+        length: 0.0012,
+        amplitude: 75,
+        speed: -0.005,
+        offset: Math.PI / 3,
+        color: 'rgba(245, 147, 0, 0.035)' // Warm orange
+      },
+      {
+        y: height * 0.48,
+        length: 0.0022,
+        amplitude: 45,
+        speed: 0.008,
+        offset: (2 * Math.PI) / 3,
+        color: 'rgba(214, 66, 56, 0.025)'
+      }
+    ]
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height)
+
+      // Draw base luxury alabaster background
+      ctx.fillStyle = '#FAF9F6'
+      ctx.fillRect(0, 0, width, height)
+
+      // Animate and draw large moving glowing ambient gradient orbs in canvas
+      const time = Date.now() * 0.0001
+      
+      const orb1X = width * 0.2 + Math.sin(time) * 110
+      const orb1Y = height * 0.35 + Math.cos(time * 0.8) * 90
+      const grad1 = ctx.createRadialGradient(orb1X, orb1Y, 0, orb1X, orb1Y, Math.min(width, height) * 0.55)
+      grad1.addColorStop(0, 'rgba(214, 66, 56, 0.07)')
+      grad1.addColorStop(1, 'rgba(214, 66, 56, 0)')
+      ctx.fillStyle = grad1
+      ctx.fillRect(0, 0, width, height)
+
+      const orb2X = width * 0.8 + Math.cos(time * 0.95) * 130
+      const orb2Y = height * 0.65 + Math.sin(time * 0.65) * 100
+      const grad2 = ctx.createRadialGradient(orb2X, orb2Y, 0, orb2X, orb2Y, Math.min(width, height) * 0.6)
+      grad2.addColorStop(0, 'rgba(245, 147, 0, 0.05)')
+      grad2.addColorStop(1, 'rgba(245, 147, 0, 0)')
+      ctx.fillStyle = grad2
+      ctx.fillRect(0, 0, width, height)
+
+      // Draw flowing sine waves
+      waves.forEach((w) => {
+        ctx.beginPath()
+        ctx.moveTo(0, height)
+        
+        for (let x = 0; x <= width; x += 10) {
+          const y = w.y + Math.sin(x * w.length + w.offset) * w.amplitude
+          ctx.lineTo(x, y)
+        }
+
+        ctx.lineTo(width, height)
+        ctx.closePath()
+        ctx.fillStyle = w.color
+        ctx.fill()
+
+        w.offset += w.speed
+      })
+
+      animationFrameId = requestAnimationFrame(draw)
+    }
+
+    draw()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
+
+  return (
+    <canvas 
+      id="live-bg-canvas" 
+      className="absolute inset-0 z-0 block w-full h-full pointer-events-none"
+    />
+  )
+}
+
+// ─── Main Login Page Component ─────────────────────────────────────────────────────────
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
@@ -33,7 +147,7 @@ export default function LoginPage() {
       const res = await api.post<LoginResponse>('/auth/login', data)
       saveSession(res.data)
       toast.success(`Welcome back, ${res.data.fullName}!`)
-      router.push('/dashboard')
+      router.push('/analytics')
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Invalid User ID or password')
     } finally {
@@ -43,23 +157,24 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      {/* Dynamic Background Blobs */}
-      <div className="bg-blobs">
-        <div className="bg-blob bg-blob-1"></div>
-        <div className="bg-blob bg-blob-2"></div>
-        <div className="bg-blob bg-blob-3"></div>
-      </div>
+      {/* Live Flowing Wave Canvas Background */}
+      <CanvasBackground />
 
       <div className="login-card">
         {/* Logo and CMS Label */}
-        <div className="login-logo">
-          <div className="login-logo-ring">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo/logo-circle.png"
-              alt="Napkiq"
-              style={{ width: 84, height: 84, objectFit: 'contain', borderRadius: '50%' }}
-            />
+        <div className="login-logo-section">
+          <div className="login-logo-container">
+            {/* Spinning decorative borders */}
+            <div className="logo-ring-outer"></div>
+            <div className="logo-ring-inner"></div>
+            <div className="login-logo-badge">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo/logo-circle.png"
+                alt="Napkiq"
+                style={{ width: 80, height: 80, objectFit: 'contain', borderRadius: '50%' }}
+              />
+            </div>
           </div>
           <p className="login-subtitle">CMS Portal</p>
         </div>
@@ -81,7 +196,7 @@ export default function LoginPage() {
                 id="cms-username"
                 {...register('username')}
                 className={`login-input ${errors.username ? 'login-input-error' : ''}`}
-                placeholder="e.g. unicord26"
+                placeholder="e.g. admin"
                 autoComplete="username"
                 autoFocus
               />
@@ -168,83 +283,38 @@ export default function LoginPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #fcfbfa; /* Luxury light warm cream base */
+          background: #FAF9F6;
           position: relative;
           overflow: hidden;
           padding: 24px;
           font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
         }
 
-        /* ─── Background Blobs ─── */
-        .bg-blobs {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          z-index: 0;
-          pointer-events: none;
-        }
-        .bg-blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(120px);
-          opacity: 0.55;
-          mix-blend-mode: multiply;
-          animation: orb-drift 22s infinite alternate ease-in-out;
-        }
-        .bg-blob-1 {
-          width: 450px;
-          height: 450px;
-          background: radial-gradient(circle, rgba(214,66,56,0.14) 0%, rgba(214,66,56,0) 70%);
-          top: -10%;
-          left: -5%;
-        }
-        .bg-blob-2 {
-          width: 550px;
-          height: 550px;
-          background: radial-gradient(circle, rgba(245,147,0,0.09) 0%, rgba(245,147,0,0) 70%);
-          bottom: -15%;
-          right: -5%;
-          animation-delay: -5s;
-        }
-        .bg-blob-3 {
-          width: 350px;
-          height: 350px;
-          background: radial-gradient(circle, rgba(214,66,56,0.06) 0%, rgba(214,66,56,0) 70%);
-          top: 35%;
-          right: 15%;
-          animation-delay: -10s;
-        }
-        @keyframes orb-drift {
-          0% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(40px, -60px) scale(1.08); }
-          100% { transform: translate(-20px, 30px) scale(0.95); }
-        }
-
         /* ─── Login Card ─── */
         .login-card {
           position: relative;
           z-index: 10;
-          background: rgba(255, 255, 255, 0.75);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(28, 25, 23, 0.05);
-          border-radius: 32px;
-          padding: 40px 36px 36px;
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.45);
+          border-radius: 36px;
+          padding: 44px 38px 38px;
           box-shadow: 
-            0 4px 6px -1px rgba(0, 0, 0, 0.005),
-            0 24px 50px -8px rgba(28, 25, 23, 0.04),
+            0 10px 30px -10px rgba(0, 2, 29, 0.03),
+            0 30px 60px -12px rgba(28, 25, 23, 0.05),
             0 1px 0 0 rgba(255, 255, 255, 0.8) inset;
           width: 100%;
-          max-width: 410px;
+          max-width: 420px;
           box-sizing: border-box;
           transform: translateY(0);
           transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
-          animation: card-appear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: card-appear 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes card-appear {
           from {
             opacity: 0;
-            transform: translateY(28px) scale(0.97);
+            transform: translateY(32px) scale(0.96);
           }
           to {
             opacity: 1;
@@ -252,60 +322,93 @@ export default function LoginPage() {
           }
         }
         .login-card:hover {
-          transform: translateY(-3px);
+          transform: translateY(-4px);
           box-shadow: 
-            0 10px 15px -3px rgba(0, 0, 0, 0.01),
-            0 36px 72px -12px rgba(28, 25, 23, 0.07),
+            0 15px 40px -10px rgba(0, 2, 29, 0.05),
+            0 40px 80px -15px rgba(28, 25, 23, 0.08),
             0 1px 0 0 rgba(255, 255, 255, 0.9) inset;
         }
         .login-card:focus-within {
-          border-color: rgba(214, 66, 56, 0.12);
+          border-color: rgba(214, 66, 56, 0.15);
         }
 
-        /* ─── Logo Wrapper ─── */
-        .login-logo {
+        /* ─── Logo Badge Rotating Rings ─── */
+        .login-logo-section {
           text-align: center;
-          margin-bottom: 24px;
+          margin-bottom: 28px;
         }
-        .login-logo-ring {
+        .login-logo-container {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+        .logo-ring-outer {
+          position: absolute;
+          inset: -8px;
+          border: 1px dashed rgba(214, 66, 56, 0.25);
+          border-radius: 50%;
+          animation: spin-clockwise 18s linear infinite;
+          pointer-events: none;
+        }
+        .logo-ring-inner {
+          position: absolute;
+          inset: -4px;
+          border: 1px dotted rgba(245, 147, 0, 0.35);
+          border-radius: 50%;
+          animation: spin-counter-clockwise 12s linear infinite;
+          pointer-events: none;
+        }
+        .login-logo-badge {
           display: inline-flex;
           padding: 6px;
-          background: #ffffff;
+          background: rgba(255, 255, 255, 0.95);
           border-radius: 50%;
           box-shadow: 
-            0 4px 16px rgba(0, 2, 29, 0.03),
-            0 12px 32px rgba(28, 25, 23, 0.04);
-          border: 1px solid rgba(28, 25, 23, 0.03);
+            0 6px 20px rgba(0, 2, 29, 0.03),
+            0 12px 36px rgba(28, 25, 23, 0.04);
+          border: 1px solid rgba(28, 25, 23, 0.04);
           transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          z-index: 5;
         }
-        .login-logo-ring:hover {
+        .login-logo-container:hover .login-logo-badge {
           transform: scale(1.08) rotate(-4deg);
         }
         .login-subtitle {
-          font-size: 0.72rem;
-          color: rgba(28, 25, 23, 0.4);
+          font-size: 0.74rem;
+          color: rgba(28, 25, 23, 0.45);
           text-transform: uppercase;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.15em;
           font-weight: 700;
-          margin: 10px 0 0;
+          margin: 6px 0 0;
+        }
+        
+        @keyframes spin-clockwise {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes spin-counter-clockwise {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
         }
 
         /* ─── Header Group ─── */
         .login-header-group {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 32px;
         }
         .login-heading {
-          font-size: 1.45rem;
-          font-weight: 700;
+          font-size: 1.55rem;
+          font-weight: 800;
           color: #1c1917;
           margin: 0;
           font-family: var(--font-serif), Georgia, serif;
-          letter-spacing: -0.015em;
+          letter-spacing: -0.02em;
         }
         .login-desc {
-          font-size: 0.84rem;
-          color: rgba(28, 25, 23, 0.45);
+          font-size: 0.85rem;
+          color: rgba(28, 25, 23, 0.48);
           margin: 8px 0 0;
           line-height: 1.5;
         }
@@ -314,7 +417,7 @@ export default function LoginPage() {
         .login-form {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: 22px;
         }
         .login-field {
           display: flex;
@@ -322,9 +425,11 @@ export default function LoginPage() {
           gap: 6px;
         }
         .login-label {
-          font-size: 0.81rem;
-          font-weight: 600;
-          color: rgba(28, 25, 23, 0.65);
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: rgba(28, 25, 23, 0.55);
           margin-left: 2px;
           transition: color 0.2s;
         }
@@ -339,18 +444,18 @@ export default function LoginPage() {
         .login-input {
           width: 100%;
           background: rgba(28, 25, 23, 0.02);
-          border: 1px solid rgba(28, 25, 23, 0.07);
-          border-radius: 12px;
-          padding: 12px 14px 12px 42px;
-          font-size: 0.9375rem;
+          border: 1px solid rgba(28, 25, 23, 0.08);
+          border-radius: 14px;
+          padding: 13px 15px 13px 44px;
+          font-size: 0.95rem;
           color: #1c1917;
           outline: none;
-          transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           box-sizing: border-box;
           font-family: inherit;
         }
         .login-input::placeholder {
-          color: rgba(28, 25, 23, 0.25);
+          color: rgba(28, 25, 23, 0.28);
         }
         .login-input:hover {
           background: rgba(28, 25, 23, 0.04);
@@ -368,20 +473,20 @@ export default function LoginPage() {
         /* ─── Input Micro-interactions ─── */
         .login-input-icon {
           position: absolute;
-          left: 14px;
+          left: 15px;
           color: rgba(28, 25, 23, 0.35);
           display: flex;
           align-items: center;
           pointer-events: none;
-          transition: color 0.2s, transform 0.2s;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .login-input:focus ~ .login-input-icon {
           color: #D64238;
-          transform: scale(1.05);
+          transform: scale(1.1) translateX(2px);
         }
         .login-eye {
           position: absolute;
-          right: 14px;
+          right: 15px;
           background: none;
           border: none;
           color: rgba(28, 25, 23, 0.35);
@@ -389,30 +494,30 @@ export default function LoginPage() {
           padding: 4px;
           display: flex;
           align-items: center;
-          transition: color 0.2s, transform 0.2s;
+          transition: all 0.25s;
         }
         .login-eye:hover {
-          color: rgba(28, 25, 23, 0.6);
-          transform: scale(1.1);
+          color: #D64238;
+          transform: scale(1.15);
         }
         .login-eye:active {
-          transform: scale(0.92);
+          transform: scale(0.9);
         }
 
         /* ─── Error Handling ─── */
         .login-input-error {
-          border-color: rgba(220, 38, 38, 0.25) !important;
+          border-color: rgba(220, 38, 38, 0.3) !important;
           background: rgba(220, 38, 38, 0.01) !important;
-          animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+          animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }
         .login-input-error:focus {
           box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08) !important;
         }
         .login-error {
-          font-size: 0.75rem;
+          font-size: 0.76rem;
           color: #dc2626;
           margin: 2px 0 0 2px;
-          font-weight: 500;
+          font-weight: 600;
         }
         @keyframes shake {
           10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -424,22 +529,22 @@ export default function LoginPage() {
         /* ─── Sign In Button ─── */
         .login-btn {
           width: 100%;
-          padding: 13.5px;
-          background: #00021D; /* Warm rich navy black */
+          padding: 14.5px;
+          background: #00021D;
           border: none;
-          border-radius: 12px;
-          font-size: 0.9375rem;
-          font-weight: 600;
+          border-radius: 14px;
+          font-size: 0.95rem;
+          font-weight: 700;
           color: #fff;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           font-family: inherit;
-          margin-top: 8px;
-          box-shadow: 0 4px 12px rgba(0, 2, 29, 0.06);
+          margin-top: 10px;
+          box-shadow: 0 4px 12px rgba(0, 2, 29, 0.08);
           position: relative;
           overflow: hidden;
         }
@@ -453,12 +558,12 @@ export default function LoginPage() {
         }
         .login-btn:hover:not(:disabled)::after {
           left: 100%;
-          transition: left 0.8s ease-in-out;
+          transition: left 0.85s ease-in-out;
         }
         .login-btn:hover:not(:disabled) {
           background: #0a0f3d;
-          transform: translateY(-1px);
-          box-shadow: 0 8px 24px rgba(0, 2, 29, 0.12);
+          transform: translateY(-2px);
+          box-shadow: 0 12px 30px rgba(0, 2, 29, 0.15);
         }
         .login-btn:active:not(:disabled) {
           transform: translateY(1px);
@@ -479,21 +584,21 @@ export default function LoginPage() {
 
         /* ─── Footer ─── */
         .login-footer {
-          margin-top: 36px;
+          margin-top: 40px;
           text-align: center;
-          font-size: 0.72rem;
-          color: rgba(28, 25, 23, 0.3);
+          font-size: 0.74rem;
+          color: rgba(28, 25, 23, 0.35);
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          letter-spacing: 0.02em;
-          font-weight: 500;
+          letter-spacing: 0.03em;
+          font-weight: 600;
         }
         .login-footer-dot {
-          width: 3px;
-          height: 3px;
-          background: rgba(28, 25, 23, 0.25);
+          width: 3.5px;
+          height: 3.5px;
+          background: rgba(28, 25, 23, 0.28);
           border-radius: 50%;
         }
       `}</style>

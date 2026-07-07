@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fingerprintjs/fingerprintjs": "^5",
     "@hookform/resolvers": "^5",
     "@radix-ui/react-avatar": "^1.1.11",
     "@supabase/ssr": "^0.10.2",

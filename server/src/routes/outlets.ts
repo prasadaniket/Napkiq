@@ -16,7 +16,7 @@ router.get('/', async (_req, res, next) => {
   }
 })
 
-// GET /outlets/:code — accepts both slug (boisar) and code (BSR)
+// GET /outlets/:code — accepts both slug (mumbai) and code (MUM)
 router.get('/:code', async (req, res, next) => {
   try {
     const { code } = req.params

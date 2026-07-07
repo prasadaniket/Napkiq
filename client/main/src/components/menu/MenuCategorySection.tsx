@@ -4,11 +4,11 @@ import MenuItemCard from './MenuItemCard'
 interface MenuCategorySectionProps {
   category: MenuCategory
   items: MenuItem[]
-  cart: Record<string, { item: MenuItem; quantity: number }>
-  onUpdateQuantity: (item: MenuItem, change: number) => void
+  getQuantity: (item: MenuItem, variantLabel: string | null) => number
+  onUpdateQuantity: (item: MenuItem, change: number, variantLabel: string | null) => void
 }
 
-export default function MenuCategorySection({ category, items, cart, onUpdateQuantity }: MenuCategorySectionProps) {
+export default function MenuCategorySection({ category, items, getQuantity, onUpdateQuantity }: MenuCategorySectionProps) {
   if (items.length === 0) return null
 
   return (
@@ -22,8 +22,8 @@ export default function MenuCategorySection({ category, items, cart, onUpdateQua
           <MenuItemCard
             key={item.id}
             item={item}
-            quantity={cart[item.id]?.quantity || 0}
-            onUpdateQuantity={(change) => onUpdateQuantity(item, change)}
+            getQuantity={(variantLabel) => getQuantity(item, variantLabel)}
+            onUpdateQuantity={(change, variantLabel) => onUpdateQuantity(item, change, variantLabel)}
           />
         ))}
       </div>

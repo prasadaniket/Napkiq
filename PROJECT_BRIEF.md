@@ -72,7 +72,7 @@ Napkiq/
 model Outlet {
   id            String          @id @default(uuid())
   name          String
-  code          String          @unique // e.g., "boisar", "virar", "palghar", "vasai"
+  code          String          @unique // e.g., "mumbai", "delhi", "pune", "bangalore"
   slug          String
   address       String?
   googleMapsUrl String?

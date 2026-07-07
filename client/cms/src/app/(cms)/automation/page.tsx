@@ -101,8 +101,8 @@ const replaceMockPlaceholders = (text: string) => {
   return text
     .replace(/{customer_name}/g, 'Alex')
     .replace(/{name}/g, 'Alex')
-    .replace(/{outlet_name}/g, 'Stone Oven Boisar')
-    .replace(/{outlet_code}/g, 'BSR')
+    .replace(/{outlet_name}/g, 'Stone Oven Mumbai')
+    .replace(/{outlet_code}/g, 'MUM')
 }
 
 // ─── Custom UI Switch ────────────────────────────────────────────────────────

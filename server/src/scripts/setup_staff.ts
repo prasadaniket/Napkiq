@@ -7,12 +7,12 @@ import { supabaseAdmin } from '../lib/supabase'
 // STAFF_ADMIN_PASSWORD / STAFF_OWNER_PASSWORD / STAFF_FB_PASSWORD, ...
 
 const STAFF = [
-  { email: 'unicord26@gmail.com', password: process.env.STAFF_ADMIN_PASSWORD, username: 'unicord26', fullName: 'Aniket (UniCord)',          role: 'admin'           as const, outlet: null      },
-  { email: 'owner@napkiq.com',    password: process.env.STAFF_OWNER_PASSWORD, username: 'niteshsve', fullName: 'Nitesh Save',               role: 'owner'           as const, outlet: null      },
-  { email: 'fbowner@napkiq.com',  password: process.env.STAFF_FB_PASSWORD,    username: 'fbowner',   fullName: 'Franchise Owner — Boisar',  role: 'franchise_owner' as const, outlet: 'boisar'  },
-  { email: 'fpowner@napkiq.com',  password: process.env.STAFF_FP_PASSWORD,    username: 'fpowner',   fullName: 'Franchise Owner — Palghar', role: 'franchise_owner' as const, outlet: 'palghar' },
-  { email: 'fviowner@napkiq.com', password: process.env.STAFF_FVI_PASSWORD,   username: 'fviowner',  fullName: 'Franchise Owner — Virar',   role: 'franchise_owner' as const, outlet: 'virar'   },
-  { email: 'fvaowner@napkiq.com', password: process.env.STAFF_FVA_PASSWORD,   username: 'fvaowner',  fullName: 'Franchise Owner — Vasai',   role: 'franchise_owner' as const, outlet: 'vasai'   },
+  { email: 'unicord26@gmail.com', password: process.env.STAFF_ADMIN_PASSWORD, username: 'admin', fullName: 'Aniket (UniCord)',          role: 'admin'           as const, outlet: null      },
+  { email: 'owner@stoneoven.com',    password: process.env.STAFF_OWNER_PASSWORD, username: 'owner', fullName: 'Nitesh Save',               role: 'owner'           as const, outlet: null      },
+  { email: 'fbowner@stoneoven.com',  password: process.env.STAFF_FB_PASSWORD,    username: 'f1owner',   fullName: 'Franchise Owner — Mumbai',  role: 'franchise_owner' as const, outlet: 'mumbai'  },
+  { email: 'fpowner@stoneoven.com',  password: process.env.STAFF_FP_PASSWORD,    username: 'f2owner',   fullName: 'Franchise Owner — Pune', role: 'franchise_owner' as const, outlet: 'pune' },
+  { email: 'fviowner@stoneoven.com', password: process.env.STAFF_FVI_PASSWORD,   username: 'f3owner',  fullName: 'Franchise Owner — Delhi',   role: 'franchise_owner' as const, outlet: 'delhi'   },
+  { email: 'fvaowner@stoneoven.com', password: process.env.STAFF_FVA_PASSWORD,   username: 'f4owner',  fullName: 'Franchise Owner — Bangalore',   role: 'franchise_owner' as const, outlet: 'bangalore'   },
 ]
 
 async function main() {

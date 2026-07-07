@@ -4,10 +4,25 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(xargs cat *)",
+      "Bash(git ls-remote *)",
+      "Bash(npm run *)",
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(npx tsx -e ' *)",
       "Bash(npx wrangler *)",
-      "Bash(curl -s -X POST https://so-ta1t.onrender.com/api/automation/welcome -H 'Content-Type: application/json' -H 'x-automation-secret: change-me-before-deploy' -H 'x-wasender-api-key: 29d8ec3fd065e1281f26bc26ca369f36c58d81b277aba1a45cd6a4445056d9ab' --max-time 30)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:8080/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" localhost:8080/api/*)",
+      "Bash(curl -s -X POST localhost:8080/api/*)",
+      "Bash(netstat -ano)",
+      "Bash(ls -la)",
+      "Bash(cat MEMORY.md)",
+      "PowerShell($c = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c | Select-Object -Expand OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } }; \"done\")",
+      "Read(//c/Users/Asus/.claude/projects/h--UniCord-Product-Napkiq/**)",
+      "Bash(npx tsx *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

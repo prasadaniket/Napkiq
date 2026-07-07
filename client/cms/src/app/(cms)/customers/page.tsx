@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { format, differenceInDays } from 'date-fns'
+import ExportModal from '@/components/export/ExportModal'
 import type { Customer, Review, PageResponse } from '@/types/api'
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -165,6 +166,7 @@ export default function CustomersPage() {
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [showExport, setShowExport] = useState(false)
 
   const [search, setSearch] = useState('')
   const [inactive, setInactive] = useState(false)
@@ -233,16 +235,15 @@ export default function CustomersPage() {
               </svg>
             </div>
             {isAdmin && (
-              <button 
-                onClick={() => toast.success('🚀 CSV Export is coming soon in the next update!')}
-                className="btn-ghost" 
+              <button
+                onClick={() => setShowExport(true)}
+                className="btn-ghost"
                 style={{ gap: 6, fontSize: 13, border: '1px solid var(--color-border)', cursor: 'pointer' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                <span>Export CSV</span>
-                <span className="text-[9px] font-extrabold bg-[#D64238]/10 text-[#D64238] px-1.5 py-0.5 rounded-md uppercase tracking-wider select-none">Soon</span>
+                <span>Export</span>
               </button>
             )}
           </div>
@@ -453,6 +454,15 @@ export default function CustomersPage() {
           </>
         )}
       </div>
+
+      {showExport && (
+        <ExportModal
+          endpoint="/cms/export/customers"
+          filenameBase="customers"
+          title="Export Customers"
+          onClose={() => setShowExport(false)}
+        />
+      )}
     </div>
   )
 }

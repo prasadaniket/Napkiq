@@ -18,14 +18,14 @@ const lora = Lora({
 export const metadata: Metadata = {
   title: 'Napkiq | Artisanal Woodfired Pizzas & Fresh Bakes',
   description:
-    'Enjoy authentic woodfired pizzas, artisanal sourdough bakes, and premium coffees at Napkiq. Visit our outlets in Boisar, Palghar, Vasai, and Virar for fresh, stone-baked goodness.',
+    'Enjoy authentic woodfired pizzas, artisanal sourdough bakes, and premium coffees at Napkiq. Visit our outlets in Mumbai, Pune, Bangalore, and Delhi for fresh, stone-baked goodness.',
   keywords: [
     'Napkiq',
     'Napkiq Pizza',
-    'Boisar Pizza',
-    'Palghar Pizza',
-    'Vasai Cafe',
-    'Virar Cafe',
+    'Mumbai Pizza',
+    'Pune Pizza',
+    'Bangalore Cafe',
+    'Delhi Cafe',
     'Woodfired Pizza',
     'Artisanal Sourdough',
     'Fresh Bakes',

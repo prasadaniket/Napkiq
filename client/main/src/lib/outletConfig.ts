@@ -6,8 +6,8 @@ export interface OutletConfig {
 }
 
 export const outletConfig: Record<string, OutletConfig> = {
-  boisar:  { id: 'boisar',  name: 'Napkiq Boisar',  location: 'Boisar, Palghar, Maharashtra', hasMenu: true },
-  palghar: { id: 'palghar', name: 'Napkiq Palghar', location: 'Palghar, Maharashtra',          hasMenu: true },
-  virar:   { id: 'virar',   name: 'Napkiq Virar',   location: 'Virar, Palghar, Maharashtra',   hasMenu: true },
-  vasai:   { id: 'vasai',   name: 'Napkiq Vasai',   location: 'Vasai, Palghar, Maharashtra',   hasMenu: true },
+  mumbai:  { id: 'mumbai',  name: 'Napkiq Mumbai',  location: 'Mumbai, Pune, Maharashtra', hasMenu: true },
+  pune: { id: 'pune', name: 'Napkiq Pune', location: 'Pune, Maharashtra',          hasMenu: true },
+  delhi:   { id: 'delhi',   name: 'Napkiq Delhi',   location: 'Delhi, Pune, Maharashtra',   hasMenu: true },
+  bangalore:   { id: 'bangalore',   name: 'Napkiq Bangalore',   location: 'Bangalore, Pune, Maharashtra',   hasMenu: true },
 }

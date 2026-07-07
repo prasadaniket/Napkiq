@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import { format } from 'date-fns'
+import ExportModal from '@/components/export/ExportModal'
 import type { PageResponse, Visit, VisitSummary } from '@/types/api'
 import toast from 'react-hot-toast'
 
@@ -136,6 +137,7 @@ export default function VisitsPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage]       = useState(0)
   const [total, setTotal]     = useState(0)
+  const [showExport, setShowExport] = useState(false)
 
   // Filters
   const [search, setSearch]     = useState('')
@@ -180,6 +182,7 @@ export default function VisitsPage() {
   const clearFilters = () => { setSearch(''); setType(''); setDateFrom(''); setDateTo(''); setSortDir('desc') }
   const totalPages = Math.ceil(total / 20)
 
+
   return (
     <div>
       <div className="page-header">
@@ -210,16 +213,15 @@ export default function VisitsPage() {
             </div>
             {/* Export — admin only (backend enforces requireAdmin) */}
             {isAdmin && (
-              <button 
-                onClick={() => toast.success('🚀 CSV Export is coming soon in the next update!')}
-                className="btn-ghost" 
+              <button
+                onClick={() => setShowExport(true)}
+                className="btn-ghost"
                 style={{ gap: 6, fontSize: 13, border: '1px solid var(--color-border)', cursor: 'pointer' }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                <span>Export CSV</span>
-                <span className="text-[9px] font-extrabold bg-[#D64238]/10 text-[#D64238] px-1.5 py-0.5 rounded-md uppercase tracking-wider select-none">Soon</span>
+                <span>Export</span>
               </button>
             )}
           </div>
@@ -404,6 +406,15 @@ export default function VisitsPage() {
           </>
         )}
       </div>
+
+      {showExport && (
+        <ExportModal
+          endpoint="/cms/export/visits"
+          filenameBase="visits"
+          title="Export Visits"
+          onClose={() => setShowExport(false)}
+        />
+      )}
     </div>
   )
 }

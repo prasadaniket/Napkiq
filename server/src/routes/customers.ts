@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma'
 import { z } from 'zod'
 import { sendWhatsApp } from '../lib/notifications'
 import { getTemplate } from '../lib/templateStore'
-import { writeLimiter } from '../middleware/rateLimit'
+import { writeLimiter, readLimiter } from '../middleware/rateLimit'
 
 const router = Router()
 
@@ -24,9 +24,9 @@ const CreateCustomerSchema = z.object({
 // fingerprint acts as the bearer secret; the global rate limiter throttles
 // enumeration. The main app needs the full record to prefill the returning
 // customer's own form, so the payload is intentionally complete.
-router.get('/by-device/:deviceId', async (req, res, next) => {
+router.get('/by-device/:deviceId', readLimiter, async (req, res, next) => {
   try {
-    const { deviceId } = req.params
+    const deviceId = req.params.deviceId as string
     const customer = await prisma.customer.findUnique({
       where: { deviceId },
       include: { firstVisitOutlet: true },

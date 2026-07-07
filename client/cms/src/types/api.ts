@@ -44,6 +44,17 @@ export interface DashboardStats {
   anniversariesThisMonth:number
 }
 
+// ─── Revenue & menu intelligence ──────────────────────────────────────────────
+
+export interface RevenueInsights {
+  days:   number
+  totals: { revenue: number; orders: number; itemsSold: number }
+  topItems: { name: string; quantity: number; revenue: number }[]
+  byOutlet: { outletId: string; name: string; revenue: number; orders: number }[]
+  daily:       { date: string; revenue: number; orders: number; visits: number; newCustomers: number; newReviews: number }[]
+  hourlyToday: { hour: number; revenue: number; orders: number; visits: number }[]
+}
+
 // ─── Outlets ──────────────────────────────────────────────────────────────────
 
 export interface Outlet {
@@ -195,3 +206,60 @@ export interface MenuCategory {
   outlet?:      { id: string; name: string; code: string }
   items:        MenuItem[]
 }
+
+// ─── Orders / KDS ─────────────────────────────────────────────────────────────
+
+export type OrderStatus = 'new' | 'preparing' | 'ready' | 'served' | 'cancelled'
+export type OrderSource = 'customer' | 'staff'
+export type ServiceType = 'table' | 'self'
+export type CancelledBy = 'staff' | 'customer'
+
+export interface OrderItem {
+  id:            string
+  orderId:       string
+  menuItemId:    string | null
+  nameSnapshot:  string
+  variantLabel:  string | null
+  priceSnapshot: string | null
+  quantity:      number
+  note:          string | null
+}
+
+export interface Order {
+  id:          string
+  outletId:    string
+  customerId:  string | null
+  deviceId:    string | null
+  createdById: string | null
+  status:      OrderStatus
+  source:      OrderSource
+  serviceType: ServiceType
+  boardNumber: string | null
+  note:        string | null
+  cancelledBy: CancelledBy | null
+  closedAt:    string | null
+  dailyNumber: number | null
+  businessDate: string | null
+  createdAt:   string
+  updatedAt:   string
+  items:       OrderItem[]
+  outlet?:     { name: string; code: string }
+}
+
+export interface OrderSummary {
+  from:                string
+  to:                  string
+  servedCount:         number
+  cancelledByStaff:    number
+  cancelledByCustomer: number
+  cancelledCount:      number
+  activeCount:         number
+  itemsSold:           number
+  revenue:             number
+  topItems:            { name: string; quantity: number }[]
+}
+
+/** Payload pushed over the KDS SSE stream. */
+export type OrderEvent =
+  | { type: 'created'; order: Order }
+  | { type: 'status';  order: Order }

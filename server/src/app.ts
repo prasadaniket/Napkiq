@@ -7,6 +7,7 @@ import customersRouter from './routes/customers'
 import reviewsRouter from './routes/reviews'
 import visitsRouter from './routes/visits'
 import menuRouter from './routes/menu'
+import ordersRouter from './routes/orders'
 import authRouter from './routes/auth'
 import dashboardRouter from './routes/cms/dashboard'
 import cmsCustomersRouter from './routes/cms/customers'
@@ -16,6 +17,7 @@ import cmsVisitsRouter from './routes/cms/visits'
 import automationLogsRouter from './routes/cms/automationLogs'
 import exportRouter from './routes/cms/export'
 import cmsMenuRouter from './routes/cms/menu'
+import cmsOrdersRouter from './routes/cms/orders'
 import automationRouter          from './routes/automation'
 import automationTemplatesRouter from './routes/cms/automationTemplates'
 import qrRouter from './routes/cms/qr'
@@ -32,12 +34,28 @@ export function createApp() {
   const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((o) => o.trim())
+    .filter(Boolean)
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  // Fail closed in production: an empty allow-list means CORS_ORIGINS is
+  // misconfigured, which must never fall through to "allow every origin". Outside
+  // production an empty list stays permissive for local dev convenience.
+  if (isProduction && allowedOrigins.length === 0) {
+    console.error('[CORS] CORS_ORIGINS is not set in production — all cross-origin requests will be denied.')
+  }
 
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow if origin is in the list, or if it's local development
-        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.length === 0) {
+        // Requests without an Origin header (curl, same-origin, server-to-server)
+        // are not subject to browser CORS — always allow them.
+        if (!origin) {
+          callback(null, true)
+          return
+        }
+        // In the allow-list, or dev with no list configured → allow. In production a
+        // missing list denies everything (fail closed).
+        if (allowedOrigins.includes(origin) || (!isProduction && allowedOrigins.length === 0)) {
           callback(null, true)
         } else {
           console.error(`[CORS Error] Origin "${origin}" is not allowed. Allowed:`, allowedOrigins)
@@ -64,6 +82,7 @@ export function createApp() {
   app.use('/api/reviews', reviewsRouter)
   app.use('/api/visits', visitsRouter)
   app.use('/api/menu', menuRouter)
+  app.use('/api/orders', ordersRouter)
 
   // Auth
   app.use('/api/auth', authRouter)  // POST /api/auth/login, GET /api/auth/me
@@ -77,6 +96,7 @@ export function createApp() {
   app.use('/api/cms/automation-logs', automationLogsRouter)
   app.use('/api/cms/export',          exportRouter)
   app.use('/api/cms/menu',                 cmsMenuRouter)
+  app.use('/api/cms/orders',               cmsOrdersRouter)
   app.use('/api/cms/automation-templates', automationTemplatesRouter)
   app.use('/api/cms/qr',                  qrRouter)
 

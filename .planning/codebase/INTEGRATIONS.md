@@ -1,134 +1,101 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-28
+**Analysis Date:** 2026-07-07
 
 ## APIs & External Services
 
-**Authentication:**
-- Supabase Auth — Staff login and token verification
-  - SDK: `@supabase/supabase-js` ^2.104.0 (server + both clients)
-  - Server client: `supabaseAdmin` (service role) in `server/src/lib/supabase.ts`
-  - Client SSR helpers: `@supabase/ssr` ^0.10.2 in both Next.js apps
-  - Flow: CMS login POSTs username → server resolves email → `supabaseAdmin.auth.signInWithPassword` → returns session token → stored in `localStorage` (CMS) or cookie (main client)
-  - Token verification: every CMS route calls `supabaseAdmin.auth.getUser(token)` in `server/src/middleware/auth.ts`
+**Authentication — Supabase Auth:**
+- SDK: `@supabase/supabase-js` ^2.104.0 (server + both clients); `@supabase/ssr` in the Next.js apps
+- Server client: `supabaseAdmin` (service role) in `server/src/lib/supabase.ts`
+- Flow: CMS login POSTs username → server resolves email → `supabaseAdmin.auth.signInWithPassword` → session token stored in `localStorage` (CMS)
+- Verification: `resolveStaffFromToken` calls `supabaseAdmin.auth.getUser(token)` then loads the active `Staff` record — used by both `requireAuth` and the KDS SSE endpoint
 
-**Image Storage:**
-- Cloudinary — Menu item image hosting
-  - SDK: `cloudinary` ^2.9.0
-  - Config: `server/src/lib/cloudinary.ts`; cloud name defaults to `dfc95tllh`
-  - Upload folder: `StoneOven/menu`
-  - Upload route: `POST /api/cms/menu/items/:id/image` — multer (memory, 5 MB) → `cloudinary.uploader.upload_stream`
-  - Env vars: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+**Image Storage — Cloudinary:**
+- SDK: `cloudinary` ^2.9.0; config in `server/src/lib/cloudinary.ts`
+- Menu item images uploaded via `POST /api/cms/menu/items/:id/image` — multer (memory, 5 MB) → `upload_stream`
+- Env: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 
-**WhatsApp Messaging:**
-- Twilio — Birthday/anniversary/re-engagement WhatsApp messages via Meta templates
-  - SDK: `twilio` ^6.0.0
-  - Implementation: `server/src/lib/notifications.ts` — currently in **dry-run mode** (logs payload, returns `success=true`)
-  - Dry-run condition: `AUTOMATION_DRY_RUN=true` OR `TWILIO_ACCOUNT_SID` not set
-  - Env vars (when live): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`
-  - Activation: uncomment Twilio block in `server/src/lib/notifications.ts`
+**WhatsApp Messaging — WaSenderAPI:**
+- SDK: `wasenderapi` ^0.4.0 — the current send path (`server/src/lib/notifications.ts`), active when `WASENDER_API_KEY` is set
+- Sends plain-text WhatsApp built from admin-editable templates (`templateStore`)
+- Dry-run when `AUTOMATION_DRY_RUN=true` or neither `WASENDER_API_KEY` nor `TWILIO_ACCOUNT_SID` is set
+- Twilio remains only as commented-out future code (intended Meta-template path); it is **not** an installed dependency
 
-**Transactional Email:**
-- Resend — Birthday/anniversary/re-engagement emails
-  - SDK: `resend` ^6.12.2
-  - Implementation: `server/src/lib/notifications.ts` — currently in **dry-run mode**
-  - Dry-run condition: `RESEND_API_KEY` not set
-  - Env vars (when live): `RESEND_API_KEY`, `RESEND_FROM_EMAIL`
-  - Activation: uncomment Resend block in `server/src/lib/notifications.ts`
+**Transactional Email — Resend:**
+- SDK: `resend` ^6.12.2; `server/src/lib/notifications.ts`
+- Dry-run until `RESEND_API_KEY` is set; templates in `notifications.ts` (`build*Email`, `buildGenericEmail`)
+- Env: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (default `Napkiq <noreply@napkiq.in>`)
 
-**Browser Fingerprinting:**
-- FingerprintJS (open source) — Anonymous customer visit tracking
-  - SDK: `@fingerprintjs/fingerprintjs` ^5
-  - Implementation: `client/main/src/lib/fingerprint.ts`
-  - Storage: `so_device_id` in `localStorage` (SSR-safe fallback)
-  - Purpose: identify returning customers before they submit a form; passed as `deviceId` to visit and customer APIs
+**Browser Fingerprinting — FingerprintJS (open source):**
+- SDK: `@fingerprintjs/fingerprintjs` ^5; `client/main/src/lib/fingerprint.ts`
+- Storage: `so_device_id` in `localStorage`
+- Purpose: identify returning customers, link visits and orders (`Order.deviceId`) before/without registration
 
 ## Data Storage
 
-**Database:**
-- PostgreSQL (hosted on Supabase or external Render DB)
-  - Connection: `DATABASE_URL` env var
-  - Client: Prisma 7.x via `@prisma/adapter-pg` + `pg.Pool`; `server/src/lib/prisma.ts`
-  - Schema: `server/generated/prisma/schema.prisma`
-  - Migrations: `prisma migrate deploy` (via `npm run prisma:migrate`)
-  - Models: `Outlet`, `Customer`, `Review`, `CustomerVisit`, `MenuCategory`, `MenuItem`, `AutomationLog`, `Staff`, `OtpVerification`
+**Database — PostgreSQL:**
+- Connection: `DATABASE_URL`; Prisma 7.x via `@prisma/adapter-pg` + `pg.Pool` (`server/src/lib/prisma.ts`)
+- Schema: `server/prisma/schema.prisma`; migrations via `prisma migrate deploy`
+- Models: `Outlet`, `Customer`, `Review`, `CustomerVisit`, `MenuCategory`, `MenuItem`, `AutomationLog`, `Staff`, `Order`, `OrderCounter`, `OrderItem`
+- `order_counters` is an atomic per-outlet/per-day sequence source for daily token numbers (`INSERT … ON CONFLICT`)
 
-**File Storage:**
-- Cloudinary (see above) — menu item images only
-- No local filesystem storage for user-uploaded files
+**File Storage:** Cloudinary (menu images only); no local user-upload storage.
 
-**Caching:**
-- None detected
+**Caching / Message bus:** None external. Order events use an **in-process** `EventEmitter` (`server/src/lib/orderEvents.ts`) — not shared across instances.
 
 ## Authentication & Identity
 
-**Staff Auth Provider:** Supabase Auth
-- Server validates Bearer tokens via `supabaseAdmin.auth.getUser(token)`
-- Username → email resolution done via Prisma lookup before Supabase sign-in
-- Roles enforced server-side: `admin`, `owner`, `franchise_owner` (mapped from Prisma `StaffRole` enum)
-- Role guards in `server/src/middleware/auth.ts`: `requireAuth`, `requireAdmin`, `requireOwnerOrAbove`
+**Staff:** Supabase Auth; roles `admin`, `owner`, `franchise_owner` (deprecated `main_owner` mapped → `admin`). Guards in `server/src/middleware/auth.ts`.
 
-**Customer Identity:** Anonymous (device fingerprint)
-- No login; customers identified by `deviceId` from FingerprintJS
-- Phone number collected on first visit form and stored as unique identifier
+**Customer:** Anonymous — identified by FingerprintJS `deviceId`; phone number is the unique registration identifier.
+
+## Real-time (SSE)
+
+- `GET /api/cms/orders/stream?token=&outletId=` — KDS live feed (auth via query-param token)
+- `GET /api/orders/:id/stream` — customer per-order status feed (public, keyed by opaque order UUID)
+- Both send `text/event-stream` with a 25s heartbeat and set `X-Accel-Buffering: no` to disable proxy buffering on Render
 
 ## Monitoring & Observability
 
-**Error Tracking:** Not detected (no Sentry, Datadog, etc.)
-
-**Logs:** `console.log` / `console.error` throughout; CORS errors explicitly logged to server console
-
-**Health Check:** `GET /api/health` returns `{ status: "ok", timestamp }` — used by Docker healthcheck
+- **Error tracking:** none (no Sentry/Datadog)
+- **Logs:** `console.log` / `console.error`
+- **Health check:** `GET /api/health` → `{ status: "ok", timestamp }`
 
 ## CI/CD & Deployment
 
-**Hosting:**
-- Server: Render (primary production URL `api.stoneoven.in`); Docker image also available via `docker-compose.yml`
-- Main client: Netlify (`netlify.toml`, `@netlify/plugin-nextjs` plugin) → `stoneoven.in`
-- CMS client: Vercel (referenced in codebase; not in `netlify.toml`)
-- Worker: Cloudflare Workers — deploy via `wrangler deploy` from `worker/`
-
-**CI Pipeline:** Not detected (no GitHub Actions, CircleCI, etc.)
+- **Server:** Render (`so-ta1t.onrender.com`, fronted by `api.napkiq.in`); Docker image via `docker-compose.yml`
+- **Main client:** Netlify (`netlify.toml`) → `napkiq.in`
+- **CMS client:** Vercel (per codebase comments)
+- **Worker:** Cloudflare Workers (`napkiq-automation`) — `wrangler deploy`
+- **CI pipeline:** none detected
 
 **Cron Automation:**
-- Cloudflare Worker (`worker/src/index.ts`) fires daily at 03:00 UTC (08:30 IST)
-- Calls `POST /api/automation/run` on Express server with `x-automation-secret` header
-- Server also accepts manual trigger from CMS (dual-auth: worker secret OR staff JWT)
-- Worker config: `worker/wrangler.toml`; Cloudflare account ID `11de51483dbed991a23c44341f0ca00d`
+- Worker `worker/src/index.ts` fires daily at 03:00 UTC (08:30 IST) → `POST /api/automation/run` with `x-automation-secret`
+- CMS manual trigger uses the same endpoint with a Bearer JWT (dual-auth)
+- Config: `worker/wrangler.toml`; `SERVER_URL = https://so-ta1t.onrender.com`; account ID `11de51483dbed991a23c44341f0ca00d`
 
 ## Environment Configuration
 
 **Required server env vars:**
-- `DATABASE_URL` — PostgreSQL connection string
-- `SUPABASE_URL` — Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (throws on startup if missing)
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Image uploads
-- `CORS_ORIGINS` — Comma-separated allowed origins (empty = allow all, for dev)
-- `AUTOMATION_SECRET` — Shared secret between Cloudflare Worker and Express
-- `PORT` — HTTP listen port (default: 8080)
+- `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- `CORS_ORIGINS` (comma-separated; empty = allow all, dev only)
+- `AUTOMATION_SECRET`, `PORT` (default 8080)
 
 **Optional server env vars (notifications):**
-- `AUTOMATION_DRY_RUN` — Set `true` to force dry-run regardless of other keys
-- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`
-- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`
+- `AUTOMATION_DRY_RUN`, `WASENDER_API_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`
 
-**Required client env vars:**
-- `NEXT_PUBLIC_API_URL` — Backend base URL (default fallback: `https://so-4ntt.onrender.com/api`)
-- `NEXT_PUBLIC_APP_URL` — Used by QRService to build QR scan URLs (default: `https://stoneoven.in`)
+**Client env vars:**
+- `NEXT_PUBLIC_API_URL` (default `https://api.napkiq.in/api`)
+- `NEXT_PUBLIC_APP_URL` (QR target base, default `https://napkiq.in`)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-**Optional client env vars:**
-- `NEXT_PUBLIC_MOCK_API=true` — CMS only; activates mock API layer from `client/cms/src/lib/mock-api.ts`
+- `NEXT_PUBLIC_MOCK_API=true` (CMS only)
 
 ## Webhooks & Callbacks
 
-**Incoming:** None detected
-
-**Outgoing:**
-- Cloudflare Worker → `POST /api/automation/run` on Express (daily cron)
-- Google Maps links embedded per outlet (`googleMapsUrl` field in `Outlet` model); no server-side Maps API calls detected
-- Google Place ID stored per outlet (`googlePlaceId`) for Google review redirects; no server-side Places API calls
+- **Incoming:** none
+- **Outgoing:** Cloudflare Worker → `POST /api/automation/run`; per-outlet Google Maps links (`googleMapsUrl`) and Google Place IDs (`googlePlaceId`) are stored for client-side redirects — no server-side Google API calls
 
 ---
 
-*Integration audit: 2026-04-28*
+*Integration audit: 2026-07-07*

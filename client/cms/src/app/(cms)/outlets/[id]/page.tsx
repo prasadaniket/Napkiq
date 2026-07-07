@@ -256,7 +256,7 @@ export default function OutletDetailPage() {
           />
 
           {/* Clickable Celebration Badges */}
-          <Link href={`/birthdays?outletId=${outlet.id}`} className="no-underline">
+          <Link href={`/celebrations?outletId=${outlet.id}`} className="no-underline">
             <KpiTile 
               label="Birthdays" 
               value={stats.birthdaysThisMonth} 
@@ -266,7 +266,7 @@ export default function OutletDetailPage() {
             />
           </Link>
 
-          <Link href={`/anniversaries?outletId=${outlet.id}`} className="no-underline">
+          <Link href={`/celebrations?outletId=${outlet.id}&tab=anniversaries`} className="no-underline">
             <KpiTile 
               label="Anniversaries" 
               value={stats.anniversariesThisMonth} 

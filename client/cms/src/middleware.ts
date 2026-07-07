@@ -11,15 +11,15 @@ export function middleware(request: NextRequest) {
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     const token = request.cookies.get('cms_token')?.value
     if (token && pathname === '/login') {
-      const dashboardUrl = request.nextUrl.clone()
-      dashboardUrl.pathname = '/dashboard'
-      return NextResponse.redirect(dashboardUrl)
+      const analyticsUrl = request.nextUrl.clone()
+      analyticsUrl.pathname = '/analytics'
+      return NextResponse.redirect(analyticsUrl)
     }
     return NextResponse.next()
   }
 
-  // Allow Next.js internals
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname === '/favicon.ico') {
+  // Allow Next.js internals and static logo assets
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.startsWith('/logo') || pathname === '/favicon.ico') {
     return NextResponse.next()
   }
 

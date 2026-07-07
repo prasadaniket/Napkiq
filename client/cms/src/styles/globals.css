@@ -12,10 +12,10 @@
   --color-primary-border:rgba(214, 66, 56, 0.15);
 
   /* Surfaces (light) */
-  --color-bg:            #ffffff;
+  --color-bg:            #FAF9F6;
   --color-surface:       #ffffff;
-  --color-surface-2:     #efeeeb;
-  --color-surface-3:     #efeeeb;
+  --color-surface-2:     #F3F2EE;
+  --color-surface-3:     #E6E4DD;
 
   /* Borders */
   --color-border:        rgba(0, 2, 29, 0.06);

@@ -93,7 +93,7 @@ export default function OutletsPage() {
 
   useEffect(() => {
     if (!isOwnerOrAbove) {
-      router.replace('/dashboard')
+      router.replace('/analytics')
       return
     }
     fetchStats()
@@ -577,7 +577,7 @@ export default function OutletsPage() {
                       <input 
                         type="text" 
                         className="input" 
-                        placeholder="e.g. VSI" 
+                        placeholder="e.g. BLR" 
                         required
                         maxLength={10}
                         value={formData.code}
@@ -589,7 +589,7 @@ export default function OutletsPage() {
                       <input 
                         type="text" 
                         className="input" 
-                        placeholder="e.g. vasai" 
+                        placeholder="e.g. bangalore" 
                         required
                         value={formData.slug}
                         onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
@@ -603,7 +603,7 @@ export default function OutletsPage() {
                     <input 
                       type="text" 
                       className="input" 
-                      placeholder="e.g. Vasai West, Palghar" 
+                      placeholder="e.g. Bangalore West, Pune" 
                       required
                       value={formData.location}
                       onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
@@ -614,7 +614,7 @@ export default function OutletsPage() {
                     <textarea 
                       className="input" 
                       style={{ minHeight: 60, resize: 'none' }}
-                      placeholder="e.g. Shop 3, Riddhi Plaza, Vasai West 401202"
+                      placeholder="e.g. Shop 3, Riddhi Plaza, Bangalore West 401202"
                       value={formData.address}
                       onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     />
@@ -646,7 +646,7 @@ export default function OutletsPage() {
                     <input 
                       type="email" 
                       className="input bg-white" 
-                      placeholder="e.g. vasai@napkiq.com" 
+                      placeholder="e.g. bangalore@napkiq.com" 
                       value={formData.ownerEmail}
                       onChange={e => setFormData(prev => ({ ...prev, ownerEmail: e.target.value }))}
                     />
@@ -702,7 +702,7 @@ export default function OutletsPage() {
                     <input 
                       type="text" 
                       className="input" 
-                      placeholder="e.g. vasai_place_id" 
+                      placeholder="e.g. bangalore_place_id" 
                       required
                       value={formData.googlePlaceId}
                       onChange={e => setFormData(prev => ({ ...prev, googlePlaceId: e.target.value }))}
@@ -745,7 +745,7 @@ export default function OutletsPage() {
               <div className="rounded-2xl bg-amber-50/50 border border-amber-100/40 p-4 flex gap-3 text-xs text-amber-800">
                 <Sparkles className="h-5 w-5 text-amber-500 flex-shrink-0" />
                 <div>
-                  <span className="font-bold">Convenience Seed Feature:</span> When you create this outlet, the system will **automatically clone** the entire Boisar menu structure (all categories, items, variant models, diets and descriptions) into this branch as a startup catalog!
+                  <span className="font-bold">Convenience Seed Feature:</span> When you create this outlet, the system will **automatically clone** the entire Mumbai menu structure (all categories, items, variant models, diets and descriptions) into this branch as a startup catalog!
                 </div>
               </div>
 

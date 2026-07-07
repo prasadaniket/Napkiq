@@ -67,6 +67,29 @@ enum StaffRole {
   main_owner
 }
 
+enum OrderStatus {
+  new
+  preparing
+  ready
+  served
+  cancelled
+}
+
+enum OrderSource {
+  customer
+  staff
+}
+
+enum ServiceType {
+  table
+  self
+}
+
+enum CancelledBy {
+  staff
+  customer
+}
+
 model Outlet {
   id            String   @id @default(uuid()) @db.Uuid
   code          String   @unique @db.VarChar(10)
@@ -87,6 +110,7 @@ model Outlet {
   visits         CustomerVisit[]
   menuCategories MenuCategory[]
   staff          Staff[]
+  orders         Order[]
 
   @@map("outlets")
 }
@@ -112,6 +136,7 @@ model Customer {
   reviews        Review[]
   visits         CustomerVisit[]
   automationLogs AutomationLog[]
+  orders         Order[]
 
   @@index([deviceId])
   @@index([phone])
@@ -186,6 +211,7 @@ model MenuItem {
   displayOrder  Int?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  orderItems    OrderItem[]
 
   @@index([categoryId, displayOrder])
   @@map("menu_items")
@@ -221,4 +247,62 @@ model Staff {
   updatedAt        DateTime  @updatedAt
 
   @@map("staff")
+}
+
+model Order {
+  id          String       @id @default(uuid()) @db.Uuid
+  outletId    String       @db.Uuid
+  outlet      Outlet       @relation(fields: [outletId], references: [id])
+  customerId  String?      @db.Uuid
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  deviceId    String? // links guest orders to a device (my-orders history + tracking)
+  createdById String?      @db.Uuid // Staff.id when source = staff (plain field, no relation)
+  status      OrderStatus  @default(new)
+  source      OrderSource
+  serviceType ServiceType  @default(table)
+  boardNumber String?      @db.VarChar(10)
+  note        String?
+  cancelledBy CancelledBy? // who cancelled, when status = cancelled
+  closedAt    DateTime? // set when the order reaches a terminal state (served/cancelled)
+  dailyNumber Int? // per-outlet token number, resets each business day (IST)
+  businessDate DateTime?   @db.Date // the IST business day this order belongs to
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  items OrderItem[]
+
+  @@index([outletId, status, createdAt])
+  @@index([outletId, closedAt])
+  @@index([outletId, businessDate])
+  @@index([deviceId])
+  @@map("orders")
+}
+
+// Per-outlet, per-day sequence source for order token numbers. One row per
+// (outlet, business day); `lastNumber` is atomically incremented on each order
+// (see createOrderWithItems). A fresh day starts a new row → numbers reset daily.
+model OrderCounter {
+  id         String   @id @default(uuid()) @db.Uuid
+  outletId   String   @db.Uuid
+  date       DateTime @db.Date
+  lastNumber Int      @default(0)
+
+  @@unique([outletId, date])
+  @@map("order_counters")
+}
+
+model OrderItem {
+  id            String    @id @default(uuid()) @db.Uuid
+  orderId       String    @db.Uuid
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId    String?   @db.Uuid // nullable: keep row if the menu item is later deleted
+  menuItem      MenuItem? @relation(fields: [menuItemId], references: [id])
+  nameSnapshot  String
+  variantLabel  String? // chosen price variant, e.g. "Large" / "nonVeg"
+  priceSnapshot Decimal?  @db.Decimal(10, 2)
+  quantity      Int       @default(1)
+  note          String?
+
+  @@index([orderId])
+  @@map("order_items")
 }

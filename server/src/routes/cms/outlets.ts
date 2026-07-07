@@ -376,19 +376,19 @@ router.post('/', async (req, res, next) => {
       }
     }
 
-    // 3. Clone the Boisar Menu for this new outlet as a convenience seed!
+    // 3. Clone the Mumbai Menu for this new outlet as a convenience seed!
     try {
-      const boisar = await prisma.outlet.findFirst({
-        where: { OR: [{ code: 'BSR' }, { slug: 'boisar' }] },
+      const mumbai = await prisma.outlet.findFirst({
+        where: { OR: [{ code: 'MUM' }, { slug: 'mumbai' }] },
       })
 
-      if (boisar) {
-        const boisarCategories = await prisma.menuCategory.findMany({
-          where: { outletId: boisar.id, isActive: true },
+      if (mumbai) {
+        const mumbaiCategories = await prisma.menuCategory.findMany({
+          where: { outletId: mumbai.id, isActive: true },
           include: { items: { orderBy: { displayOrder: 'asc' } } },
         })
 
-        for (const sourceCat of boisarCategories) {
+        for (const sourceCat of mumbaiCategories) {
           const targetCat = await prisma.menuCategory.create({
             data: {
               name: sourceCat.name,

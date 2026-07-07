@@ -19,7 +19,7 @@ Napkiq is an end-to-end, ultra-premium restaurant management, dining, customer e
 ## ✨ Key Features
 
 ### 🏪 Public Experience (`/client/main`)
-- **Dynamic Geography:** Context-aware routing for distinct branches (Boisar, Palghar, Vasai, Virar).
+- **Dynamic Geography:** Context-aware routing for distinct branches (Mumbai, Pune, Bangalore, Delhi).
 - **Premium Aesthetics:** Dark-themed UI with `framer-motion` micro-interactions, warm luxury themes, glassmorphism, and radial gradients.
 - **Diet Indicators:** High-fidelity custom SVG diet types (FSSAI green circle dot for Veg, red triangle for Non-Veg).
 - **Interactive Cart & Menu:** Anchored scrolling categories, local diets filtering, Zomato/Swiggy-style cart selector with spring animations, and bottom sheet drawer.
@@ -127,7 +127,7 @@ npx prisma db push
 
 # (Optional) Run utility setup scripts
 npx tsx src/scripts/setup_staff.ts          # Authenticate and map Supabase staff roles
-npx tsx src/scripts/propagate_menu.ts       # Clone Boisar base menu to other branches with price deltas
+npx tsx src/scripts/propagate_menu.ts       # Clone Mumbai base menu to other branches with price deltas
 npx tsx src/scripts/inspect_outlets.ts      # View list of current database outlets
 npx tsx src/scripts/test_bounceback_direct.ts # Test run WhatsApp template dispatches manually
 
@@ -163,7 +163,7 @@ npm run dev
 
 ## 🗄️ Database Schema Summary
 Napkiq uses PostgreSQL managed through Prisma. The core schema comprises:
-- **`Outlet`**: Repositories representing dining locations (Boisar, Palghar, Virar, Vasai).
+- **`Outlet`**: Repositories representing dining locations (Mumbai, Pune, Delhi, Bangalore).
 - **`Customer`**: Unique users indexed by device ID/phone, tracking contact details, birthdays, anniversaries, and visit frequency.
 - **`CustomerVisit`**: Detailed logs capturing visit times and types (`qr_scan` or `payment`).
 - **`Review`**: Feedback containing stars, text, sentiment tags, and visibility statuses.
