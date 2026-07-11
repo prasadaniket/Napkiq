@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { prisma } from '../lib/prisma'
 import { writeLimiter } from '../middleware/rateLimit'
 import { z } from 'zod'
+import { emitCrmEvent } from '../lib/crmEvents'
 
 const router = Router()
 
@@ -63,6 +64,7 @@ router.post('/', writeLimiter, async (req, res, next) => {
       })
     }
 
+    emitCrmEvent({ type: 'visit', outletId: body.outletId })
     res.status(201).json(visit)
   } catch (err) {
     next(err)

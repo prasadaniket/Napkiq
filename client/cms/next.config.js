@@ -15,6 +15,10 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // Pin Turbopack's root to the monorepo root (client/). This is an npm-workspaces
+  // repo, so `next` is hoisted to client/node_modules — the root MUST be the parent
+  // dir, not this app dir, or Turbopack can't resolve next from here.
+  turbopack: { root: require('path').resolve(__dirname, '..') },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'api.napkiq.in' },

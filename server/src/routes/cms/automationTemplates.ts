@@ -5,7 +5,15 @@ import { readTemplates, updateTemplate } from '../../lib/templateStore'
 import { cloudinary } from '../../lib/cloudinary'
 
 const router = Router()
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  // Reject non-image uploads at the edge; a dropped file leaves req.file
+  // undefined, so the handler's existing "No image file provided" 400 covers it.
+  fileFilter: (_req, file, cb) => {
+    cb(null, /^image\/(png|jpe?g|webp|gif|avif)$/.test(file.mimetype))
+  },
+})
 
 router.use(requireAuth)
 

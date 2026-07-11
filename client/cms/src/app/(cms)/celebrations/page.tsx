@@ -1,54 +1,24 @@
 'use client'
 
-import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BirthdaysPanel from '@/components/celebrations/BirthdaysPanel'
 import AnniversariesPanel from '@/components/celebrations/AnniversariesPanel'
 
 type Tab = 'birthdays' | 'anniversaries'
 
-const TABS: [Tab, string][] = [
-  ['birthdays', '🎂 Birthdays'],
-  ['anniversaries', '💍 Anniversaries'],
-]
-
-// ─── Merged Celebrations page: birthdays + anniversaries as tabs ────────────────
 export default function CelebrationsPage() {
   const searchParams = useSearchParams()
-  const initial: Tab = searchParams.get('tab') === 'anniversaries' ? 'anniversaries' : 'birthdays'
-  const [tab, setTab] = useState<Tab>(initial)
+  const tab: Tab = searchParams.get('tab') === 'anniversaries' ? 'anniversaries' : 'birthdays'
 
   return (
-    <div>
-      <div className="page-header" style={{ marginBottom: 8, paddingBottom: 0 }}>
-        <div style={{ display: 'inline-flex', gap: 4, background: '#f1f5f9', padding: 4, borderRadius: 12 }}>
-          {TABS.map(([key, label]) => {
-            const active = tab === key
-            return (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                style={{
-                  padding: '7px 18px',
-                  borderRadius: 9,
-                  border: 'none',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all .2s',
-                  background: active ? '#ffffff' : 'transparent',
-                  color: active ? '#D64238' : 'rgba(0,2,29,0.5)',
-                  boxShadow: active ? '0 1px 3px rgba(0,2,29,0.08)' : 'none',
-                }}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+    <div className="page-content relative overflow-hidden" style={{ padding: '24px 28px 32px', minHeight: 'calc(100vh - 80px)' }}>
+      {/* Ambient luxury brand glow orbs */}
+      <div className="absolute top-[-10%] left-[-15%] -z-10 h-[50vw] w-[50vw] rounded-full bg-gradient-to-tr from-red-100/5 to-amber-100/5 blur-[120px] animate-pulse duration-[8000ms] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-15%] -z-10 h-[40vw] w-[40vw] rounded-full bg-gradient-to-bl from-rose-100/5 to-orange-100/5 blur-[100px] animate-pulse duration-[10000ms] pointer-events-none" />
 
-      {tab === 'birthdays' ? <BirthdaysPanel /> : <AnniversariesPanel />}
+      <div className="space-y-6">
+        {tab === 'birthdays' ? <BirthdaysPanel /> : <AnniversariesPanel />}
+      </div>
     </div>
   )
 }

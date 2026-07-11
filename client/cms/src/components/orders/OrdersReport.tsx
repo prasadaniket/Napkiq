@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 import type { Order, OrderSummary, OrderStatus, Outlet, PageResponse } from '@/types/api'
+import GSAPDropdown from '@/components/ui/GSAPDropdown'
 import {
   CheckCircle2,
   XCircle,
@@ -132,18 +133,13 @@ export default function OrdersReportPage() {
         
         <div className="filter-console">
           {!isFranchise && (
-            <div className="select-outlet-container">
-              <Store size={14} className="select-outlet-icon" />
-              <select 
-                className="orders-select" 
-                value={outletId} 
-                onChange={e => setOutletId(e.target.value)}
-              >
-                <option value="">All outlets</option>
-                {outlets.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <ChevronDown size={14} className="orders-select-arrow" />
-            </div>
+            <GSAPDropdown
+              value={outletId}
+              onChange={setOutletId}
+              options={[{ value: '', label: 'All outlets' }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
+              icon={<Store size={14} />}
+              width="190px"
+            />
           )}
 
           <div className="date-range-container">

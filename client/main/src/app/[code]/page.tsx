@@ -172,6 +172,31 @@ export default function OutletPage() {
             </Link>
           </motion.div>
 
+          {/* Reserve a Table — only when this outlet has reservations enabled */}
+          {outlet.reservationsEnabled && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Link href={`/${code}/reserve`} className="block w-full" id="btn-reserve-table">
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  className={`${glassBtn} font-bold text-[16px] tracking-wide`}
+                  style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00021D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span className="text-white">Reserve a Table</span>
+                </motion.div>
+              </Link>
+            </motion.div>
+
+          )}
+
+
           {/* Get Directions */}
           {outlet.googleMapsUrl && (
             <motion.div

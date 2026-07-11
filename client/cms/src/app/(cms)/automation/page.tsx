@@ -784,17 +784,14 @@ export default function AutomationPage() {
   return (
     <div className="automation-page-workspace">
       {/* Page Header */}
-      <div className="page-header relative overflow-hidden rounded-[24px] bg-[#efeeeb] border border-neutral-light/50 p-8 mb-8">
-        {/* Abstract background blobs */}
-        <div className="absolute top-[-50%] right-[-10%] w-[320px] h-[320px] bg-primary/5 rounded-full blur-[80px]" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+      <div className="page-header">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h1 className="page-title text-3xl font-bold flex items-center gap-3">
-              <Layers className="text-primary" size={24} />
+            <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Layers className="text-primary" size={20} />
               Marketing &amp; Automation
             </h1>
-            <p className="page-subtitle text-sm mt-1.5 text-neutral-medium max-w-xl">
+            <p className="page-subtitle">
               Construct high-fidelity messaging templates for WhatsApp and email channels. Drive engagement with automatic daily scheduling or dispatch immediate targeted broadcasts.
             </p>
           </div>
@@ -804,7 +801,7 @@ export default function AutomationPage() {
         </div>
       </div>
 
-      <div className="page-content px-0">
+      <div className="page-content">
         {/* Info Notification Panel */}
         <div className="info-banner-panel mb-8">
           <div className="banner-icon-bg">

@@ -175,6 +175,33 @@ export default function CustomerDetailPage() {
               </div>
             </div>
 
+            {/* Lifetime value card */}
+            <div className="card" style={{ padding: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, marginBottom: 6 }}>Lifetime Value</div>
+              <div style={{ fontSize: 40, fontWeight: 800, color: 'var(--color-text-1)', lineHeight: 1 }}>
+                {(customer.clv ?? 0) > 0 ? `₹${Math.round(customer.clv ?? 0).toLocaleString('en-IN')}` : '—'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 6 }}>from served orders</div>
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>Orders</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-1)' }}>{customer.orderCount ?? 0}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>Avg / Order</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-1)' }}>
+                    {(customer.orderCount ?? 0) > 0 ? `₹${Math.round((customer.clv ?? 0) / (customer.orderCount ?? 1)).toLocaleString('en-IN')}` : '—'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>Last Order</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-1)' }}>
+                    {customer.lastOrderAt ? format(new Date(customer.lastOrderAt), 'dd MMM yy') : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Visit History Timeline */}
             {customer.visits && customer.visits.length > 0 && (
               <div className="card" style={{ padding: '16px 20px' }}>

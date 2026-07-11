@@ -33,6 +33,8 @@ const WASENDER_TEMPLATE_MAP: Record<string, string> = {
   promotional:  'promotional_whatsapp',
   announcement: 'announcement_whatsapp',
   bounceback:   'bounceback_whatsapp',
+  reservation:  'reservation_confirmation',
+  reminder:     'reservation_reminder',
 }
 
 // ─── WhatsApp ────────────────────────────────────────────────────────────────
@@ -55,8 +57,11 @@ export async function sendWhatsApp(payload: WhatsAppPayload): Promise<boolean> {
   try {
     // ── WaSenderAPI (temporary testing path) ─────────────────────────────
     if (process.env.WASENDER_API_KEY) {
-      const baseWord   = payload.templateName.replace('napkiq_', '').split('_')[0]
-      const templateKey = WASENDER_TEMPLATE_MAP[baseWord]
+      // Prefer an exact template-key match (e.g. "reservation_reminder"); otherwise
+      // fall back to the first-word map (e.g. "birthday_..." → birthday_whatsapp).
+      const cleanName  = payload.templateName.replace('napkiq_', '')
+      const baseWord   = cleanName.split('_')[0]
+      const templateKey = getTemplate(cleanName) ? cleanName : WASENDER_TEMPLATE_MAP[baseWord]
       const tmpl       = templateKey ? getTemplate(templateKey) : null
       const text       = tmpl
         ? tmpl.body.replace(/\{(\w+)\}/g, (_, k) => payload.variables[k] ?? '')
@@ -98,6 +103,64 @@ export async function sendWhatsApp(payload: WhatsAppPayload): Promise<boolean> {
     }
     return false
   }
+}
+
+// ─── Reservation confirmation ────────────────────────────────────────────────
+// Sent when a table reservation is confirmed. Carries the assigned table + the
+// fresh booking code (the guest's "unique customer number"). Uses the same
+// DRY_RUN / WaSenderAPI path as every other WhatsApp message.
+
+export interface ReservationConfirmationInput {
+  to:          string // E.164 phone
+  customerName: string
+  outletName:  string
+  tableName:   string
+  zone:        string
+  partySize:   number
+  date:        string // e.g. "Fri, 10 Jul 2026"
+  time:        string // e.g. "7:30 PM"
+  bookingCode: string
+}
+
+const ZONE_LABEL: Record<string, string> = {
+  ac:      'AC',
+  non_ac:  'Non-AC',
+  outdoor: 'Outdoor',
+}
+
+export async function sendReservationConfirmation(input: ReservationConfirmationInput): Promise<boolean> {
+  return sendWhatsApp({
+    to:           input.to,
+    templateName: 'reservation_confirmation',
+    variables: {
+      customer_name: input.customerName,
+      outlet_name:   input.outletName,
+      table_name:    input.tableName,
+      zone:          ZONE_LABEL[input.zone] ?? input.zone,
+      party_size:    String(input.partySize),
+      date:          input.date,
+      time:          input.time,
+      booking_code:  input.bookingCode,
+    },
+  })
+}
+
+/** Pre-visit reminder — same fields as the confirmation, different template body. */
+export async function sendReservationReminder(input: ReservationConfirmationInput): Promise<boolean> {
+  return sendWhatsApp({
+    to:           input.to,
+    templateName: 'reservation_reminder',
+    variables: {
+      customer_name: input.customerName,
+      outlet_name:   input.outletName,
+      table_name:    input.tableName,
+      zone:          ZONE_LABEL[input.zone] ?? input.zone,
+      party_size:    String(input.partySize),
+      date:          input.date,
+      time:          input.time,
+      booking_code:  input.bookingCode,
+    },
+  })
 }
 
 // ─── Email ───────────────────────────────────────────────────────────────────

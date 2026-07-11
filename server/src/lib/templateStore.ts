@@ -121,6 +121,20 @@ export const DEFAULT_TEMPLATES: TemplateMap = {
     body: "We hope you enjoyed your woodfired pizza today. Visit us again within the next 14 days and enjoy a complimentary Free Cheese Garlic Bread on us! Simply present this email on your next visit.",
     imageUrl: null, linkUrl: null, isActive: true,
   },
+  reservation_confirmation: {
+    key: 'reservation_confirmation', label: 'Reservation Confirmation', channel: 'whatsapp',
+    trigger: 'automatic', triggerDesc: 'Sent when a table reservation is confirmed',
+    subject: null,
+    body: "Hi {customer_name}, your table at {outlet_name} is confirmed! ✅\n\n🍽️ Table: {table_name} ({zone})\n👥 Guests: {party_size}\n📅 {date} at {time}\n🎟️ Booking code: {booking_code}\n\nPlease show this code at the restaurant. See you soon!",
+    imageUrl: null, linkUrl: null, isActive: true,
+  },
+  reservation_reminder: {
+    key: 'reservation_reminder', label: 'Reservation Reminder', channel: 'whatsapp',
+    trigger: 'automatic', triggerDesc: 'Sent a couple of hours before the reservation',
+    subject: null,
+    body: "Hi {customer_name}, a reminder of your table at {outlet_name} today 🍽️\n\n🪑 Table: {table_name} ({zone})\n👥 Guests: {party_size}\n🕐 {time}\n🎟️ Code: {booking_code}\n\nSee you soon! Reply to this message if your plans change.",
+    imageUrl: null, linkUrl: null, isActive: true,
+  },
 }
 
 // ─── I/O ──────────────────────────────────────────────────────────────────────

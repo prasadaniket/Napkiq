@@ -3,13 +3,14 @@ import { prisma } from '../lib/prisma'
 import { sentimentService } from '../services/SentimentService'
 import { writeLimiter } from '../middleware/rateLimit'
 import { z } from 'zod'
+import { emitCrmEvent } from '../lib/crmEvents'
 
 const router = Router()
 
 const CreateReviewSchema = z.object({
   customerId: z.string().uuid().nullable().optional(),
   outletId: z.string().uuid(),
-  reviewText: z.string().nullable().optional(),
+  reviewText: z.string().max(2000).nullable().optional(),
   stars: z.number().int().min(1).max(5),
   reviewType: z.enum(['first_visit', 'repeat']),
 })
@@ -77,8 +78,11 @@ router.post('/', writeLimiter, async (req, res, next) => {
           totalVisits:   { increment: 1 },
         },
       })
+      emitCrmEvent({ type: 'visit', outletId: body.outletId })
     }
 
+    // Live CRM feed: a new review just came in.
+    emitCrmEvent({ type: 'review', outletId: body.outletId })
     res.status(201).json(review)
   } catch (err) {
     next(err)

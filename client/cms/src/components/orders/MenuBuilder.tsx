@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { api } from '@/lib/api'
 import type { MenuCategory, MenuItem, Outlet } from '@/types/api'
 import toast from 'react-hot-toast'
+import gsap from 'gsap'
+import GSAPDropdown from '@/components/ui/GSAPDropdown'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -712,6 +714,50 @@ export default function MenuPage() {
   // Segment Filter State (All, Veg, Non-Veg)
   const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'nonveg'>('all')
 
+  const filterContainerRef = useRef<HTMLDivElement>(null)
+  const filterPillRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const updatePill = () => {
+      if (!filterContainerRef.current || !filterPillRef.current) return
+      const activeBtn = filterContainerRef.current.querySelector('.segment-btn-active') as HTMLElement | null
+      
+      if (activeBtn) {
+        const parentRect = filterContainerRef.current.getBoundingClientRect()
+        const btnRect = activeBtn.getBoundingClientRect()
+
+        const left = btnRect.left - parentRect.left
+        const top = btnRect.top - parentRect.top
+        const width = btnRect.width
+        const height = btnRect.height
+
+        const currentOpacity = gsap.getProperty(filterPillRef.current, 'opacity')
+        if (currentOpacity === 0) {
+          gsap.set(filterPillRef.current, { left, top, width, height })
+        }
+
+        gsap.to(filterPillRef.current, {
+          left,
+          top,
+          width,
+          height,
+          opacity: 1,
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto'
+        })
+      }
+    }
+
+    const timer = setTimeout(updatePill, 20)
+
+    window.addEventListener('resize', updatePill)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', updatePill)
+    }
+  }, [dietFilter, loading])
+
   useEffect(() => {
     api.get<Outlet[]>('/cms/outlets').then(r => {
       setOutlets(r.data)
@@ -754,7 +800,7 @@ export default function MenuPage() {
         <div className="bg-blob bg-blob-2"></div>
       </div>
 
-      <div className="page-header" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="page-header" style={{ position: 'relative', zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 className="page-title">Menu Builder</h1>
@@ -766,13 +812,27 @@ export default function MenuPage() {
           </div>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
             {/* Segmented Filter Control */}
-            <div className="segment-control">
+            <div ref={filterContainerRef} className="segment-control" style={{ position: 'relative' }}>
+              {/* Sliding active indicator pill */}
+              <div
+                ref={filterPillRef}
+                style={{
+                  position: 'absolute',
+                  background: '#ffffff',
+                  borderRadius: 8,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                  opacity: 0,
+                }}
+              />
               {(['all', 'veg', 'nonveg'] as const).map(f => (
                 <button
                   key={f}
                   type="button"
                   className={`segment-btn ${dietFilter === f ? 'segment-btn-active' : ''}`}
                   onClick={() => setDietFilter(f)}
+                  style={{ position: 'relative', zIndex: 1 }}
                 >
                   {f === 'all' ? 'All' : f === 'veg' ? '🟢 Veg' : '🔴 Non-Veg'}
                 </button>
@@ -780,13 +840,12 @@ export default function MenuPage() {
             </div>
 
             {/* Outlet Selector */}
-            <div className="custom-select-wrapper">
-              <select className="input" value={outletId} onChange={e => setOutletId(e.target.value)}
-                style={{ width: 'auto', padding: '6px 36px 6px 12px', fontSize: 13, height: 38, cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none' }}>
-                {outlets.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <span className="select-arrow">▼</span>
-            </div>
+            <GSAPDropdown
+              value={outletId}
+              onChange={setOutletId}
+              options={outlets.map(o => ({ value: o.id, label: o.name }))}
+              width="190px"
+            />
 
             {outletId && (
               <button className="btn-primary" onClick={() => setShowAdd(true)} style={{ height: 38, padding: '0 16px' }}>
@@ -913,9 +972,9 @@ export default function MenuPage() {
           white-space: nowrap;
         }
         .segment-btn-active {
-          background: #ffffff;
+          background: transparent;
           color: var(--color-text-1);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          box-shadow: none;
         }
 
         /* ─── Custom Select ─── */

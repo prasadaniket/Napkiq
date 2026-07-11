@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { sendWhatsApp } from '../lib/notifications'
 import { getTemplate } from '../lib/templateStore'
 import { writeLimiter, readLimiter } from '../middleware/rateLimit'
+import { emitCrmEvent } from '../lib/crmEvents'
 
 const router = Router()
 
@@ -98,6 +99,7 @@ router.post('/', writeLimiter, async (req, res, next) => {
               visitedAt:  now,
             },
           })
+          emitCrmEvent({ type: 'visit', outletId: body.firstVisitOutletId })
         } else if (!existing.customerId) {
           // Link the anonymous visit created by POST /visits to this customer
           await prisma.customerVisit.update({
@@ -107,11 +109,26 @@ router.post('/', writeLimiter, async (req, res, next) => {
         }
       }
 
+      // Back-link this device's still-anonymous orders & visits to the customer, so
+      // their spend (CLV / average) and history attribute correctly — e.g. someone who
+      // placed an order and *then* filled the registration form. Runs on every
+      // registration (new or returning); only touches rows with a null customerId.
+      const [linkedOrders, linkedVisits] = await Promise.all([
+        prisma.order.updateMany({ where: { deviceId: body.deviceId, customerId: null }, data: { customerId: customer.id } }),
+        prisma.customerVisit.updateMany({ where: { deviceId: body.deviceId, customerId: null }, data: { customerId: customer.id } }),
+      ])
+
       // Fire welcome WhatsApp on first registration — async, doesn't block response
       if (isNew) {
         void sendWelcomeWhatsApp(customer.id, customer.fullName, customer.phone)
         void scheduleBounceBackCampaign(customer.id, customer.fullName, customer.phone, body.firstVisitOutletId)
       }
+
+      // Live CRM feed: a new customer, or newly-attributed spend/visits, just landed.
+      if (isNew || linkedOrders.count > 0 || linkedVisits.count > 0) {
+        emitCrmEvent({ type: 'customer', outletId: body.firstVisitOutletId ?? null })
+      }
+      if (linkedVisits.count > 0) emitCrmEvent({ type: 'visit', outletId: body.firstVisitOutletId ?? null })
 
       res.status(201).json(customer)
     } catch (prismaErr: any) {
@@ -121,16 +138,16 @@ router.post('/', writeLimiter, async (req, res, next) => {
         prismaErr?.message?.includes('Unique constraint failed')
 
       if (isUniqueViolation) {
-        // Phone already registered on another device — link this device to existing customer
-        const existing = await prisma.customer.findUnique({ where: { phone: body.phone } })
-        if (existing) {
-          const updated = await prisma.customer.update({
-            where: { id: existing.id },
-            data: { deviceId: body.deviceId, lastVisitDate: new Date() },
-          })
-          res.status(201).json(updated)
-          return
-        }
+        // The phone is already registered to another device. This endpoint is
+        // unauthenticated, so we must NOT re-link the device or echo the existing
+        // record back: doing so let anyone who knows a phone number harvest that
+        // customer's full PII and hijack their device association (account
+        // takeover). Fail closed with a generic 409 that leaks nothing.
+        //
+        // A legitimate "same customer, new device" re-link belongs behind an
+        // ownership proof (e.g. OTP to the phone) — tracked follow-up.
+        res.status(409).json({ error: 'This phone number is already registered.' })
+        return
       }
       throw prismaErr
     }

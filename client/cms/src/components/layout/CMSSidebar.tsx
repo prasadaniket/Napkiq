@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import gsap from 'gsap'
 
 // ─── Nav item type ─────────────────────────────────────────────────────────────
 
@@ -67,6 +69,13 @@ const Icon = {
       <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
     </svg>
   ),
+  Reservations: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      <path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>
+    </svg>
+  ),
   Birthday: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/>
@@ -100,10 +109,9 @@ const Icon = {
 const adminNav: NavItem[] = [
   { href: '/analytics',    label: 'Analytics',    icon: <Icon.Analytics /> },
   { href: '/outlets',      label: 'Outlets',      icon: <Icon.Outlets /> },
-  { href: '/customers',    label: 'Customers',    icon: <Icon.Customers /> },
-  { href: '/reviews',      label: 'Reviews',      icon: <Icon.Reviews /> },
-  { href: '/visits',       label: 'Visits',       icon: <Icon.Visits /> },
+  { href: '/customers',    label: 'Guests',       icon: <Icon.Customers /> },
   { href: '/kds',          label: 'Kitchen',      icon: <Icon.Kitchen /> },
+  { href: '/reservations', label: 'Reservations', icon: <Icon.Reservations /> },
   { href: '/celebrations', label: 'Celebrations', icon: <Icon.Celebrations /> },
   { href: '/automation',   label: 'Automation',   icon: <Icon.Automation /> },
 ]
@@ -111,21 +119,27 @@ const adminNav: NavItem[] = [
 const ownerNav: NavItem[] = [
   { href: '/analytics',    label: 'Analytics',    icon: <Icon.Analytics /> },
   { href: '/outlets',      label: 'Outlets',      icon: <Icon.Outlets /> },
-  { href: '/customers',    label: 'Customers',    icon: <Icon.Customers /> },
-  { href: '/reviews',      label: 'Reviews',      icon: <Icon.Reviews /> },
-  { href: '/visits',       label: 'Visits',       icon: <Icon.Visits /> },
+  { href: '/customers',    label: 'Guests',       icon: <Icon.Customers /> },
   { href: '/kds',          label: 'Kitchen',      icon: <Icon.Kitchen /> },
+  { href: '/reservations', label: 'Reservations', icon: <Icon.Reservations /> },
   { href: '/celebrations', label: 'Celebrations', icon: <Icon.Celebrations /> },
 ]
 
 const franchiseNav: NavItem[] = [
   { href: '/analytics',    label: 'Analytics',    icon: <Icon.Analytics /> },
-  { href: '/customers',    label: 'Customers',    icon: <Icon.Customers /> },
-  { href: '/reviews',      label: 'Reviews',      icon: <Icon.Reviews /> },
-  { href: '/visits',       label: 'Visits',       icon: <Icon.Visits /> },
+  { href: '/customers',    label: 'Guests',       icon: <Icon.Customers /> },
   { href: '/kds',          label: 'Kitchen',      icon: <Icon.Kitchen /> },
+  { href: '/reservations', label: 'Reservations', icon: <Icon.Reservations /> },
   { href: '/celebrations', label: 'Celebrations', icon: <Icon.Celebrations /> },
 ]
+
+// Sub-items shown under the collapsible "Guests" group (customer-relationship views).
+const GUESTS_CHILDREN: NavItem[] = [
+  { href: '/customers', label: 'Customers', icon: <Icon.Customers /> },
+  { href: '/reviews',   label: 'Reviews',   icon: <Icon.Reviews /> },
+  { href: '/visits',    label: 'Visits',    icon: <Icon.Visits /> },
+]
+const GUESTS_PATHS = GUESTS_CHILDREN.map((c) => c.href)
 
 // ─── Role label ────────────────────────────────────────────────────────────────
 
@@ -146,7 +160,117 @@ function roleBadgeClass(role: string | undefined) {
 
 export default function CMSSidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { user, logout, isAdmin, isOwner } = useAuth()
+
+  const [celebrationsOpen, setCelebrationsOpen] = useState(pathname.startsWith('/celebrations'))
+  const [guestsOpen, setGuestsOpen] = useState(GUESTS_PATHS.some((p) => pathname.startsWith(p)))
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const guestsDropdownRef = useRef<HTMLDivElement>(null)
+  const navRef = useRef<HTMLElement>(null)
+  const indicatorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dropdownRef.current) return
+
+    if (celebrationsOpen) {
+      gsap.killTweensOf(dropdownRef.current)
+      dropdownRef.current.style.display = 'flex'
+      gsap.fromTo(dropdownRef.current,
+        { height: 0, opacity: 0 },
+        {
+          height: 'auto',
+          opacity: 1,
+          duration: 0.35,
+          ease: 'power3.out'
+        }
+      )
+    } else {
+      gsap.killTweensOf(dropdownRef.current)
+      gsap.to(dropdownRef.current, {
+        height: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          if (dropdownRef.current) dropdownRef.current.style.display = 'none'
+        }
+      })
+    }
+  }, [celebrationsOpen])
+
+  useEffect(() => {
+    if (!guestsDropdownRef.current) return
+
+    if (guestsOpen) {
+      gsap.killTweensOf(guestsDropdownRef.current)
+      guestsDropdownRef.current.style.display = 'flex'
+      gsap.fromTo(guestsDropdownRef.current,
+        { height: 0, opacity: 0 },
+        { height: 'auto', opacity: 1, duration: 0.35, ease: 'power3.out' }
+      )
+    } else {
+      gsap.killTweensOf(guestsDropdownRef.current)
+      gsap.to(guestsDropdownRef.current, {
+        height: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          if (guestsDropdownRef.current) guestsDropdownRef.current.style.display = 'none'
+        }
+      })
+    }
+  }, [guestsOpen])
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (!navRef.current || !indicatorRef.current) return
+      const activeEl = navRef.current.querySelector('.sidebar-link.active') as HTMLElement | null
+      
+      if (activeEl) {
+        const parentRect = navRef.current.getBoundingClientRect()
+        const activeRect = activeEl.getBoundingClientRect()
+
+        const top = activeRect.top - parentRect.top
+        const height = activeRect.height
+        const left = activeRect.left - parentRect.left
+        const width = activeRect.width
+
+        const currentOpacity = gsap.getProperty(indicatorRef.current, 'opacity')
+        if (currentOpacity === 0) {
+          gsap.set(indicatorRef.current, { top, height, left, width })
+        }
+
+        gsap.to(indicatorRef.current, {
+          top,
+          height,
+          left,
+          width,
+          opacity: 1,
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto'
+        })
+      } else {
+        gsap.to(indicatorRef.current, {
+          opacity: 0,
+          duration: 0.25,
+          ease: 'power2.inOut',
+          overwrite: 'auto'
+        })
+      }
+    }
+
+    // Delay slightly to allow the collapsible DOM section height transition to trigger / finish
+    const timer = setTimeout(updateIndicator, 50)
+
+    window.addEventListener('resize', updateIndicator)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', updateIndicator)
+    }
+  }, [pathname, searchParams, celebrationsOpen, guestsOpen])
 
   const navItems = isAdmin ? adminNav : isOwner ? ownerNav : franchiseNav
   const outletName = user?.assignedOutletName
@@ -167,7 +291,19 @@ export default function CMSSidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="sidebar-nav">
+        <nav ref={navRef} className="sidebar-nav" style={{ position: 'relative' }}>
+          {/* Sliding active indicator pill */}
+          <div
+            ref={indicatorRef}
+            style={{
+              position: 'absolute',
+              background: 'var(--color-primary-dim)',
+              borderRadius: 'var(--radius-md)',
+              pointerEvents: 'none',
+              zIndex: 0,
+              opacity: 0,
+            }}
+          />
           {/* Outlet badge for franchise owners */}
           {outletName && (
             <div style={{
@@ -187,6 +323,133 @@ export default function CMSSidebar() {
           <div className="sidebar-section-label">Navigation</div>
 
           {navItems.map((item) => {
+            if (item.label === 'Guests') {
+              const isGuestsActive = GUESTS_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+              return (
+                <div key={item.label} className="flex flex-col">
+                  <button
+                    onClick={() => setGuestsOpen(!guestsOpen)}
+                    className={`sidebar-link ${isGuestsActive ? 'active' : ''}`}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="sidebar-icon">{item.icon}</span>
+                      {item.label}
+                    </div>
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      style={{ transition: 'transform 0.2s', transform: guestsOpen ? 'rotate(90deg)' : 'none', opacity: 0.6 }}
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+
+                  <div
+                    ref={guestsDropdownRef}
+                    style={{
+                      paddingLeft: '14px',
+                      marginLeft: '18px',
+                      borderLeft: '1.5px solid var(--color-primary-border)',
+                      marginTop: '4px',
+                      marginBottom: '4px',
+                      display: isGuestsActive ? 'flex' : 'none',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {GUESTS_CHILDREN.map((child) => {
+                      const childActive = pathname === child.href || pathname.startsWith(child.href + '/')
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`sidebar-link hover:translate-x-1 ${childActive ? 'active' : ''}`}
+                          style={{ fontSize: '12px', padding: '6px 8px', transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s' }}
+                        >
+                          <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', opacity: 0.7 }}>{child.icon}</span>
+                          {child.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            }
+
+            if (item.label === 'Celebrations') {
+              const isCelebrationsActive = pathname.startsWith('/celebrations')
+              return (
+                <div key={item.label} className="flex flex-col">
+                  <button
+                    onClick={() => setCelebrationsOpen(!celebrationsOpen)}
+                    className={`sidebar-link ${isCelebrationsActive ? 'active' : ''}`}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="sidebar-icon">{item.icon}</span>
+                      {item.label}
+                    </div>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      style={{
+                        transition: 'transform 0.2s',
+                        transform: celebrationsOpen ? 'rotate(90deg)' : 'none',
+                        opacity: 0.6
+                      }}
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+
+                  <div 
+                    ref={dropdownRef}
+                    style={{
+                      paddingLeft: '14px',
+                      marginLeft: '18px',
+                      borderLeft: '1.5px solid var(--color-primary-border)',
+                      marginTop: '4px',
+                      marginBottom: '4px',
+                      display: pathname.startsWith('/celebrations') ? 'flex' : 'none',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Link
+                      href="/celebrations?tab=birthdays"
+                      className={`sidebar-link hover:translate-x-1 ${pathname === '/celebrations' && searchParams.get('tab') !== 'anniversaries' ? 'active' : ''}`}
+                      style={{ 
+                        fontSize: '12px', 
+                        padding: '6px 8px',
+                        transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s' 
+                      }}
+                    >
+                      <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', opacity: 0.7 }}><Icon.Birthday /></span>
+                      Birthdays
+                    </Link>
+                    <Link
+                      href="/celebrations?tab=anniversaries"
+                      className={`sidebar-link hover:translate-x-1 ${pathname === '/celebrations' && searchParams.get('tab') === 'anniversaries' ? 'active' : ''}`}
+                      style={{ 
+                        fontSize: '12px', 
+                        padding: '6px 8px',
+                        transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, color 0.15s' 
+                      }}
+                    >
+                      <span className="sidebar-icon" style={{ display: 'flex', alignItems: 'center', opacity: 0.7 }}><Icon.Anniversary /></span>
+                      Anniversaries
+                    </Link>
+                  </div>
+                </div>
+              )
+            }
+
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link

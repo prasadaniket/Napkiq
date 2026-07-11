@@ -9,7 +9,7 @@
     "body": "Hey {customer_name}, your birthday is coming up! 🎂 Celebrate with us at Napkiq — we have something special waiting for you.",
     "imageUrl": null,
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "birthday_email": {
     "key": "birthday_email",
@@ -33,7 +33,7 @@
     "body": "Hey {customer_name}, your anniversary is almost here! 💑 Come celebrate at Napkiq with a romantic dining experience.",
     "imageUrl": "https://res.cloudinary.com/dfc95tllh/image/upload/v1779719260/Napkiq/automation/template_anniversary_whatsapp.png",
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "anniversary_email": {
     "key": "anniversary_email",
@@ -57,7 +57,7 @@
     "body": "Hey {customer_name}, we miss you! 👋 It's been a while since your last visit — come back to Napkiq, your favourite table is waiting.",
     "imageUrl": "https://res.cloudinary.com/dfc95tllh/image/upload/v1779719255/Napkiq/automation/template_reengagement_whatsapp.png",
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "reengagement_email": {
     "key": "reengagement_email",
@@ -105,7 +105,7 @@
     "body": "Hey {customer_name}! 🎉 We have a special offer just for you at Napkiq. Visit us this week and enjoy exclusive deals.",
     "imageUrl": "https://res.cloudinary.com/dfc95tllh/image/upload/v1779719299/Napkiq/automation/template_promotional_whatsapp.png",
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "promotional_email": {
     "key": "promotional_email",
@@ -129,7 +129,7 @@
     "body": "Exciting news, {customer_name}! 🍽️ We've added something new to our menu at Napkiq. Come in and be the first to try it!",
     "imageUrl": "https://res.cloudinary.com/dfc95tllh/image/upload/v1779719309/Napkiq/automation/template_announcement_whatsapp.png",
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "announcement_email": {
     "key": "announcement_email",
@@ -153,7 +153,7 @@
     "body": "Hey {customer_name}! 🍕 Thank you for dining with us at {outlet_name} today. We hope you loved our pizza! Come visit us again in the next 14 days and get a Free Cheese Garlic Bread on us! Just show this message to your server. Code: BOUNCE-{outlet_code}",
     "imageUrl": "https://res.cloudinary.com/dfc95tllh/image/upload/v1779742980/Napkiq/automation/template_bounceback_whatsapp.png",
     "linkUrl": null,
-    "isActive": true
+    "isActive": false
   },
   "bounceback_email": {
     "key": "bounceback_email",

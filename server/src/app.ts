@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 
 import outletsRouter from './routes/outlets'
 import customersRouter from './routes/customers'
@@ -8,6 +9,7 @@ import reviewsRouter from './routes/reviews'
 import visitsRouter from './routes/visits'
 import menuRouter from './routes/menu'
 import ordersRouter from './routes/orders'
+import reservationsRouter from './routes/reservations'
 import authRouter from './routes/auth'
 import dashboardRouter from './routes/cms/dashboard'
 import cmsCustomersRouter from './routes/cms/customers'
@@ -18,6 +20,10 @@ import automationLogsRouter from './routes/cms/automationLogs'
 import exportRouter from './routes/cms/export'
 import cmsMenuRouter from './routes/cms/menu'
 import cmsOrdersRouter from './routes/cms/orders'
+import cmsReservationsRouter from './routes/cms/reservations'
+import cmsTablesRouter from './routes/cms/tables'
+import cmsWaitlistRouter from './routes/cms/waitlist'
+import cmsCrmRouter from './routes/cms/crm'
 import automationRouter          from './routes/automation'
 import automationTemplatesRouter from './routes/cms/automationTemplates'
 import qrRouter from './routes/cms/qr'
@@ -30,6 +36,18 @@ export function createApp() {
   // Behind Render/other reverse proxies — required so rate limiting keys on the
   // real client IP (X-Forwarded-For) rather than the proxy's.
   app.set('trust proxy', 1)
+
+  // Baseline security headers (HSTS, nosniff, frameguard, etc.) + hides the
+  // Express fingerprint. CSP is intentionally left off here — this service only
+  // returns JSON, and the HTML-rendering Next apps enforce their own CSP. CORP is
+  // set cross-origin so the separate-origin frontends can consume the API.
+  app.disable('x-powered-by')
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  )
 
   const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
@@ -83,6 +101,7 @@ export function createApp() {
   app.use('/api/visits', visitsRouter)
   app.use('/api/menu', menuRouter)
   app.use('/api/orders', ordersRouter)
+  app.use('/api/reservations', reservationsRouter)
 
   // Auth
   app.use('/api/auth', authRouter)  // POST /api/auth/login, GET /api/auth/me
@@ -97,6 +116,10 @@ export function createApp() {
   app.use('/api/cms/export',          exportRouter)
   app.use('/api/cms/menu',                 cmsMenuRouter)
   app.use('/api/cms/orders',               cmsOrdersRouter)
+  app.use('/api/cms/reservations',         cmsReservationsRouter)
+  app.use('/api/cms/tables',               cmsTablesRouter)
+  app.use('/api/cms/waitlist',             cmsWaitlistRouter)
+  app.use('/api/cms/crm',                  cmsCrmRouter)
   app.use('/api/cms/automation-templates', automationTemplatesRouter)
   app.use('/api/cms/qr',                  qrRouter)
 

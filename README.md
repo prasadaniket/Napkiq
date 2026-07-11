@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/UniCord-Dev/Napkiq/main/client/main/public/images/logo/logo.jpg" alt="Napkiq Logo" width="120" style="border-radius: 50%; box-shadow: 0 4px 14px rgba(232, 140, 58, 0.4);" />
+  <img src="https://raw.githubusercontent.com/prasadaniket/napkiq/main/client/main/public/images/logo/logo-circle.png" alt="Napkiq Logo" width="120" style="border-radius: 50%; box-shadow: 0 4px 14px rgba(232, 140, 58, 0.4);" />
   <h1>Napkiq Platform</h1>
   <p><strong>A premium, multi-outlet dining and customer engagement platform.</strong></p>
   

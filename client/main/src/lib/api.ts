@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { mockApi } from './mock-api'
+import { getCookie } from './auth'
 
 const realApi = axios.create({
   // Fail to the real production API, never a stray host. Set NEXT_PUBLIC_API_URL
@@ -13,7 +14,7 @@ const realApi = axios.create({
 // Attach JWT token to CMS requests
 realApi.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('cms_token')
+    const token = getCookie('cms_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -22,6 +23,7 @@ realApi.interceptors.request.use((config) => {
 })
 
 import { replaceStoneOven } from '../utils/normalize'
+import { clearSession } from './auth'
 
 // Redirect to login on 401
 realApi.interceptors.response.use(
@@ -35,8 +37,7 @@ realApi.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       const isCmsRoute = window.location.pathname.startsWith('/cms')
       if (isCmsRoute) {
-        localStorage.removeItem('cms_token')
-        localStorage.removeItem('cms_user')
+        clearSession()
         window.location.href = '/cms/login'
       }
     }

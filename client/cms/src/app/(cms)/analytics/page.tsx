@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import type { DashboardStats, RevenueInsights } from '@/types/api'
+import gsap from 'gsap'
+import type { DashboardStats, RevenueInsights, HeatmapData, MenuPerformance } from '@/types/api'
 import { 
   Users, 
   Star, 
@@ -43,6 +44,9 @@ function KpiCard({
   const isUp = delta?.dir === 'up'
   const isDown = delta?.dir === 'down'
 
+  const sparklineRef = useRef<SVGPathElement>(null)
+  const sparklineAreaRef = useRef<SVGPathElement>(null)
+
   const drawSparkline = (data: number[]) => {
     const w = 80
     const h = 30
@@ -60,6 +64,40 @@ function KpiCard({
       fillPath: `M ${padding},${h} L ${points.join(' L ')} L ${w - padding},${h} Z`
     }
   }
+
+  useEffect(() => {
+    if (!sparklineRef.current || !sparklineAreaRef.current || !sparklineData) return
+    try {
+      const length = sparklineRef.current.getTotalLength() || 100
+      gsap.killTweensOf(sparklineRef.current)
+      gsap.killTweensOf(sparklineAreaRef.current)
+
+      gsap.set(sparklineRef.current, {
+        strokeDasharray: length,
+        strokeDashoffset: length
+      })
+      gsap.set(sparklineAreaRef.current, {
+        opacity: 0
+      })
+
+      gsap.to(sparklineRef.current, {
+        strokeDashoffset: 0,
+        duration: 1.0,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+
+      gsap.to(sparklineAreaRef.current, {
+        opacity: 1,
+        duration: 0.8,
+        delay: 0.15,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    } catch (e) {
+      console.warn("Failed to animate sparkline", e)
+    }
+  }, [sparklineData])
 
   const cardContent = (
     <div className={`group relative overflow-hidden rounded-2xl border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full flex flex-col justify-between ${
@@ -108,10 +146,12 @@ function KpiCard({
                     </linearGradient>
                   </defs>
                   <path
+                    ref={sparklineAreaRef}
                     d={drawSparkline(sparklineData).fillPath}
                     fill={`url(#sparklineGrad-${label.replace(/\s+/g, '')})`}
                   />
                   <path
+                    ref={sparklineRef}
                     d={drawSparkline(sparklineData).path}
                     fill="none"
                     stroke={accent || isDown ? "#D64238" : "#10B981"}
@@ -171,12 +211,406 @@ function Skeleton({ h, r = 16 }: { h: number; r?: number }) {
   )
 }
 
+// ─── Peak Hours Heatmap ────────────────────────────────────────────────────────
+
+const HEATMAP_DOW = [
+  { idx: 1, label: 'Mon' }, { idx: 2, label: 'Tue' }, { idx: 3, label: 'Wed' },
+  { idx: 4, label: 'Thu' }, { idx: 5, label: 'Fri' }, { idx: 6, label: 'Sat' },
+  { idx: 0, label: 'Sun' },
+]
+const fmtHour12 = (h: number) => `${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}`
+
+function PeakHoursHeatmap({ data }: { data: HeatmapData }) {
+  const { grid, maxCount, totalVisits, busiest } = data
+  const dowLabel = (idx: number) => HEATMAP_DOW.find(d => d.idx === idx)?.label ?? ''
+  const dowFullLabel = (idx: number) => {
+    const names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return names[idx] || '';
+  }
+
+  // Safely compute stats
+  const dailyTotals = Array.from({ length: 7 }, (_, idx) => {
+    const row = grid[idx] || [];
+    return row.reduce((sum, val) => sum + (val || 0), 0);
+  });
+  
+  const hourlyTotals = Array.from({ length: 24 }, (_, h) => {
+    return grid.reduce((sum, dayRow) => sum + (dayRow?.[h] || 0), 0);
+  });
+
+  const busiestDayIdx = dailyTotals.indexOf(Math.max(...dailyTotals));
+  const busiestHour = hourlyTotals.indexOf(Math.max(...hourlyTotals));
+  
+  const avgDailyVisits = Math.round(totalVisits / 7);
+
+  const cellStyle = (count: number): React.CSSProperties => {
+    if (maxCount === 0 || count === 0) return { background: '#f8fafc' };
+    const t = count / maxCount;
+    const hue = Math.round(20 - t * 20);
+    const saturation = Math.round(85 + t * 15);
+    const lightness = Math.round(93 - t * 48);
+    return {
+      background: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+      color: t > 0.5 ? '#ffffff' : `hsl(${hue}, ${saturation}%, 25%)`,
+      transition: 'all 0.2s ease',
+    };
+  };
+
+  return (
+    <div className="rounded-3xl border border-slate-100 bg-white/80 backdrop-blur-md p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] relative overflow-hidden group">
+      {/* Decorative glow */}
+      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/5 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+      
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5 flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#D64238] transition-transform duration-300 group-hover:scale-110">
+            <Clock className="h-5.5 w-5.5" />
+          </div>
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Peak Operating Hours</h3>
+            <p className="text-xs font-medium text-slate-400 mt-0.5">Customer traffic distribution · last {data.days} days</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-50 border border-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+            Total Visits: <span className="text-slate-900 font-extrabold">{totalVisits.toLocaleString()}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50/60 px-3 py-1 text-xs font-bold text-emerald-700">
+            Daily Avg: <span className="text-emerald-950 font-extrabold">{avgDailyVisits}</span>
+          </span>
+        </div>
+      </div>
+
+      {totalVisits === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 mb-3">
+            <Clock className="h-6 w-6" />
+          </div>
+          <span className="text-sm font-semibold text-slate-400">No customer visits recorded in this period</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Stats & Insights Sidebar */}
+          <div className="lg:col-span-1 flex flex-col justify-between gap-4 bg-slate-50/60 border border-slate-100/50 rounded-2xl p-4.5">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Smart Highlights</span>
+              
+              <div className="mt-4 space-y-4">
+                {/* Highlight 1: Peak Traffic */}
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#D64238]/10 text-[#D64238]">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Busiest Hour</div>
+                    <div className="text-sm font-extrabold text-slate-800 mt-0.5">{fmtHour12(busiestHour)}</div>
+                    <p className="text-[10px] font-medium text-slate-400 mt-0.5">Highest concentration of traffic.</p>
+                  </div>
+                </div>
+
+                {/* Highlight 2: Busiest Day */}
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-700">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Busiest Day</div>
+                    <div className="text-sm font-extrabold text-slate-800 mt-0.5">{dowFullLabel(busiestDayIdx)}</div>
+                    <p className="text-[10px] font-medium text-slate-400 mt-0.5">{Math.round((dailyTotals[busiestDayIdx] / totalVisits) * 100)}% of weekly visits.</p>
+                  </div>
+                </div>
+
+                {/* Highlight 3: Staffing recommendation */}
+                {busiest && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                      <Zap className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Staffing Tip</div>
+                      <div className="text-xs font-extrabold text-slate-800 mt-0.5">Optimal Coverage</div>
+                      <p className="text-[10px] font-medium text-slate-500 mt-0.5 leading-relaxed">
+                        Ensure extra coverage on <strong>{dowLabel(busiest.dow)}s</strong> around <strong>{fmtHour12(busiest.hour)}</strong> ({busiest.count} visits).
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Legend inside sidebar */}
+            <div className="border-t border-slate-100 pt-3">
+              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                <span>Traffic Level</span>
+                <div className="flex gap-0.5">
+                  {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
+                    <div 
+                      key={i} 
+                      className="h-3.5 w-3.5 rounded-[4px]" 
+                      style={t === 0 ? { background: '#f8fafc', border: '1px solid #f1f5f9' } : { background: `hsl(${20 - t * 20}, ${85 + t * 15}%, ${93 - t * 48}%)` }} 
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Heatmap Grid */}
+          <div className="lg:col-span-3 overflow-x-auto">
+            <div className="min-w-[620px] p-1">
+              {/* Hour Axis Labels */}
+              <div className="flex items-center gap-1.5 pl-10 mb-2">
+                {Array.from({ length: 24 }, (_, h) => (
+                  <div key={h} className="flex-1 text-center text-[9px] font-black text-slate-400">
+                    {h % 3 === 0 ? fmtHour12(h) : ''}
+                  </div>
+                ))}
+              </div>
+
+              {/* Rows */}
+              <div className="space-y-1.5">
+                {HEATMAP_DOW.map(({ idx, label }) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <div className="w-8 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 select-none">{label}</div>
+                    {grid[idx].map((count, h) => {
+                      const ratio = maxCount > 0 ? count / maxCount : 0;
+                      return (
+                        <div
+                          key={h}
+                          title={`${dowFullLabel(idx)} · ${fmtHour12(h)} · ${count} visit${count === 1 ? '' : 's'}`}
+                          className="flex-1 aspect-square rounded-[6px] flex items-center justify-center text-[9px] font-black shadow-sm transition-all hover:scale-125 hover:z-20 cursor-pointer border border-slate-100/30"
+                          style={cellStyle(count)}
+                        >
+                          {ratio > 0.65 ? count : ''}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Menu Performance (slowest movers) ─────────────────────────────────────────
+
+function MenuPerformancePanel({ data, multiOutlet }: { data: MenuPerformance; multiOutlet: boolean }) {
+  const [filter, setFilter] = useState<'all' | 'zero' | 'active'>('all')
+  const money = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`
+
+  const filteredSlowest = data.slowest.filter(it => {
+    if (filter === 'zero') return it.quantity === 0
+    if (filter === 'active') return it.isAvailable
+    return true
+  })
+
+  const zeroSalesCount = data.slowest.filter(it => it.quantity === 0).length
+  const activeSlowCount = data.slowest.filter(it => it.isAvailable).length
+
+  // Calculate sum of revenue of slow items
+  const slowItemsRevenue = data.slowest.reduce((sum, it) => sum + it.revenue, 0)
+  // Calculate average price of slow items
+  const validPrices = data.slowest.filter(it => it.price !== null) as { price: number }[]
+  const avgPrice = validPrices.length > 0 ? validPrices.reduce((sum, it) => sum + it.price, 0) / validPrices.length : 0
+
+  return (
+    <div className="rounded-3xl border border-slate-100 bg-white/80 backdrop-blur-md p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] relative overflow-hidden group">
+      {/* Decorative background visual elements */}
+      <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-amber-500/5 blur-3xl transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
+      <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-red-500/3 blur-3xl transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
+
+      {/* Header and Title */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6 flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 transition-transform duration-300 group-hover:scale-110">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Menu Optimization Hub</h3>
+            <p className="text-xs font-medium text-slate-400 mt-0.5">Automated recommendations for low-converting menu items</p>
+          </div>
+        </div>
+
+        {/* Tab switch controller */}
+        <div className="flex p-0.5 bg-slate-100/80 border border-slate-200/50 rounded-xl select-none">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
+              filter === 'all'
+                ? 'bg-white text-slate-800 shadow-sm border border-slate-200/10'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            All Items ({data.slowest.length})
+          </button>
+          <button
+            onClick={() => setFilter('zero')}
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
+              filter === 'zero'
+                ? 'bg-white text-[#D64238] shadow-sm border border-slate-200/10'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            Zero Sales ({zeroSalesCount})
+          </button>
+          <button
+            onClick={() => setFilter('active')}
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
+              filter === 'active'
+                ? 'bg-white text-amber-600 shadow-sm border border-slate-200/10'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            Active Slow ({activeSlowCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Summary KPI/Action Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between hover:bg-slate-50/80 transition-colors">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pruning Candidates</span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl font-black text-slate-900">{data.slowest.length}</span>
+            <span className="text-xs text-slate-400 font-semibold">of {data.totalItems} items</span>
+          </div>
+          <p className="text-[10px] font-medium text-slate-400 mt-1">Items categorized as low performing</p>
+        </div>
+
+        <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between hover:bg-slate-50/80 transition-colors">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Revenue Leakage</span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl font-black text-[#D64238]">{money(slowItemsRevenue)}</span>
+          </div>
+          <p className="text-[10px] font-medium text-slate-400 mt-1">Sales volume generated by candidates</p>
+        </div>
+
+        <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between hover:bg-slate-50/80 transition-colors">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Avg Candidate Price</span>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl font-black text-slate-900">{money(avgPrice)}</span>
+          </div>
+          <p className="text-[10px] font-medium text-slate-400 mt-1">Average catalog listing value</p>
+        </div>
+
+        <div className="bg-orange-50/30 border border-orange-100/50 p-4 rounded-2xl flex flex-col justify-between hover:bg-orange-50/50 transition-colors md:col-span-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600">Optimization Tip</span>
+          <p className="text-[10px] font-semibold text-slate-500 mt-2 leading-relaxed">
+            Pruning inactive items keeps your menu clean, speeds up service, and directs attention to top conversions.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Table / Row list */}
+      {filteredSlowest.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50/30 border border-slate-100 rounded-3xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 mb-3">
+            <CheckCircle className="h-6 w-6" />
+          </div>
+          <h4 className="text-sm font-extrabold text-slate-800">Everything Looking Perfect</h4>
+          <span className="text-xs font-semibold text-slate-400 mt-1">No items meet the underperforming threshold criteria.</span>
+        </div>
+      ) : (
+        <div className="max-h-[420px] overflow-y-auto pr-1.5 space-y-3">
+          {filteredSlowest.map(it => {
+            const isZero = it.quantity === 0
+            return (
+              <div 
+                key={it.menuItemId} 
+                className={`flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-2xl border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+                  isZero 
+                    ? 'border-rose-100/80 bg-rose-50/10 hover:bg-rose-50/20 hover:border-rose-200' 
+                    : 'border-slate-100 bg-white hover:bg-slate-50/30 hover:border-slate-200/80'
+                }`}
+              >
+                {/* Column 1: Item Details */}
+                <div className="flex items-start gap-3.5 lg:w-[28%] min-w-0">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold text-sm ${
+                    isZero ? 'bg-rose-50 text-[#D64238] border border-rose-100' : 'bg-slate-50 text-slate-700 border border-slate-100'
+                  }`}>
+                    {it.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block truncate text-sm font-black text-slate-800">{it.name}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`h-1.5 w-1.5 rounded-full ${it.isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        {it.isAvailable ? 'Visible' : 'Hidden'}
+                      </span>
+                      {multiOutlet && it.outletName && (
+                        <>
+                          <span className="text-slate-300 text-[10px]">•</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[120px]">
+                            {it.outletName}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 2: Financial Stats */}
+                <div className="grid grid-cols-3 gap-2 lg:w-[25%] py-2 lg:py-0 border-t border-b lg:border-none border-slate-100/80">
+                  <div>
+                    <span className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Price</span>
+                    <span className="block text-xs font-extrabold text-slate-700 mt-0.5">{it.price ? money(it.price) : 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Sold</span>
+                    <span className={`block text-xs font-black mt-0.5 ${isZero ? 'text-[#D64238]' : 'text-slate-800'}`}>{it.quantity} items</span>
+                  </div>
+                  <div>
+                    <span className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Revenue</span>
+                    <span className="block text-xs font-extrabold text-slate-700 mt-0.5">{money(it.revenue)}</span>
+                  </div>
+                </div>
+
+                {/* Column 3: Custom Recommendation Strategy */}
+                <div className="lg:w-[35%] bg-slate-50/50 rounded-xl px-3.5 py-2.5 border border-slate-100/50">
+                  <span className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Recommended Strategy</span>
+                  <p className="text-[10px] font-semibold text-slate-600 mt-1 leading-relaxed">
+                    {isZero 
+                      ? "Unsold item. Pruning candidate to reduce inventory overhead & focus marketing on top converters."
+                      : it.quantity <= 2 
+                        ? `Low conversions. Consider temporary bundling or a ${money((it.price || 100) * 0.85)} discounted promotional menu price.` 
+                        : "Sales pace slow. Recommend adding to Chef Special lists or adjusting online visibility tags."
+                    }
+                  </p>
+                </div>
+
+                {/* Column 4: Actions */}
+                <div className="flex lg:flex-col items-center justify-end shrink-0 gap-2">
+                  <span className={`rounded-lg px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-center ${
+                    isZero 
+                      ? 'bg-rose-50 text-[#D64238] border border-rose-100/70' 
+                      : 'bg-amber-50 text-amber-700 border-amber-100/70'
+                  }`}>
+                    {isZero ? 'Critical Action' : 'Attention'}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Page Component ─────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const { user, isAdmin, isOwner } = useAuth()
   const [stats, setStats]     = useState<DashboardStats | null>(null)
   const [insights, setInsights] = useState<RevenueInsights | null>(null)
+  const [heatmap, setHeatmap] = useState<HeatmapData | null>(null)
+  const [menuPerf, setMenuPerf] = useState<MenuPerformance | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(false)
   // Revenue-section period toggle. The 30d fetch above powers the KPI sparklines
@@ -189,6 +623,48 @@ export default function AnalyticsPage() {
   const [graphTimeframe, setGraphTimeframe] = useState<'1D' | '1W' | '1M'>('1M')
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
+  const linePathRef = useRef<SVGPathElement>(null)
+  const areaPathRef = useRef<SVGPathElement>(null)
+
+  useEffect(() => {
+    if (!isGraphView || !linePathRef.current || !areaPathRef.current) return
+
+    try {
+      const pathLength = linePathRef.current.getTotalLength() || 600
+
+      // Reset style to draw position
+      gsap.killTweensOf(linePathRef.current)
+      gsap.killTweensOf(areaPathRef.current)
+
+      gsap.set(linePathRef.current, {
+        strokeDasharray: pathLength,
+        strokeDashoffset: pathLength
+      })
+      gsap.set(areaPathRef.current, {
+        opacity: 0
+      })
+
+      // Animate line path drawing
+      gsap.to(linePathRef.current, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+
+      // Animate area fill fade in
+      gsap.to(areaPathRef.current, {
+        opacity: 1,
+        duration: 1.0,
+        delay: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    } catch (err) {
+      console.warn("GSAP graph animation failed:", err)
+    }
+  }, [isGraphView, graphTimeframe, insights])
+
   useEffect(() => {
     if (!user) return
     api.get<DashboardStats>('/cms/dashboard/stats')
@@ -199,6 +675,12 @@ export default function AnalyticsPage() {
     // degrade gracefully if it fails, so a failure here never blanks the page.
     api.get<RevenueInsights>('/cms/dashboard/insights')
       .then(res => setInsights(res.data))
+      .catch(() => {})
+    api.get<HeatmapData>('/cms/dashboard/heatmap')
+      .then(res => setHeatmap(res.data))
+      .catch(() => {})
+    api.get<MenuPerformance>('/cms/dashboard/menu-performance')
+      .then(res => setMenuPerf(res.data))
       .catch(() => {})
   }, [user])
 
@@ -739,11 +1221,13 @@ export default function AnalyticsPage() {
 
                                 {/* SVG filled curves and path lines */}
                                 <path 
+                                  ref={areaPathRef}
                                   d={areaD} 
                                   fill="url(#chartGradient)"
                                   className="transition-all duration-300 ease-in-out"
                                 />
                                 <path 
+                                  ref={linePathRef}
                                   d={pathD} 
                                   fill="none" 
                                   stroke="url(#chartStroke)" 
@@ -954,6 +1438,12 @@ export default function AnalyticsPage() {
               </div>
 
             </div>
+
+            {/* ── Peak Hours Heatmap ── */}
+            {heatmap && <PeakHoursHeatmap data={heatmap} />}
+
+            {/* ── Menu Performance (slowest movers) ── */}
+            {menuPerf && <MenuPerformancePanel data={menuPerf} multiOutlet={isAdmin || isOwner} />}
 
             {/* ── Advanced Quick Actions Grid ── */}
             {(isAdmin || isOwner) && (

@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma'
 import { requireAuth, resolveStaffFromToken } from '../../middleware/auth'
 import { paginate } from '../../lib/paginate'
 import { emitOrderEvent, onOrderEvent } from '../../lib/orderEvents'
+import { emitCrmEvent } from '../../lib/crmEvents'
 import { createOrderWithItems, OrderValidationError } from '../../lib/orders'
 
 const router = Router()
@@ -205,6 +206,11 @@ router.patch('/:id/status', async (req, res, next) => {
     })
 
     emitOrderEvent(order.outletId, { type: 'status', order })
+    // A served order realises revenue → the customer's CLV/order count changed, so
+    // nudge the live Customers CRM feed to refresh.
+    if (status === 'served' && order.customerId) {
+      emitCrmEvent({ type: 'customer', outletId: order.outletId })
+    }
     res.json(order)
   } catch (err) {
     next(err)

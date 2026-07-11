@@ -150,10 +150,11 @@
   background: none;
   width: 100%;
   text-align: left;
+  position: relative;
+  z-index: 1;
 }
 .sidebar-link:hover { background: rgba(245, 147, 0, 0.04); color: var(--color-text-1); }
 .sidebar-link.active {
-  background: var(--color-primary-dim);
   color: var(--color-primary);
   font-weight: 600;
 }
@@ -243,6 +244,8 @@
 .page-header {
   padding: 24px 28px 0;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 20;
 }
 .page-title    { font-size: 20px; font-weight: 700; color: var(--color-text-1); }
 .page-subtitle { font-size: 13px; color: var(--color-text-3); margin-top: 3px; }

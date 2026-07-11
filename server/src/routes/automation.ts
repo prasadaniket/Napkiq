@@ -9,8 +9,10 @@ import {
   buildAnniversaryEmail,
   buildReengagementEmail,
   buildGenericEmail,
+  sendReservationReminder,
 } from '../lib/notifications'
 import { getTemplate } from '../lib/templateStore'
+import { sweepReservations } from '../lib/reservations'
 
 const router = Router()
 
@@ -444,6 +446,38 @@ router.post('/announcement', dualAuth, async (_req, res, next) => {
     }
 
     res.json({ ok: true, customers: customers.length, sent, skipped, failed })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ─── POST /api/automation/reservation-sweep ──────────────────────────────────
+// Cron pass for table reservations: send pre-visit WhatsApp reminders for bookings
+// starting soon, and mark long-overdue un-seated bookings as no_show. Worker-only.
+// Query overrides: ?remindWithinMinutes= &noShowAfterMinutes=
+router.post('/reservation-sweep', requireWorkerSecret, async (req, res, next) => {
+  try {
+    const remindWithinMinutes = parseInt(req.query.remindWithinMinutes as string) || undefined
+    const noShowAfterMinutes  = parseInt(req.query.noShowAfterMinutes as string) || undefined
+
+    const result = await sweepReservations({
+      remindWithinMinutes,
+      noShowAfterMinutes,
+      sendReminder: (r) =>
+        sendReservationReminder({
+          to:           normalizePone(r.guestPhone),
+          customerName: r.guestName,
+          outletName:   r.outletName,
+          tableName:    r.tableName,
+          zone:         r.zone,
+          partySize:    r.partySize,
+          date:         r.reservedAt.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'Asia/Kolkata' }),
+          time:         r.reservedAt.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' }),
+          bookingCode:  r.bookingCode,
+        }),
+    })
+
+    res.json({ ok: true, ...result })
   } catch (err) {
     next(err)
   }

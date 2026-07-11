@@ -309,4 +309,131 @@ router.get('/insights', async (req, res, next) => {
   }
 })
 
+/**
+ * GET /api/cms/dashboard/heatmap
+ *
+ * Peak-hours heatmap — visit distribution across the week (day-of-week × hour)
+ * over the last N days (default 90, max 180). Buckets are computed in IST.
+ * Same scoping as /stats. `grid[dow][hour]` where dow 0=Sunday … 6=Saturday.
+ */
+router.get('/heatmap', async (req, res, next) => {
+  try {
+    const role           = req.staff!.role
+    const assignedOutlet = req.staff!.assignedOutletId
+    const isFranchise    = role === 'franchise_owner'
+
+    let outletIds: string[]
+    if (isFranchise) {
+      if (!assignedOutlet) { res.status(403).json({ error: 'No outlet assigned' }); return }
+      outletIds = [assignedOutlet]
+    } else if (req.query.outletId) {
+      outletIds = [req.query.outletId as string]
+    } else {
+      const outlets = await prisma.outlet.findMany({ where: { isActive: true }, select: { id: true } })
+      outletIds = outlets.map(o => o.id)
+    }
+
+    const days        = Math.min(Math.max(Number(req.query.days) || 90, 1), 180)
+    const windowStart = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+
+    const visits = await prisma.customerVisit.findMany({
+      where: { outletId: { in: outletIds }, visitedAt: { gte: windowStart } },
+      select: { visitedAt: true },
+    })
+
+    // grid[dayOfWeek][hour] — dayOfWeek 0=Sun..6=Sat, in IST.
+    const grid: number[][] = Array.from({ length: 7 }, () => new Array(24).fill(0))
+    let maxCount = 0
+    let busiest: { dow: number; hour: number; count: number } | null = null
+
+    for (const v of visits) {
+      const ist  = new Date(v.visitedAt.getTime() + 5.5 * 60 * 60 * 1000)
+      const dow  = ist.getUTCDay()
+      const hour = ist.getUTCHours()
+      const c = ++grid[dow][hour]
+      if (c > maxCount) { maxCount = c; busiest = { dow, hour, count: c } }
+    }
+
+    res.json({ days, grid, maxCount, totalVisits: visits.length, busiest })
+  } catch (err) {
+    next(err)
+  }
+})
+
+/**
+ * GET /api/cms/dashboard/menu-performance
+ *
+ * Slowest-moving menu items over the last N days (default 30, max 90) — a menu
+ * left-join against served-order quantities so items with *zero* orders surface
+ * too (they never appear in order rows). Sorted ascending: the least-ordered
+ * (discount/removal candidates) first. Same scoping as /stats.
+ */
+router.get('/menu-performance', async (req, res, next) => {
+  try {
+    const role           = req.staff!.role
+    const assignedOutlet = req.staff!.assignedOutletId
+    const isFranchise    = role === 'franchise_owner'
+
+    let outletIds: string[]
+    if (isFranchise) {
+      if (!assignedOutlet) { res.status(403).json({ error: 'No outlet assigned' }); return }
+      outletIds = [assignedOutlet]
+    } else if (req.query.outletId) {
+      outletIds = [req.query.outletId as string]
+    } else {
+      const outlets = await prisma.outlet.findMany({ where: { isActive: true }, select: { id: true } })
+      outletIds = outlets.map(o => o.id)
+    }
+
+    const days              = Math.min(Math.max(Number(req.query.days) || 30, 1), 90)
+    const startBusinessDate = new Date(`${istDateNDaysAgo(days - 1)}T00:00:00.000Z`)
+
+    const [menuItems, orderItems] = await Promise.all([
+      prisma.menuItem.findMany({
+        where: { category: { outletId: { in: outletIds } } },
+        select: {
+          id: true, name: true, price: true, isAvailable: true,
+          category: { select: { outlet: { select: { name: true } } } },
+        },
+      }),
+      prisma.orderItem.findMany({
+        where: {
+          menuItemId: { not: null },
+          order: { status: 'served', outletId: { in: outletIds }, businessDate: { gte: startBusinessDate } },
+        },
+        select: { menuItemId: true, quantity: true, priceSnapshot: true },
+      }),
+    ])
+
+    const sold = new Map<string, { quantity: number; revenue: number }>()
+    for (const it of orderItems) {
+      if (!it.menuItemId) continue
+      const s = sold.get(it.menuItemId) ?? { quantity: 0, revenue: 0 }
+      s.quantity += it.quantity
+      s.revenue  += it.priceSnapshot != null ? Number(it.priceSnapshot) * it.quantity : 0
+      sold.set(it.menuItemId, s)
+    }
+
+    const items = menuItems.map(m => {
+      const s = sold.get(m.id) ?? { quantity: 0, revenue: 0 }
+      return {
+        menuItemId:  m.id,
+        name:        m.name,
+        outletName:  m.category?.outlet?.name ?? null,
+        price:       m.price != null ? Number(m.price) : null,
+        isAvailable: m.isAvailable,
+        quantity:    s.quantity,
+        revenue:     s.revenue,
+      }
+    })
+
+    // Slowest movers first (fewest ordered), tie-break by revenue.
+    items.sort((a, b) => a.quantity - b.quantity || a.revenue - b.revenue)
+
+    res.json({ days, totalItems: items.length, slowest: items.slice(0, 10) })
+  } catch (err) {
+    next(err)
+  }
+})
+
 export default router

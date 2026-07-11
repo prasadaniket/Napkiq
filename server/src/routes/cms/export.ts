@@ -14,6 +14,22 @@ type Row = Record<string, string | number>
 // Max rows returned for the live preview (download always returns everything).
 const PREVIEW_LIMIT = 50
 
+// Neutralize CSV formula injection: a cell whose text begins with a formula
+// trigger (= + - @, or a leading tab / carriage-return) is prefixed with a single
+// quote so Excel/Sheets treat it as literal text instead of executing it. Values
+// here are user-controlled (e.g. customer names from the public registration
+// endpoint). The xlsx path is unaffected — exceljs stores these as string cells,
+// which spreadsheets never evaluate as formulas.
+function sanitizeForCsv(rows: Row[]): Row[] {
+  return rows.map((row) => {
+    const out: Row = {}
+    for (const [key, value] of Object.entries(row)) {
+      out[key] = typeof value === 'string' && /^[=+\-@\t\r]/.test(value) ? `'${value}` : value
+    }
+    return out
+  })
+}
+
 // ─── Row builders (single source of truth for columns) ────────────────────────
 
 async function customerRows(): Promise<Row[]> {
@@ -145,8 +161,8 @@ async function respond(
     return
   }
 
-  // Default — CSV.
-  const csv = stringify(rows, { header: true })
+  // Default — CSV. Sanitize cells to defuse spreadsheet formula injection.
+  const csv = stringify(sanitizeForCsv(rows), { header: true })
   res.setHeader('Content-Type', 'text/csv')
   res.setHeader('Content-Disposition', `attachment; filename="${baseName}.csv"`)
   res.send(csv)

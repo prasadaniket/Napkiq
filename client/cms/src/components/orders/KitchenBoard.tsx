@@ -6,6 +6,7 @@ import { getToken } from '@/lib/auth'
 import { useAuth } from '@/context/AuthContext'
 import type { Order, OrderStatus, OrderEvent, Outlet, MenuCategory, MenuItem } from '@/types/api'
 import toast from 'react-hot-toast'
+import GSAPDropdown from '@/components/ui/GSAPDropdown'
 import {
   Clock,
   Play,
@@ -447,17 +448,13 @@ export default function KdsPage() {
 
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           {!isFranchise && (
-            <div className="select-outlet-container">
-              <Store size={14} className="select-outlet-icon" />
-              <select 
-                className="kds-select" 
-                value={outletId} 
-                onChange={e => setOutletId(e.target.value)}
-              >
-                {outlets.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <ChevronDown size={14} className="kds-select-arrow" />
-            </div>
+            <GSAPDropdown
+              value={outletId}
+              onChange={setOutletId}
+              options={outlets.map(o => ({ value: o.id, label: o.name }))}
+              icon={<Store size={14} />}
+              width="190px"
+            />
           )}
           <button 
             className="btn-new-order" 

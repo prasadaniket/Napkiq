@@ -55,6 +55,28 @@ export interface RevenueInsights {
   hourlyToday: { hour: number; revenue: number; orders: number; visits: number }[]
 }
 
+export interface HeatmapData {
+  days:        number
+  grid:        number[][]  // [dayOfWeek 0=Sun..6=Sat][hour 0..23]
+  maxCount:    number
+  totalVisits: number
+  busiest:     { dow: number; hour: number; count: number } | null
+}
+
+export interface MenuPerformance {
+  days:       number
+  totalItems: number
+  slowest: {
+    menuItemId:  string
+    name:        string
+    outletName:  string | null
+    price:       number | null
+    isAvailable: boolean
+    quantity:    number
+    revenue:     number
+  }[]
+}
+
 // ─── Outlets ──────────────────────────────────────────────────────────────────
 
 export interface Outlet {
@@ -116,9 +138,23 @@ export interface Customer {
   firstVisitOutletId:      string
   createdAt:               string
   firstVisitOutlet?:       { name: string; code: string }
+  // Customer Lifetime Value — total served-order spend (list + detail endpoints)
+  clv?:                    number
+  orderCount?:             number
   // Only present on the single-customer /:id endpoint
+  lastOrderAt?:            string | null
   visits?:                 { id: string; visitType: 'qr_scan' | 'payment'; visitedAt: string; outlet?: { name: string; code: string } }[]
   reviews?:                Review[]
+}
+
+export interface CustomerSummary {
+  totalCustomers:    number
+  totalSpend:        number
+  spendingCustomers: number
+  avgSpend:          number
+  activeGuests:      number
+  retentionRate:     number
+  reviewRate:        number
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
@@ -156,6 +192,7 @@ export interface Visit {
   isRepeatVisitor:  boolean
   customer?:        { fullName: string; phone: string } | null
   outlet?:          { name: string; code: string }
+  deviceId?:        string | null
 }
 
 export interface VisitSummary {
@@ -263,3 +300,125 @@ export interface OrderSummary {
 export type OrderEvent =
   | { type: 'created'; order: Order }
   | { type: 'status';  order: Order }
+
+// ─── Table Reservations ─────────────────────────────────────────────────────────
+
+export type TableZone = 'ac' | 'non_ac' | 'outdoor'
+export type TableShape = 'square' | 'round' | 'rect'
+export type ReservationStatus =
+  | 'held' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no_show' | 'expired'
+
+export interface RestaurantTable {
+  id:          string
+  outletId:    string
+  name:        string
+  capacity:    number
+  zone:        TableZone
+  isActive:    boolean
+  isBlocked:   boolean
+  blockReason: string | null
+  sortOrder:   number | null
+  posX:        number | null
+  posY:        number | null
+  shape:       TableShape
+  createdAt:   string
+  updatedAt:   string
+}
+
+// ─── Floor view (live table states) ─────────────────────────────────────────────
+
+export type FloorStatus = 'available' | 'reserved' | 'occupied' | 'blocked'
+
+export interface FloorTable {
+  id:          string
+  name:        string
+  capacity:    number
+  zone:        TableZone
+  posX:        number | null
+  posY:        number | null
+  shape:       TableShape
+  isBlocked:   boolean
+  blockReason: string | null
+  status:      FloorStatus
+  current: {
+    id:            string
+    guestName:     string
+    partySize:     number
+    reservedAt:    string
+    status:        ReservationStatus
+    bookingCode:   string
+    joinRequested: boolean
+    tableCount:    number
+  } | null
+  upcomingCount: number
+}
+
+// ─── Walk-in waitlist ────────────────────────────────────────────────────────────
+
+export type WaitlistStatus = 'waiting' | 'seated' | 'left' | 'no_show'
+
+export interface WaitlistEntry {
+  id:            string
+  outletId:      string
+  guestName:     string
+  guestPhone:    string
+  partySize:     number
+  status:        WaitlistStatus
+  quotedMinutes: number | null
+  note:          string | null
+  tableId:       string | null
+  seatedAt:      string | null
+  createdAt:     string
+  updatedAt:     string
+}
+
+export interface CalendarDay { date: string; count: number; covers: number }
+
+export interface Reservation {
+  id:              string
+  outletId:        string
+  tableId:         string
+  customerId:      string | null
+  deviceId:        string | null
+  guestName:       string
+  guestPhone:      string
+  guestEmail:      string | null
+  partySize:       number
+  reservedAt:      string
+  durationMinutes: number
+  status:          ReservationStatus
+  holdExpiresAt:   string | null
+  bookingCode:     string
+  source:          OrderSource
+  createdById:     string | null
+  specialRequests: string | null
+  occasion:        string | null
+  dietaryNotes:    string | null
+  reminderSentAt:  string | null
+  joinRequested:   boolean
+  cancelledBy:     CancelledBy | null
+  confirmedAt:     string | null
+  createdAt:       string
+  updatedAt:       string
+  table?:          Pick<RestaurantTable, 'id' | 'name' | 'zone' | 'capacity'>
+  additionalTables?: { table: Pick<RestaurantTable, 'id' | 'name' | 'zone' | 'capacity'> }[]
+  outlet?:         { id: string; name: string; code: string }
+}
+
+export interface ReservationSettings {
+  id:                         string
+  name:                       string
+  reservationsEnabled:        boolean
+  reservationOpenTime:        string | null
+  reservationCloseTime:       string | null
+  reservationSlotMinutes:     number
+  reservationDurationMinutes: number
+  reservationHoldMinutes:     number
+}
+
+/** Payload pushed over the reservations SSE stream. */
+export type ReservationEvent =
+  | { type: 'created';  reservation: Reservation }
+  | { type: 'status';   reservation: Reservation }
+  | { type: 'table' }
+  | { type: 'waitlist' }
