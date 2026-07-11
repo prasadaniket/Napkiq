@@ -43,3 +43,4 @@ client/node_modules/
 # Internal strategy/brief docs (not for repo)
 napkiq_feature_recommendations.md
 PROJECT_BRIEF.md
+netlify.toml
