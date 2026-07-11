@@ -35,3 +35,7 @@ client/cms/node_modules/
 client/cms/.next/
 client/cms/out/
 client/node_modules/
+
+# Local Claude Code settings & GSD planning docs
+.claude/
+.planning/
