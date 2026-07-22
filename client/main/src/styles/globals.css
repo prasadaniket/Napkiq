@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-white text-secondary;
+    min-height: 100vh;
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-serif), Georgia, ui-serif, serif;
+  }
+}
+
+@layer components {
+  /* Gradient background — buttons, CTAs, block elements */
+  .btn-gradient {
+    background: linear-gradient(to bottom, #E85D52, #D64238, #A62B22);
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-gradient:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(214, 66, 56, 0.25);
+  }
+  .btn-gradient:active:not(:disabled) {
+    filter: brightness(0.95);
+    transform: translateY(0);
+  }
+
+  /* Outline variant */
+  .btn-gradient-outline {
+    background: transparent;
+    border: 2px solid #D64238;
+    color: #D64238;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-gradient-outline:hover:not(:disabled) {
+    background: linear-gradient(to bottom, #E85D52, #D64238, #A62B22);
+    border-color: transparent;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(214, 66, 56, 0.15);
+  }
+
+  /* Gradient text */
+  .text-gradient-primary {
+    background: linear-gradient(to bottom, #E85D52, #D64238, #A62B22);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Gradient background for non-button block elements */
+  .bg-gradient-primary {
+    background: linear-gradient(to bottom, #E85D52, #D64238, #A62B22);
+  }
+
+  /* Soft tint accent */
+  .accent-tint-primary {
+    background-color: rgba(214, 66, 56, 0.08);
+  }
+
+  /* Glass card utility */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
