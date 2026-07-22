@@ -1,0 +1,586 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  Male
+  Female
+  Transgender
+  RatherNotSay
+}
+
+enum MaritalStatus {
+  Married
+  Unmarried
+}
+
+enum ReviewType {
+  first_visit
+  repeat
+}
+
+enum VisitType {
+  qr_scan
+  payment
+}
+
+enum AutomationType {
+  birthday_whatsapp
+  birthday_email
+  anniversary_whatsapp
+  anniversary_email
+  reengagement_whatsapp
+  reengagement_email
+  welcome_whatsapp
+  welcome_email
+  promotional_whatsapp
+  promotional_email
+  announcement_whatsapp
+  announcement_email
+  bounceback_whatsapp
+  bounceback_email
+}
+
+enum MessageStage {
+  five_days_before
+  one_day_before
+  thirty_days_inactive
+  on_day
+  on_registration
+  manual_campaign
+}
+
+enum AutomationStatus {
+  success
+  failed
+}
+
+enum StaffRole {
+  admin
+  owner
+  franchise_owner
+  main_owner
+}
+
+enum OrderStatus {
+  new
+  preparing
+  ready
+  served
+  cancelled
+}
+
+enum OrderSource {
+  customer
+  staff
+}
+
+// Per-line kitchen progress within an order. A line advances pending → ready →
+// served independently; the order's own status is derived from the collective
+// item progress (all ready → order ready; all served → order served/closed).
+enum OrderItemStatus {
+  pending
+  ready
+  served
+}
+
+enum ServiceType {
+  table
+  self
+}
+
+enum CancelledBy {
+  staff
+  customer
+}
+
+enum TableZone {
+  ac
+  non_ac
+  outdoor
+}
+
+enum TableShape {
+  square
+  round
+  rect // long banquet table
+}
+
+enum ReservationStatus {
+  held // temporary BookMyShow-style lock while the guest completes booking
+  confirmed // finalised (auto-confirmed) — WhatsApp sent
+  seated // guest has arrived and been seated
+  completed // visit finished
+  cancelled // cancelled by staff or guest
+  no_show // guest never arrived
+  expired // hold lapsed before confirmation — frees the table
+}
+
+// ─── POS / Counter billing ──────────────────────────────────────────────────────
+
+// Lifecycle of a dine-in table's running tab (TableSession).
+enum SessionStatus {
+  open // table seated, orders can still be added
+  billed // total requested, awaiting payment at the counter
+  settled // paid — revenue realised, table freed
+  cancelled // voided (comp / mistake) — no revenue
+}
+
+// How a settled bill was paid (single method per bill in v1).
+enum PaymentMethod {
+  cash
+  upi
+  card
+}
+
+enum WaitlistStatus {
+  waiting // in the walk-in queue
+  seated // seated from the queue
+  left // gave up / walked away
+  no_show // called but never showed
+}
+
+model Outlet {
+  id            String  @id @default(uuid()) @db.Uuid
+  code          String  @unique @db.VarChar(10)
+  slug          String  @unique @db.VarChar(50)
+  name          String
+  location      String?
+  address       String?
+  googlePlaceId String  @unique
+  googleMapsUrl String?
+  instagramUrl  String?
+  facebookUrl   String?
+  isActive      Boolean @default(true)
+
+  // ─── Table reservation config (per-outlet) ───────────────────────────────────
+  reservationsEnabled        Boolean @default(false) // shows/hides "Reserve a Table" on the customer app
+  reservationOpenTime        String? @db.VarChar(5) // "HH:mm" IST — first bookable slot
+  reservationCloseTime       String? @db.VarChar(5) // "HH:mm" IST — last bookable slot
+  reservationSlotMinutes     Int     @default(60) // gap between slot start times
+  reservationDurationMinutes Int     @default(90) // how long a table is held per booking
+  reservationHoldMinutes     Int     @default(10) // how long a pre-confirm hold survives
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customers      Customer[]        @relation("FirstVisitOutlet")
+  reviews        Review[]
+  visits         CustomerVisit[]
+  menuCategories MenuCategory[]
+  staff          Staff[]
+  orders         Order[]
+  tables         RestaurantTable[]
+  reservations   Reservation[]
+  waitlist       WaitlistEntry[]
+  tableSessions  TableSession[]
+  vaultDocuments VaultDocument[]
+  vaultSettings  VaultSettings?
+
+  @@map("outlets")
+}
+
+model Customer {
+  id                      String        @id @default(uuid()) @db.Uuid
+  deviceId                String        @unique
+  fullName                String
+  phone                   String        @unique @db.VarChar(15)
+  email                   String?
+  birthDate               DateTime      @db.Date
+  anniversaryDate         DateTime?     @db.Date
+  gender                  Gender
+  maritalStatus           MaritalStatus
+  firstVisitOutletId      String?       @db.Uuid
+  firstVisitOutlet        Outlet?       @relation("FirstVisitOutlet", fields: [firstVisitOutletId], references: [id])
+  lastVisitDate           DateTime?
+  totalVisits             Int           @default(1)
+  hasSubmittedFirstReview Boolean       @default(false)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  reviews        Review[]
+  visits         CustomerVisit[]
+  automationLogs AutomationLog[]
+  orders         Order[]
+  reservations   Reservation[]
+
+  @@index([deviceId])
+  @@index([phone])
+  @@index([lastVisitDate])
+  @@index([birthDate])
+  @@index([anniversaryDate])
+  @@map("customers")
+}
+
+model Review {
+  id                String     @id @default(uuid()) @db.Uuid
+  customerId        String?    @db.Uuid
+  customer          Customer?  @relation(fields: [customerId], references: [id])
+  outletId          String     @db.Uuid
+  outlet            Outlet     @relation(fields: [outletId], references: [id])
+  reviewText        String?
+  stars             Int
+  reviewType        ReviewType
+  postedToGoogle    Boolean    @default(false)
+  isVisible         Boolean    @default(true)
+  sentimentLabel    String?
+  sentimentScore    Decimal?   @db.Decimal(4, 3)
+  sentimentKeywords String[]   @default([])
+  createdAt         DateTime   @default(now())
+
+  @@index([outletId, createdAt])
+  @@index([customerId])
+  @@index([sentimentLabel])
+  @@map("reviews")
+}
+
+model CustomerVisit {
+  id         String    @id @default(uuid()) @db.Uuid
+  customerId String?   @db.Uuid
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  deviceId   String
+  outletId   String    @db.Uuid
+  outlet     Outlet    @relation(fields: [outletId], references: [id])
+  visitType  VisitType @default(qr_scan)
+  visitedAt  DateTime  @default(now())
+
+  @@index([customerId, visitedAt])
+  @@index([deviceId, visitedAt])
+  @@index([outletId, visitedAt])
+  @@map("customer_visits")
+}
+
+model MenuCategory {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String
+  displayOrder Int?
+  isActive     Boolean    @default(true)
+  outletId     String?    @db.Uuid
+  outlet       Outlet?    @relation(fields: [outletId], references: [id])
+  createdAt    DateTime   @default(now())
+  items        MenuItem[]
+
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id            String       @id @default(uuid()) @db.Uuid
+  categoryId    String       @db.Uuid
+  category      MenuCategory @relation(fields: [categoryId], references: [id])
+  name          String
+  description   String?
+  price         Decimal?     @db.Decimal(10, 2)
+  priceVariants Json?
+  isVeg         Boolean      @default(true)
+  imageUrl      String?      @db.VarChar(500)
+  isAvailable   Boolean      @default(true)
+  displayOrder  Int?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  orderItems    OrderItem[]
+
+  @@index([categoryId, displayOrder])
+  @@map("menu_items")
+}
+
+model AutomationLog {
+  id             String           @id @default(uuid()) @db.Uuid
+  customerId     String?          @db.Uuid
+  customer       Customer?        @relation(fields: [customerId], references: [id])
+  automationType AutomationType
+  messageStage   MessageStage
+  status         AutomationStatus
+  errorMessage   String?
+  sentAt         DateTime         @default(now())
+
+  @@index([customerId, sentAt])
+  @@index([automationType, status])
+  @@map("automation_logs")
+}
+
+model Staff {
+  id               String    @id @db.Uuid
+  username         String?   @unique
+  fullName         String
+  email            String    @unique
+  phone            String?   @db.VarChar(15)
+  role             StaffRole
+  isAdmin          Boolean   @default(false)
+  assignedOutletId String?   @db.Uuid
+  assignedOutlet   Outlet?   @relation(fields: [assignedOutletId], references: [id])
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("staff")
+}
+
+model Order {
+  id           String           @id @default(uuid()) @db.Uuid
+  outletId     String           @db.Uuid
+  outlet       Outlet           @relation(fields: [outletId], references: [id])
+  customerId   String?          @db.Uuid
+  customer     Customer?        @relation(fields: [customerId], references: [id])
+  deviceId     String? // links guest orders to a device (my-orders history + tracking)
+  createdById  String?          @db.Uuid // Staff.id when source = staff (plain field, no relation)
+  status       OrderStatus      @default(new)
+  source       OrderSource
+  serviceType  ServiceType      @default(table)
+  boardNumber  String?          @db.VarChar(10) // legacy/self-service free-text label (kept for back-compat)
+  tableId      String?          @db.Uuid // real dine-in table (null for self-service)
+  table        RestaurantTable? @relation(fields: [tableId], references: [id])
+  sessionId    String?          @db.Uuid // the running tab (TableSession) this order belongs to
+  session      TableSession?    @relation(fields: [sessionId], references: [id])
+  note         String?
+  cancelledBy  CancelledBy? // who cancelled, when status = cancelled
+  closedAt     DateTime? // set when the order reaches a terminal state (served/cancelled)
+  dailyNumber  Int? // per-outlet token number, resets each business day (IST)
+  businessDate DateTime?        @db.Date // the IST business day this order belongs to
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  items OrderItem[]
+
+  @@index([outletId, status, createdAt])
+  @@index([outletId, closedAt])
+  @@index([outletId, businessDate])
+  @@index([deviceId])
+  @@index([sessionId])
+  @@map("orders")
+}
+
+// Per-outlet, per-day sequence source for order token numbers. One row per
+// (outlet, business day); `lastNumber` is atomically incremented on each order
+// (see createOrderWithItems). A fresh day starts a new row → numbers reset daily.
+model OrderCounter {
+  id         String   @id @default(uuid()) @db.Uuid
+  outletId   String   @db.Uuid
+  date       DateTime @db.Date
+  lastNumber Int      @default(0)
+
+  @@unique([outletId, date])
+  @@map("order_counters")
+}
+
+model OrderItem {
+  id            String          @id @default(uuid()) @db.Uuid
+  orderId       String          @db.Uuid
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId    String?         @db.Uuid // nullable: keep row if the menu item is later deleted
+  menuItem      MenuItem?       @relation(fields: [menuItemId], references: [id])
+  nameSnapshot  String
+  variantLabel  String? // chosen price variant, e.g. "Large" / "nonVeg"
+  priceSnapshot Decimal?        @db.Decimal(10, 2)
+  quantity      Int             @default(1)
+  note          String?
+  itemStatus    OrderItemStatus @default(pending) // per-line kitchen progress
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ─── Table Reservation ─────────────────────────────────────────────────────────
+
+// A physical table an outlet can seat guests at. Staff define these in the CMS;
+// capacity + zone drive availability (a table is offered only when it seats the
+// party and has no overlapping active reservation for the chosen slot).
+model RestaurantTable {
+  id          String     @id @default(uuid()) @db.Uuid
+  outletId    String     @db.Uuid
+  outlet      Outlet     @relation(fields: [outletId], references: [id])
+  name        String // human label, e.g. "T1" / "Window 4"
+  capacity    Int        @default(2)
+  zone        TableZone  @default(non_ac)
+  isActive    Boolean    @default(true)
+  isBlocked   Boolean    @default(false) // temporarily out of service (cleaning/maintenance)
+  blockReason String? // optional note shown on the floor view
+  sortOrder   Int? // manual ordering within a zone on the floor map
+  // Spatial floor-plan position (percent of the room canvas, 0–100). Set by the CMS
+  // drag-to-arrange editor; when null the client falls back to the zone-grid layout.
+  posX        Float?
+  posY        Float?
+  shape       TableShape @default(square) // visual token on the floor map
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  reservations      Reservation[] // reservations whose PRIMARY table is this one
+  reservationTables ReservationTable[] // + extra tables of multi-table (combined) bookings
+  sessions          TableSession[] // dine-in running tabs opened on this table
+  orders            Order[] // orders placed against this table
+
+  @@index([outletId, isActive])
+  @@map("restaurant_tables")
+}
+
+// ─── Table Session (running tab / POS bill) ─────────────────────────────────────
+//
+// One open session per seated table. Staff open it when a party sits (walk-in or from
+// a reservation); orders attach to it as rounds are placed; the running total is
+// derived from the orders' item price snapshots. Settling records a single payment
+// method + the total snapshot and frees the table. Enforce "at most one open/billed
+// session per table" in the open-session endpoint (checked before create).
+model TableSession {
+  id            String          @id @default(uuid()) @db.Uuid
+  outletId      String          @db.Uuid
+  outlet        Outlet          @relation(fields: [outletId], references: [id])
+  tableId       String          @db.Uuid
+  table         RestaurantTable @relation(fields: [tableId], references: [id])
+  reservationId String?         @db.Uuid // set when the seating originated from a booking
+  status        SessionStatus   @default(open)
+  partySize     Int?
+  openedById    String?         @db.Uuid // Staff.id who opened the tab
+
+  // Settlement — all set once, at settle time.
+  paymentMethod PaymentMethod?
+  paidAmount    Decimal?       @db.Decimal(10, 2) // snapshot of the total when settled
+  settledById   String?        @db.Uuid
+  settledAt     DateTime?
+
+  openedAt DateTime  @default(now())
+  closedAt DateTime? // set when the session reaches settled/cancelled
+
+  orders Order[]
+
+  @@index([outletId, status])
+  @@index([tableId, status])
+  @@map("table_sessions")
+}
+
+// Join row for multi-table (combined) bookings: a large party occupying more than
+// one table. The reservation's PRIMARY table stays on Reservation.tableId; every
+// ADDITIONAL table is one row here. The full set = primary ∪ additionalTables.
+model ReservationTable {
+  reservationId String          @db.Uuid
+  reservation   Reservation     @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  tableId       String          @db.Uuid
+  table         RestaurantTable @relation(fields: [tableId], references: [id])
+
+  @@id([reservationId, tableId])
+  @@index([tableId])
+  @@map("reservation_tables")
+}
+
+model Reservation {
+  id               String             @id @default(uuid()) @db.Uuid
+  outletId         String             @db.Uuid
+  outlet           Outlet             @relation(fields: [outletId], references: [id])
+  tableId          String             @db.Uuid // PRIMARY table (always set)
+  table            RestaurantTable    @relation(fields: [tableId], references: [id])
+  additionalTables ReservationTable[] // extra tables for a large / combined party
+  joinRequested    Boolean            @default(false) // guest asked to have the tables pushed together
+  customerId       String?            @db.Uuid
+  customer         Customer?          @relation(fields: [customerId], references: [id])
+  deviceId         String? // links a guest booking to their device (my-reservations)
+
+  // Guest contact — captured on the booking form (may differ from linked customer).
+  guestName  String
+  guestPhone String  @db.VarChar(15)
+  guestEmail String?
+  partySize  Int     @default(2)
+
+  reservedAt      DateTime // slot start (UTC; derived from IST date + time)
+  durationMinutes Int               @default(90) // snapshot of outlet duration at booking time
+  status          ReservationStatus @default(held)
+  holdExpiresAt   DateTime? // while status = held, when the lock lapses
+
+  // Fresh, human-friendly code generated per confirmed booking. Sent to the guest
+  // over WhatsApp along with the table number — the "unique customer number".
+  bookingCode String @unique @db.VarChar(16)
+
+  source          OrderSource // customer (app) | staff (walk-in entry)
+  createdById     String?      @db.Uuid // Staff.id when source = staff
+  specialRequests String?
+  occasion        String? // CRM tag: Birthday / Anniversary / Business…
+  dietaryNotes    String? // CRM tag: allergies / veg / jain…
+  reminderSentAt  DateTime? // set when the pre-visit WhatsApp reminder was sent
+  cancelledBy     CancelledBy?
+  confirmedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([outletId, reservedAt])
+  @@index([tableId, reservedAt])
+  @@index([deviceId])
+  @@index([status, holdExpiresAt])
+  @@index([status, reservedAt, reminderSentAt])
+  @@map("reservations")
+}
+
+// ─── Walk-in Queue / Waitlist ──────────────────────────────────────────────────
+// Guests without a reservation who join the queue at the door. Staff quote a wait
+// time and seat them (optionally onto a table) when one frees.
+model WaitlistEntry {
+  id            String         @id @default(uuid()) @db.Uuid
+  outletId      String         @db.Uuid
+  outlet        Outlet         @relation(fields: [outletId], references: [id])
+  guestName     String
+  guestPhone    String         @db.VarChar(15)
+  partySize     Int            @default(2)
+  status        WaitlistStatus @default(waiting)
+  quotedMinutes Int? // staff-quoted wait estimate
+  note          String?
+  tableId       String?        @db.Uuid // set when seated onto a specific table
+  seatedAt      DateTime?
+  createdById   String?        @db.Uuid // Staff.id who added the entry
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([outletId, status, createdAt])
+  @@map("waitlist_entries")
+}
+
+// ─── Restaurant Vault & Document Storage ──────────────────────────────────────
+enum VaultDocumentCategory {
+  legal
+  tax
+  property
+  vendor
+  hr
+  financial
+  other
+}
+
+model VaultDocument {
+  id              String                @id @default(uuid()) @db.Uuid
+  outletId        String                @db.Uuid
+  outlet          Outlet                @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  name            String
+  category        VaultDocumentCategory @default(legal)
+  fileName        String
+  fileUrl         String
+  fileSize        Int                   @default(0)
+  mimeType        String                @default("application/pdf")
+  tags            String[]              @default([])
+  expiryDate      DateTime?
+  isLocked        Boolean               @default(false)
+  isDigiLocker    Boolean               @default(false)
+  digiLockerDocId String?
+  uploadedBy      String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([outletId, category])
+  @@map("vault_documents")
+}
+
+model VaultSettings {
+  id                    String    @id @default(uuid()) @db.Uuid
+  outletId              String    @unique @db.Uuid
+  outlet                Outlet    @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  passwordHash          String?
+  isLockEnabled         Boolean   @default(false)
+  autoLockMinutes       Int       @default(15)
+  digiLockerAccessToken String?
+  digiLockerRefreshToken String?
+  digiLockerTokenExpires DateTime?
+  digiLockerId          String?
+  updatedAt             DateTime  @updatedAt
+
+  @@map("vault_settings")
+}
+
