@@ -86,25 +86,7 @@ Napkiq/
 ## 🚀 Getting Started
 
 ### 1. Environment Setup
-
-#### Backend (`/server/.env`)
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/napkiq"
-SUPABASE_URL="https://your-project.supabase.co"
-SUPABASE_SERVICE_KEY="your-service-key"
-CLOUDINARY_URL="cloudinary://api_key:api_secret@cloud_name"
-
-# MeitY DigiLocker API Integration
-DIGILOCKER_CLIENT_ID="your_client_id"
-DIGILOCKER_CLIENT_SECRET="your_client_secret"
-DIGILOCKER_REDIRECT_URI="http://localhost:8080/api/cms/vault/digilocker/callback"
-DIGILOCKER_ENV="sandbox"
-```
-
-#### Frontend Client (`/client/cms/.env`)
-```env
-NEXT_PUBLIC_API_URL="http://localhost:8080/api"
-```
+Configure your environment configuration files by creating local `.env` files based on the `.env.example` templates provided in `/server` and `/client/cms`.
 
 ---
 
