@@ -1,0 +1,41 @@
+{
+  "name": "napkiq-cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.104.0",
+    "axios": "^1.7.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4",
+    "gsap": "^3.15.0",
+    "lucide-react": "^0.468.0",
+    "next": "16.2.4",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-hook-form": "^7.51.5",
+    "react-hot-toast": "^2.4.1",
+    "tailwind-merge": "^2.5.2",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^25",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5"
+  }
+}
